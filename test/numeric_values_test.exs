@@ -47,7 +47,6 @@ defmodule BinStructTest.NumericValuesTest do
 
     struct =
       NumericBinStruct.new(
-       %{
          uint8: uint8_value,
          int8: int8_value,
 
@@ -68,8 +67,6 @@ defmodule BinStructTest.NumericValuesTest do
          int64_le: int64_value,
          float32_le: float32,
          float64_le: float64
-
-       }
       )
 
     values = NumericBinStruct.decode(struct)
@@ -109,8 +106,6 @@ defmodule BinStructTest.NumericValuesTest do
     struct =
       NumericBinStruct.new(
 
-        %{
-
           uint8: 0,
           uint16_be: 0,
           uint32_be: 0,
@@ -133,9 +128,6 @@ defmodule BinStructTest.NumericValuesTest do
           int16_le: int16_value,
           int32_le: int32_value,
           int64_le: int64_value
-
-        }
-
       )
 
     values = NumericBinStruct.decode(struct)
