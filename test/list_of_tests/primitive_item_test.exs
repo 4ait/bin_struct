@@ -13,18 +13,8 @@ defmodule BinStructTest.ListOfTests.PrimitiveItemTest do
 
   test "struct with primitive items works" do
 
-    boolean_items = [
-      true,
-      true,
-      false
-    ]
-
-    integer_items = [
-      1,
-      2,
-      3
-    ]
-
+    boolean_items = [ true, true, false ]
+    integer_items = [ 1, 2, 3 ]
 
     struct =
       StructWithItems.new(
@@ -32,15 +22,9 @@ defmodule BinStructTest.ListOfTests.PrimitiveItemTest do
         integer_items: integer_items
       )
 
-
     dump = StructWithItems.dump_binary(struct)
 
-    StructWithItems.module_code()
-
     { :ok, parsed_struct, "" = _rest } = StructWithItems.parse(dump)
-
-    IO.inspect(parsed_struct)
-
 
     values = StructWithItems.decode(parsed_struct)
 
