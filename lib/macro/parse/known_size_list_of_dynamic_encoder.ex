@@ -15,7 +15,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeListOfDynamicEncoder do
       for << unquote(bind_item)::bytes-(unquote(item_size)) <- unquote(access_field) >> do
 
         unquote(
-          KnownSizeTypeEncoder.encode_known_size_type(bind_item, item_type, opts, context)
+          KnownSizeTypeEncoder.encode_known_size_type(bind_item, item_type, opts, context) || bind_item
         )
 
       end

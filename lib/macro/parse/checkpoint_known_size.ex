@@ -85,7 +85,6 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
         end
       ) |> Enum.reject(&is_nil/1)
 
-
     static_values_bindings =
       Enum.map(
         fields_encoding,
@@ -131,6 +130,16 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
               end
 
             { :asn1_parse_result, asn1_encode_expr } -> asn1_encode_expr
+
+              #quote do
+              #  unquote(access_field) <- unquote(asn1_encode_expr)
+              #end
+
+            { :simple_value, encode_expr } ->
+
+              quote do
+                unquote(access_field) <- unquote(encode_expr)
+              end
 
             _ -> nil
 

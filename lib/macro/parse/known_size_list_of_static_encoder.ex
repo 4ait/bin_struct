@@ -23,7 +23,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeListOfStaticEncoder do
         fn unquote(bind_item) ->
 
           unquote(
-            KnownSizeTypeEncoder.encode_known_size_type(bind_item, item_type, opts, context)
+            KnownSizeTypeEncoder.encode_known_size_type(bind_item, item_type, opts, context) || bind_item
           )
 
         end

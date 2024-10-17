@@ -313,7 +313,7 @@ defmodule BinStruct do
 
         unquote(
 
-          if Mix.env() == :dev do
+          if Mix.env() != :prod do
 
             quote do
 
