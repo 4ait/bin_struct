@@ -26,3 +26,5 @@ bin_struct-*.tar
 /tmp/
 
 .idea
+
+.bin_struct.iml
