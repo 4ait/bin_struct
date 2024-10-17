@@ -241,8 +241,7 @@ defmodule BinStruct.Macro.Encoder do
 
   end
 
-  def encode_term_to_bin_struct_field({:list_of, %{ item_type: item_type} = _list_of_info}, quoted) do
-
+  def encode_term_to_bin_struct_field({:list_of, %{ item_type: item_type } = _list_of_info}, quoted) do
 
     item_binding = { :item, [], __MODULE__ }
 

@@ -8,7 +8,18 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
   def remap_list_of({:list_of, item_type}, opts, env) do
 
     item_type = RemapType.remap_type(item_type, opts, env)
-    
+
+
+    supported_string = "supported list_of item types are all primitives, binaries and bin_structs"
+
+    case item_type do
+      { :variant_of, _variants } -> raise "variant_of list_item type not supported directly, you could wrap it with another struct \n#{supported_string}"
+      { :enum, _variants } -> raise "enum list_item type not supported \n#{supported_string}"
+      { :flags, _variants } -> raise "flags list_item type not supported \n#{supported_string}"
+      { :list_of, _list_of } -> raise "list_of list_item type not supported\n#{supported_string}"
+      _ -> :ok
+    end
+
     list_of_info =
       #at least 2 known at compile time
       case compile_time_bounds(item_type, opts) do

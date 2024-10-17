@@ -1,26 +1,18 @@
 defmodule BinStruct.Macro.Parse.KnownSizeTypeEncoder do
 
-
-  alias BinStruct.Macro.Parse.KnownSizeListOfStaticEncoder
   alias BinStruct.Macro.Parse.KnownSizeListOfDynamicEncoder
 
   defp encode_known_size_list_of_expr(%{
     length: _length,
     item_size: _item_size,
-    count: count
+    count: _count
   } = bounds, access_field, item_type, opts, context )  do
 
-    if count <= 32 do
-      KnownSizeListOfStaticEncoder
-        .encode_known_size_list_of_as_static_expr(bounds, access_field, item_type, opts, context)
-    else
+    KnownSizeListOfDynamicEncoder
+      .encode_known_size_list_of_as_dynamic_expr(
+        bounds, access_field, item_type, opts, context
+      )
 
-      KnownSizeListOfDynamicEncoder
-        .encode_known_size_list_of_as_dynamic_expr(
-          bounds, access_field, item_type, opts, context
-        )
-
-    end
 
   end
 
@@ -118,7 +110,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeEncoder do
 
             expr = encode_known_size_list_of_expr(bounds, access_field, item_type, opts, context)
 
-            { :simple_value, expr }
+            { :items_parse_result, expr }
 
         end
 
