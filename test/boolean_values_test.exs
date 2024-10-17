@@ -2,7 +2,7 @@ defmodule BinStructTest.BooleanValuesTest do
 
   use ExUnit.Case
 
-  defmodule BoolsBinStruct do
+  defmodule BooleanValuesBinStruct do
 
     use BinStruct
 
@@ -16,13 +16,17 @@ defmodule BinStructTest.BooleanValuesTest do
   test "struct with boolean values works" do
 
     struct =
-      BoolsBinStruct.new(
+      BooleanValuesBinStruct.new(
         true_bool: true,
         false_bool: false,
         bool_16_bit: true
       )
 
-    values = BoolsBinStruct.decode(struct)
+    dump = BooleanValuesBinStruct.dump_binary(struct)
+
+    { :ok, parsed_struct } = BooleanValuesBinStruct.parse_exact(dump)
+
+    values = BooleanValuesBinStruct.decode(parsed_struct)
 
     %{
       true_bool: true,

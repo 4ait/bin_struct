@@ -2,7 +2,7 @@ defmodule BinStructTest.NumericValuesTest do
 
   use ExUnit.Case
 
-  defmodule NumericBinStruct do
+  defmodule NumericValuesBinStruct do
 
     use BinStruct
 
@@ -29,7 +29,6 @@ defmodule BinStructTest.NumericValuesTest do
 
   end
 
-
   test "struct with numeric values works" do
 
     uint8_value = trunc(:math.pow(2, 8)) - 1
@@ -46,7 +45,7 @@ defmodule BinStructTest.NumericValuesTest do
     float64 = 1.5
 
     struct =
-      NumericBinStruct.new(
+      NumericValuesBinStruct.new(
          uint8: uint8_value,
          int8: int8_value,
 
@@ -69,7 +68,11 @@ defmodule BinStructTest.NumericValuesTest do
          float64_le: float64
       )
 
-    values = NumericBinStruct.decode(struct)
+    dump = NumericValuesBinStruct.dump_binary(struct)
+
+    { :ok, parsed_struct } = NumericValuesBinStruct.parse_exact(dump)
+
+    values = NumericValuesBinStruct.decode(parsed_struct)
 
     %{
       uint8: ^uint8_value,
@@ -104,7 +107,7 @@ defmodule BinStructTest.NumericValuesTest do
     int64_value = (trunc(:math.pow(2, 63)) - 1) * -1
 
     struct =
-      NumericBinStruct.new(
+      NumericValuesBinStruct.new(
 
           uint8: 0,
           uint16_be: 0,
@@ -130,7 +133,12 @@ defmodule BinStructTest.NumericValuesTest do
           int64_le: int64_value
       )
 
-    values = NumericBinStruct.decode(struct)
+
+    dump = NumericValuesBinStruct.dump_binary(struct)
+
+    { :ok, parsed_struct } = NumericValuesBinStruct.parse_exact(dump)
+
+    values = NumericValuesBinStruct.decode(parsed_struct)
 
     %{
       int8: ^int8_value,
