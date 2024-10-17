@@ -1,4 +1,4 @@
-defmodule BinStructTest.FlagsValuesBinStruct do
+defmodule BinStructTest.FlagsValuesTest do
 
   use ExUnit.Case
 
