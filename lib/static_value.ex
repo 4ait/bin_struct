@@ -29,3 +29,6 @@ defmodule BinStructStaticValue do
   end
 
 end
+
+
+
