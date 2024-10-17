@@ -24,3 +24,5 @@ bin_struct-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+.idea
