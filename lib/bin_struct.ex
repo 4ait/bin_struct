@@ -75,152 +75,6 @@ defmodule BinStruct do
     Module.put_attribute(__CALLER__.module, :callbacks, raw_registered_callback)
   end
 
-  defp tcp_receive_function() do
-
-    quote do
-
-      def tcp_receive(socket, buffer \\ <<>>, options \\ nil) do
-
-        known_total_size_bytes = __MODULE__.known_total_size_bytes()
-
-        available_in_buffer_size = byte_size(buffer)
-
-        bin =
-          case known_total_size_bytes do
-
-            known_total_size_bytes when
-              is_integer(known_total_size_bytes) and
-              available_in_buffer_size >= known_total_size_bytes -> buffer
-
-            known_total_size_bytes when is_integer(known_total_size_bytes) ->
-
-              { :ok, received } = :gen_tcp.recv(socket, known_total_size_bytes - available_in_buffer_size)
-
-              <<buffer::binary, received::binary>>
-
-            :unknown ->
-
-              case buffer do
-
-                <<>> ->
-
-                  { :ok, received } = :gen_tcp.recv(socket, 0)
-
-                  received
-
-                buffer -> buffer
-
-              end
-
-          end
-
-        Logger.debug("Receive TCP #{String.trim_leading("#{__MODULE__}", "Elixir.")}: #{inspect(bin, limit: :infinity)}", ansi_color: :green)
-
-        case __MODULE__.parse(bin, options) do
-
-          {:ok, struct, rest }  ->
-
-            Logger.debug("Created struct %#{String.trim_leading("#{__MODULE__}", "Elixir.")}{}", ansi_color: :green)
-            {:ok, struct, rest }
-
-          :not_enough_bytes  -> tcp_receive(socket, bin, options)
-
-        end
-
-      end
-
-    end
-
-  end
-
-  defp tls_receive_function() do
-
-    quote do
-
-      def tls_receive(socket, buffer \\ <<>>, options \\ nil) do
-
-        known_total_size_bytes = __MODULE__.known_total_size_bytes()
-
-        available_in_buffer_size = byte_size(buffer)
-
-        bin =
-          case known_total_size_bytes do
-
-            known_total_size_bytes when
-              is_integer(known_total_size_bytes) and
-              available_in_buffer_size >= known_total_size_bytes -> buffer
-
-            known_total_size_bytes when is_integer(known_total_size_bytes) ->
-
-              { :ok, received } = :ssl.recv(socket, known_total_size_bytes - available_in_buffer_size)
-
-              <<buffer::binary, received::binary>>
-
-            :unknown ->
-
-                case buffer do
-
-                 <<>> ->
-
-                   { :ok, received } = :ssl.recv(socket, 0)
-
-                   received
-
-                 buffer -> buffer
-
-                end
-
-          end
-
-        Logger.debug("Receive TLS #{String.trim_leading("#{__MODULE__}", "Elixir.")}: #{inspect(bin, limit: :infinity)}", ansi_color: :light_green)
-
-        case __MODULE__.parse(bin, options) do
-
-          {:ok, struct, rest } ->
-
-            Logger.debug("Created struct %#{String.trim_leading("#{__MODULE__}", "Elixir.")}{}", ansi_color: :light_green)
-
-            {:ok, struct, rest }
-
-          :not_enough_bytes  -> tls_receive(socket, bin, options)
-
-        end
-
-      end
-
-    end
-
-  end
-
-
-  defmacro define_send() do
-
-    quote do
-
-      def tcp_send(bin_struct, socket) do
-
-        binary = __MODULE__.dump_binary(bin_struct)
-
-        Logger.debug("Sent TCP #{__MODULE__}: #{inspect(binary, limit: :infinity)}", ansi_color: :blue)
-
-        :gen_tcp.send(socket, binary)
-
-      end
-
-      def tls_send(bin_struct, socket) do
-
-        binary = __MODULE__.dump_binary(bin_struct)
-
-        Logger.debug("Sent TLS #{__MODULE__}: #{inspect(binary, limit: :infinity)}", ansi_color: :light_blue)
-
-        :ssl.send(socket, binary)
-
-      end
-
-    end
-
-  end
-
 
   defmacro define_is_bin_struct_terminated(is_bin_struct_terminated) do
 
@@ -359,6 +213,7 @@ defmodule BinStruct do
       Enum.map(
         non_virtual_fields,
         fn %Field{} = field ->
+
           %Field{ name: name } = field
 
           { name, nil }
@@ -367,16 +222,22 @@ defmodule BinStruct do
       ) |> Keyword.new()
 
     maybe_receive =
-      if is_bin_struct_terminated do
+      case { is_bin_struct_terminated, known_total_size_bytes } do
 
-        tcp_receive = tcp_receive_function()
+        { _is_bin_struct_terminated = false, _known_total_size_bytes } -> []
 
-        tls_receive = tls_receive_function()
+        { _is_bin_struct_terminated = true, known_total_size_bytes } when is_integer(known_total_size_bytes) ->
+          [
+            BinStruct.Macro.ReceiveFunctions.tpc_receive_function_known_size(known_total_size_bytes),
+            BinStruct.Macro.ReceiveFunctions.tls_receive_function_known_size(known_total_size_bytes)
+          ]
 
-        [tcp_receive, tls_receive]
+        { _is_bin_struct_terminated = true, _known_total_size_bytes = :unknown } ->
+          [
+            BinStruct.Macro.ReceiveFunctions.tpc_receive_function_unknown_size(),
+            BinStruct.Macro.ReceiveFunctions.tls_receive_function_unknown_size()
+          ]
 
-      else
-        []
       end
 
      result_quote =
@@ -404,7 +265,10 @@ defmodule BinStruct do
 
           unquote_splicing(maybe_receive)
 
-          define_send()
+          unquote_splicing([
+            BinStruct.Macro.SendFunctions.tcp_send(),
+            BinStruct.Macro.SendFunctions.tls_send()
+          ])
 
           def parse_exact_returning_options(bin, options \\ nil) do
 
@@ -442,11 +306,6 @@ defmodule BinStruct do
       end
 
      module_code = BinStruct.MacroDebug.code(result_quote)
-
-      if env.module == SshGatewayElixir.Ssh.SshPacket do
-        #BinStruct.MacroDebug.puts_code(result_quote)
-     end
-
 
       quote do
 

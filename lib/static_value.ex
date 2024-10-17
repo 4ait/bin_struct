@@ -20,4 +20,12 @@ defmodule BinStructStaticValue do
     <<value::32-big-unsigned>>
   end
 
+  def uint64_le(value) do
+    <<value::64-little-unsigned>>
+  end
+
+  def uint64_be(value) do
+    <<value::64-big-unsigned>>
+  end
+
 end
