@@ -1,10 +1,10 @@
-defmodule BinStructTest.ListOfTests.UnboundedListsTests.NotTerminated.UntilEndByParseTest do
+defmodule BinStructTest.ListOfTests.UnboundedListsTests.NotTerminated.UntilEndByParseStructTest do
 
   use ExUnit.Case
 
   defmodule Item do
     use BinStruct
-    field :binary, :binary, termination: <<0>>
+    field :binary, :binary, length: 1
   end
 
   defmodule StructWithItems do
@@ -14,12 +14,12 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.NotTerminated.UntilEndBy
 
   end
 
-  test "count parse structs containing some amount of terminated items with parse_exact" do
+  test "count parse structs containing some amount of structs with size by parse_exact" do
 
     items = [
       Item.new(binary: <<1>>),
-      Item.new(binary: <<2, 3, 4>>),
-      Item.new(binary: <<5, 6, 7, 8>>)
+      Item.new(binary: <<2>>),
+      Item.new(binary: <<3>>)
     ]
 
     struct = StructWithItems.new(items: items)
