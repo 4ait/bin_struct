@@ -1,7 +1,7 @@
 ExUnit.start()
 #implemented: tests for all list bounds variants
 
-#todo implement tests optional fields (dynamic or optional tail)
+#implemented: tests optional fields (dynamic or optional tail)
 #implemented: tests for dynamic validation
 #todo implement tests for builder
 #todo implement tests for read/write virtual system
