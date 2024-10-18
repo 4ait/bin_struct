@@ -9,6 +9,7 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
   alias BinStruct.Macro.Encoder
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
+  alias BinStruct.Macro.IsOptionalField
 
   def registered_callback_arguments_bindings(
         %RegisteredCallback{ arguments: arguments },
@@ -31,7 +32,25 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
             case options[:encode] do
               :raw -> bind
-              _ -> Encoder.decode_bin_struct_field_to_term(type, bind)
+              _ ->
+
+                is_optional = IsOptionalField.is_optional_field(field)
+
+                if is_optional do
+
+                  quote do
+
+                    case unquote(bind) do
+                      nil -> nil
+                      unquote(bind) -> unquote(Encoder.decode_bin_struct_field_to_term(type, bind))
+                    end
+
+                  end
+
+                else
+                  Encoder.decode_bin_struct_field_to_term(type, bind)
+                end
+
             end
 
           %RegisteredCallbackNewArgument{} = new_argument ->
@@ -45,7 +64,6 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
               end
 
             bind = { BinStruct.Macro.Bind.bind_value_name(name), [], context }
-
 
 
             case options[:encode] do
