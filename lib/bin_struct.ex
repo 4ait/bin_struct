@@ -1,5 +1,6 @@
 defmodule BinStruct do
 
+  #todo add docs
   @moduledoc false
 
   alias BinStruct.Macro.Preprocess.Remap
