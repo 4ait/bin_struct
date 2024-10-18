@@ -229,11 +229,17 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
       ->
 
         if Integer.mod(compile_time_length, compile_time_count) != 0 do
-          raise "Valid list_of boundaries could not be computed for length (#{compile_time_length}) and count (#{compile_time_count})"
+          raise "list_of boundaries could not be computed for length (#{compile_time_length}) and count (#{compile_time_count})"
         end
 
         if Integer.mod(compile_time_length, compile_time_item_size) != 0 do
-          raise "Valid list_of boundaries could not be computed for length (#{compile_time_length}) and item size (#{compile_time_item_size})"
+          raise "list_of boundaries could not be computed for length (#{compile_time_length}) and item size (#{compile_time_item_size})"
+        end
+
+        computed_count = Integer.floor_div(compile_time_length, compile_time_item_size)
+
+        if computed_count != compile_time_count do
+          raise "list_of boundaries invalid, provided length (#{compile_time_length}), item size (#{compile_time_item_size}) and count (#{compile_time_count}) not resulting in common boundaries"
         end
 
         %{
@@ -262,7 +268,7 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
 
           if Integer.mod(compile_time_length, compile_time_item_size) != 0 do
-            raise "Valid list_of boundaries could not be computed for length (#{compile_time_length}) and item size (#{compile_time_item_size})"
+            raise "list_of boundaries could not be computed for length (#{compile_time_length}) and item size (#{compile_time_item_size})"
           end
 
           %{
@@ -278,7 +284,7 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
         ->
 
           if Integer.mod(compile_time_length, compile_time_count) != 0 do
-            raise "Valid list_of boundaries could not be computed for length (#{compile_time_length}) and count (#{compile_time_count})"
+            raise "list_of boundaries could not be computed for length (#{compile_time_length}) and count (#{compile_time_count})"
           end
 
           %{
