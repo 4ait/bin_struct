@@ -2,23 +2,30 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.UntilLengthBy
 
   use ExUnit.Case
 
+  defmodule Item do
+    use BinStruct
+    field :binary, :binary, termination: <<0>>
+  end
+
   defmodule StructWithItems do
 
     use BinStruct
 
-    register_callback &count_by/0
-    register_callback &item_size_by/0
+    register_callback &length_by/0
 
-    field :items, { :list_of, :binary }, count_by: &count_by/0, item_size_by: &item_size_by/0
+    field :items, { :list_of, Item }, length_by: &length_by/0
 
-    defp count_by(), do: 3
-    defp item_size_by(), do: 3
+    defp length_by(), do: 9
 
   end
 
   test "bound by count and item size computed" do
 
-    items = [ "123", "234", "345" ]
+    items = [
+      Item.new(binary: <<1>>),
+      Item.new(binary: <<2, 3>>),
+      Item.new(binary: <<4, 5, 6>>)
+    ]
 
     struct = StructWithItems.new(items: items)
 
