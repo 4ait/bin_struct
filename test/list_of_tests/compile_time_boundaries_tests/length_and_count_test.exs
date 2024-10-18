@@ -1,4 +1,4 @@
-defmodule BinStructTest.ListOfTests.BoundariesTests.ItemSizeAndCountTest do
+defmodule BinStructTest.ListOfTests.CompileTimeBoundariesTests.LengthAndCountTest do
 
   use ExUnit.Case
 
@@ -6,11 +6,11 @@ defmodule BinStructTest.ListOfTests.BoundariesTests.ItemSizeAndCountTest do
 
     use BinStruct
 
-    field :items, { :list_of, :binary }, item_size: 3, count: 3
+    field :items, { :list_of, :binary }, length: 9, count: 3
 
   end
 
-  test "bound by item size and count computed" do
+  test "bound by length and count computed" do
 
     items = [ "123", "234", "345" ]
 

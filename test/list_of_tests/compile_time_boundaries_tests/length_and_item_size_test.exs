@@ -1,4 +1,4 @@
-defmodule BinStructTest.ListOfTests.BoundariesTests.LengthAndItemSizeTest do
+defmodule BinStructTest.ListOfTests.CompileTimeBoundariesTests.LengthAndItemSizeTest do
 
   use ExUnit.Case
 

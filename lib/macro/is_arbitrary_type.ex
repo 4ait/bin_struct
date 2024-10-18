@@ -15,6 +15,9 @@ defmodule BinStruct.Macro.IsArbitraryType do
         bits_size = FieldSize.type_size_bits(type, [])
 
         case bits_size do
+
+          :unknown -> true
+
           bits_size when is_integer(bits_size) ->
 
             case Integer.mod(bits_size, 8) do
