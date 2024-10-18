@@ -6,7 +6,7 @@ ExUnit.start()
 #implemented: implement tests for read/write virtual system
 #implemented: tests for options/option interfaces
 
-#todo add more detailed examples of uses virtual field system in practice
+#todolater add more detailed examples of uses virtual field system in practice
 #todo add tests for asn1
 #todo add exceptions for unsupported options per type
 #todo add benchmarks
