@@ -1,5 +1,7 @@
 defmodule BinStruct do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Preprocess.Remap
 
   defmacro __using__(_opts) do
