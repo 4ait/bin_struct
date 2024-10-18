@@ -19,7 +19,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.UntilCountByP
 
   end
 
-  test "count parse terminated items by count_by" do
+  test "could parse terminated items by count_by" do
 
     items = [
       Item.new(binary: <<1>>),

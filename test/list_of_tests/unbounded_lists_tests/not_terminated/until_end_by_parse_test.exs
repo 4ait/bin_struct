@@ -14,7 +14,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.NotTerminated.UntilEndBy
 
   end
 
-  test "count parse structs containing some amount of terminated items with parse_exact" do
+  test "could parse structs containing some amount of terminated items with parse_exact" do
 
     items = [
       Item.new(binary: <<1>>),

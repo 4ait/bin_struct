@@ -28,7 +28,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
 
   end
 
-  test "count parse structs with item_size by take_while_by" do
+  test "could parse structs with item_size by take_while_by" do
 
     items = [
       Item.new(binary: <<1>>),

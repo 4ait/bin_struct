@@ -10,7 +10,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.NotTerminated.UntilEndBy
 
   end
 
-  test "count parse primitives with size in list by parse_exact" do
+  test "could parse some amount of primitives with size in list by parse_exact" do
 
     items = [
       1,
