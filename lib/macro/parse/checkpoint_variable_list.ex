@@ -295,9 +295,10 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
           unquote(item_bind_name) = unquote(parse_expr)
 
-          take_while_by_callback_result = unquote(take_while_by_function_call)
-
           new_acc = [ unquote(item_bind_name) | acc ]
+          unquote(field_name_access) = new_acc
+
+          take_while_by_callback_result = unquote(take_while_by_function_call)
 
           case take_while_by_callback_result do
             :cont -> unquote(parse_take_while_by_callback_by_item_size_function_name)(rest, options, item_size, :cont, new_acc)

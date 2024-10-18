@@ -1,10 +1,10 @@
-defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCallbackByItemSizeTest do
+defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCallbackByItemSizeStructTest do
 
   use ExUnit.Case
 
   defmodule Item do
     use BinStruct
-    field :binary, :binary, termination: <<0>>
+    field :binary, :binary, length: 1
   end
 
   defmodule StructWithItems do
@@ -20,7 +20,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
       [ recent | _previous ] = items
 
       case recent.binary do
-        <<4, 5, 6>> -> :halt
+        <<3>> -> :halt
         _ -> :cont
       end
 
@@ -28,12 +28,12 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
 
   end
 
-  test "count parse anything with item_size by while_by" do
+  test "count parse structs with item_size by while_by" do
 
     items = [
       Item.new(binary: <<1>>),
-      Item.new(binary: <<2, 3>>),
-      Item.new(binary: <<4, 5, 6>>)
+      Item.new(binary: <<2>>),
+      Item.new(binary: <<3>>)
     ]
 
     struct = StructWithItems.new(items: items)
@@ -49,6 +49,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
     } = values
 
   end
+
 
 end
 

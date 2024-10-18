@@ -28,7 +28,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
 
   end
 
-  test "count parse terminated items by while_by" do
+  test "could parse terminated items by while_by" do
 
     items = [
       Item.new(binary: <<1>>),
