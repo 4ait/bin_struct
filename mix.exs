@@ -7,8 +7,21 @@ defmodule BinStruct.MixProject do
       version: "0.1.0",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
+      elixirc_paths: ["lib"] |> maybe_add_test_elixirc_path(),
       deps: deps()
     ]
+  end
+
+  defp maybe_add_test_elixirc_path(elixirc_paths) do
+
+    if Mix.env() == :test do
+      elixirc_paths ++ [
+        "test/support"
+      ]
+    else
+      elixirc_paths
+    end
+
   end
 
   # Run "mix help compile.app" to learn about applications.
