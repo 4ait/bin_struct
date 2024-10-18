@@ -29,16 +29,18 @@ defmodule BinStructTest.VariantsTest do
 
   test "struct with variant field works" do
 
-    b = VariantB.new(binary: "321")
+    b = VariantB.new()
 
-    b_dump = VariantB.dump_binary(b)
+    struct_with_variant = VariantValueBinStruct.new(variant: b)
 
-    { :ok, parsed_struct, _rest } = VariantValueBinStruct.parse(b_dump)
+    dump = VariantValueBinStruct.dump_binary(struct_with_variant)
+
+    { :ok, parsed_struct, _rest } = VariantValueBinStruct.parse(dump)
 
     values = VariantValueBinStruct.decode(parsed_struct)
 
     %{
-      variant: %VariantB{},
+      variant: ^b
     } = values
 
   end
