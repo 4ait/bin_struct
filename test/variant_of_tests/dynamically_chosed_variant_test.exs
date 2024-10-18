@@ -2,6 +2,24 @@ defmodule BinStructTest.VariantOfTests.SimpleVariantOfTest do
 
   use ExUnit.Case
 
+  defmodule Cookie do
+
+    use BinStruct
+
+    register_callback &check_if_starting_with_cookie_pattern/1,
+                      binary: :field
+
+    field :binary, :binary,
+          termination: <<0>>,
+          validate_by: &check_if_starting_with_cookie_pattern/1
+
+    defp check_if_starting_with_cookie_pattern(binary) do
+      String.starts_with?(binary, "Cookie: ")
+    end
+
+
+  end
+
   defmodule Token do
 
     use BinStruct
@@ -14,29 +32,50 @@ defmodule BinStructTest.VariantOfTests.SimpleVariantOfTest do
           validate_by: &check_if_starting_with_token_pattern/1
 
     defp check_if_starting_with_token_pattern(binary) do
-      String.starts_with?(binary, "starting with particular sentence")
+      String.starts_with?(binary, "Token: ")
     end
 
 
   end
 
+  defmodule TokenOrCookie do
+
+    use BinStruct
+
+    field :token_or_cookie, { :variant_of, [ Token, Cookie ]}
+
+
+  end
+
+
 
   test "struct with variant field works" do
 
-    a = VariantA.new(binary: "some binary")
-    b = VariantB.new(binary: "starting with particular sentence some binary")
+    token = Token.new(binary: "Token: SomeToken")
+    cookie = Cookie.new(binary: "Cookie: SomeCookie")
 
-    struct_with_variant = VariantValueBinStruct.new(variant: b)
+    token_or_cookie_struct_initialized_with_token =
+      TokenOrCookie.new(token_or_cookie: token)
 
-    dump = VariantValueBinStruct.dump_binary(struct_with_variant)
+    token_or_cookie_struct_initialized_with_cookie =
+      TokenOrCookie.new(token_or_cookie: cookie)
 
-    { :ok, parsed_struct, _rest } = VariantValueBinStruct.parse(dump)
+    dump_variant_with_token = TokenOrCookie.dump_binary(token_or_cookie_struct_initialized_with_token)
+    dump_variant_with_cookie = TokenOrCookie.dump_binary(token_or_cookie_struct_initialized_with_cookie)
 
-    values = VariantValueBinStruct.decode(parsed_struct)
+    { :ok, parsed_struct_with_token_variant, _rest } = TokenOrCookie.parse(dump_variant_with_token)
+    { :ok, parsed_struct_with_cookie_variant, _rest } = TokenOrCookie.parse(dump_variant_with_cookie)
+
+    values_of_token_variant = TokenOrCookie.decode(parsed_struct_with_token_variant)
+    values_of_cookie_variant = TokenOrCookie.decode(parsed_struct_with_cookie_variant)
 
     %{
-      variant: ^b
-    } = values
+      token_or_cookie: ^token
+    } = values_of_token_variant
+
+    %{
+      token_or_cookie: ^cookie
+    } = values_of_cookie_variant
 
   end
 
