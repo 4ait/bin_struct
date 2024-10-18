@@ -30,25 +30,25 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
             bind = { BinStruct.Macro.Bind.bind_value_name(name), [], context }
 
+            encode_expr = Encoder.decode_bin_struct_field_to_term(type, bind)
+
             case options[:encode] do
               :raw -> bind
               _ ->
 
-                is_optional = IsOptionalField.is_optional_field(field)
+                if IsOptionalField.is_optional_field(field) do
 
-                if is_optional do
+                    quote do
 
-                  quote do
+                      case unquote(bind) do
+                        nil -> nil
+                        unquote(bind) -> unquote(encode_expr)
+                      end
 
-                    case unquote(bind) do
-                      nil -> nil
-                      unquote(bind) -> unquote(Encoder.decode_bin_struct_field_to_term(type, bind))
                     end
 
-                  end
-
                 else
-                  Encoder.decode_bin_struct_field_to_term(type, bind)
+                  encode_expr
                 end
 
             end
