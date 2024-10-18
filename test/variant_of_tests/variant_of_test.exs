@@ -1,4 +1,4 @@
-defmodule BinStructTest.VariantsTest do
+defmodule BinStructTest.VariantOfTests.VariantOfTest do
 
   use ExUnit.Case
 

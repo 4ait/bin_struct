@@ -1,8 +1,8 @@
-defmodule BinStruct.Macro.IsArbitraryType do
+defmodule BinStruct.Macro.IsPrimitiveType do
 
   alias BinStruct.Macro.FieldSize
 
-  def is_arbitrary_type(type) do
+  def is_primitive_type(type) do
 
     case type do
       {:module, _module_info} -> false

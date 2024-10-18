@@ -126,9 +126,9 @@ defmodule BinStruct.Macro.SizeFunction do
 
   defp size_type_size_expr(type, field_access, opts, is_optional) do
 
-    is_arbitrary_type = BinStruct.Macro.IsArbitraryType.is_arbitrary_type(type)
+    is_primitive_type = BinStruct.Macro.IsPrimitiveType.is_primitive_type(type)
 
-    if is_arbitrary_type do
+    if is_primitive_type do
 
       FieldSize.type_size_bits(type, [])
       |> Utils.bit_size_to_byte_size()

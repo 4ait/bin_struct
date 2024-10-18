@@ -8,7 +8,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
   alias BinStruct.Macro.Termination
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Parse.ListOfRuntimeBounds
-  alias BinStruct.Macro.IsArbitraryType
+  alias BinStruct.Macro.IsPrimitiveType
   alias BinStruct.Macro.Parse.CheckpointVariableList
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
   alias BinStruct.Macro.Parse.ExternalFieldDependencies
@@ -654,13 +654,13 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
     runtime_bounds_expr = ListOfRuntimeBounds.get_runtime_bounds(bounds, registered_callbacks_map, __MODULE__)
 
-    is_item_of_arbitrary_type = IsArbitraryType.is_arbitrary_type(item_type)
+    is_item_of_primitive_type = IsPrimitiveType.is_primitive_type(item_type)
 
     parse_expr =
 
       case item_type do
 
-        _item_type when is_item_of_arbitrary_type -> item_bind_name
+        _item_type when is_item_of_primitive_type -> item_bind_name
 
         {:module, %{ module: module } = _module_info} ->
 

@@ -6,7 +6,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
   alias BinStruct.Macro.Parse.Validation
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
   alias BinStruct.Macro.Bind
-  alias BinStruct.Macro.IsArbitraryType
+  alias BinStruct.Macro.IsPrimitiveType
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
 
@@ -246,12 +246,12 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     parse_take_while_by_callback_by_item_size_function_name = String.to_atom("#{function_name}_take_while_by_callback_by_item_size")
 
-    is_item_of_arbitrary_type = IsArbitraryType.is_arbitrary_type(item_type)
+    is_item_of_primitive_type = IsPrimitiveType.is_primitive_type(item_type)
 
     parse_expr =
       case item_type do
 
-        _item_type when is_item_of_arbitrary_type -> item_bind_name
+        _item_type when is_item_of_primitive_type -> item_bind_name
 
         {:module, %{ module: module } = _module_info} ->
 
@@ -495,13 +495,13 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     field_name_access = { Bind.bind_value_name(name), [], __MODULE__ }
     item_bind_name = { :item, [], __MODULE__ }
 
-    is_item_of_arbitrary_type = IsArbitraryType.is_arbitrary_type(item_type)
+    is_item_of_primitive_type = IsPrimitiveType.is_primitive_type(item_type)
 
     parse_expr =
 
       case item_type do
 
-        _item_type when is_item_of_arbitrary_type -> item_bind_name
+        _item_type when is_item_of_primitive_type -> item_bind_name
 
         {:module, %{ module: module } = _module_info} ->
 
