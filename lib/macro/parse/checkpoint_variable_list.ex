@@ -242,7 +242,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     value_bind_name = Bind.bind_value_name(name)
 
     field_name_access = { value_bind_name, [], __MODULE__ }
-    item_bind_name = { Bind.bind_item_of_value_name(value_bind_name), [], __MODULE__ }
+    item_bind_name = { :item, [], __MODULE__ }
 
     parse_take_while_by_callback_by_item_size_function_name = String.to_atom("#{function_name}_take_while_by_callback_by_item_size")
 
@@ -382,8 +382,6 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     field_name_access = { value_bind_name, [], __MODULE__ }
 
-    item_bind_name = { Bind.bind_item_of_value_name(value_bind_name), [], __MODULE__ }
-
     parse_take_while_by_callback_by_parse_function_name = String.to_atom("#{function_name}_take_while_by_callback_by_parse")
 
     take_while_by_registered_callback = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, take_while_by)
@@ -410,9 +408,9 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
           case unquote(module_full_name).parse(binary, options) do
 
-            {:ok, unquote(item_bind_name), rest } ->
+            {:ok, new_item, rest } ->
 
-              new_acc = [ unquote(item_bind_name) | acc ]
+              new_acc = [ new_item | acc ]
 
               unquote(field_name_access) = new_acc
 

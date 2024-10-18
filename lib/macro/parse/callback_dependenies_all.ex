@@ -6,7 +6,6 @@ defmodule BinStruct.Macro.Parse.CallbacksDependenciesAll do
 
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
-  alias BinStruct.Macro.Structs.RegisteredCallbackItemArgument
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.RegisteredOption
   alias BinStruct.Macro.Structs.InterfaceImplementation
@@ -74,9 +73,6 @@ defmodule BinStruct.Macro.Parse.CallbacksDependenciesAll do
                %Field{ name: name } = field
                name
 
-             %RegisteredCallbackItemArgument{item_of_field: item_of_field} ->
-               %Field{ name: name } = item_of_field
-               name
            end
 
          end

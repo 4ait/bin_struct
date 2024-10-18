@@ -2,7 +2,6 @@ defmodule BinStruct.Macro.Parse.ExternalFieldDependencies do
 
   alias BinStruct.Macro.Parse.CallbacksDependenciesAll
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
-  alias BinStruct.Macro.Structs.RegisteredCallbackItemArgument
   alias BinStruct.Macro.Structs.Field
 
   def external_field_dependencies(fields, interface_implementations, registered_callbacks_map) do
@@ -16,7 +15,6 @@ defmodule BinStruct.Macro.Parse.ExternalFieldDependencies do
 
           case argument do
             %RegisteredCallbackFieldArgument{ field: field } -> !Enum.member?(fields, field)
-            %RegisteredCallbackItemArgument{ item_of_field: item_of_field } -> !Enum.member?(fields, item_of_field)
           end
 
         end

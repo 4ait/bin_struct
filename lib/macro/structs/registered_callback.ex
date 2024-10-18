@@ -2,7 +2,6 @@ defmodule BinStruct.Macro.Structs.RegisteredCallback do
 
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
-  alias BinStruct.Macro.Structs.RegisteredCallbackItemArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
   alias BinStruct.Macro.Structs.Field
@@ -12,7 +11,6 @@ defmodule BinStruct.Macro.Structs.RegisteredCallback do
                arguments: list(
                  RegisteredCallbackFieldArgument.t() |
                  RegisteredCallbackOptionArgument.t() |
-                 RegisteredCallbackItemArgument.t() |
                  RegisteredCallbackNewArgument.t()
                ),
                returns:

@@ -4,7 +4,6 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
 
   alias BinStruct.Macro.FunctionName
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
-  alias BinStruct.Macro.Structs.RegisteredCallbackItemArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
   alias BinStruct.Macro.Structs.RegisteredCallback
@@ -150,12 +149,6 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
               options: Map.delete(type_map, :type)
             }
 
-          %{ type: :item } = type_map ->
-
-            %RegisteredCallbackItemArgument{
-              item_of_field: FieldsMap.get_field_by_name(fields_map, name),
-              options: Map.delete(type_map, :type)
-            }
 
         %{ type: :argument } = type_map ->
 

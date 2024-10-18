@@ -3,7 +3,6 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredOption
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
-  alias BinStruct.Macro.Structs.RegisteredCallbackItemArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
   alias BinStruct.Macro.Encoder
@@ -77,27 +76,6 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
               :raw -> Encoder.encode_term_to_bin_struct_field(type, bind)
 
               _ -> bind
-
-            end
-
-          %RegisteredCallbackItemArgument{item_of_field: item_of_field} = argument ->
-
-            %RegisteredCallbackItemArgument{ options: options } = argument
-
-            %Field { name: item_of_field_name, type: item_of_field_type } = item_of_field
-
-            case item_of_field_type do
-
-              { :list_of, %{ item_type: item_type } = _list_of_info } ->
-
-                value_bind_name = BinStruct.Macro.Bind.bind_value_name(item_of_field_name)
-
-                bind_item = { BinStruct.Macro.Bind.bind_item_of_value_name(value_bind_name), [], context }
-
-                case options[:encode] do
-                  :raw -> bind_item
-                  _ -> Encoder.decode_bin_struct_field_to_term(item_type, bind_item)
-                end
 
             end
 
