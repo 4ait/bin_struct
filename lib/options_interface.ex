@@ -4,6 +4,14 @@ defmodule BinStructOptionsInterface do
   alias BinStruct.Macro.Preprocess.RemapRegisteredOption
   alias BinStruct.Macro.Structs.RegisteredOptionsMap
 
+  defmacro __using__(_opts) do
+
+    quote do
+      import BinStructOptionsInterface
+    end
+
+  end
+
   defmacro register_option(_name, _parameters \\ []) do
       raise "should not be called directly, wrap with register_options_interface block"
   end
