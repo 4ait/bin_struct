@@ -10,7 +10,7 @@ defmodule BinStructTest.ListOfTests.BinaryItemTest do
 
   end
 
-  test "struct with primitive items works" do
+  test "struct with binary items works" do
 
     binary_items = [ "123", "234", "345" ]
 

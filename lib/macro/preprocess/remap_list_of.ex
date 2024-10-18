@@ -214,19 +214,28 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
   end
 
   defp compile_time_bounds(item_type, opts) do
-    
-    case { 
+
+    case {
       compile_time_length(item_type, opts),
       compile_time_count(item_type, opts),
-      compile_time_item_size(item_type, opts) 
+      compile_time_item_size(item_type, opts)
     } do
-      
-      { compile_time_length, compile_time_count, compile_time_item_size } 
-        when 
-          is_integer(compile_time_length) and 
-          is_integer(compile_time_count) and 
+
+      { compile_time_length, compile_time_count, compile_time_item_size }
+        when
+          is_integer(compile_time_length) and
+          is_integer(compile_time_count) and
           is_integer(compile_time_item_size)
-      -> 
+      ->
+
+        if Integer.mod(compile_time_length, compile_time_count) != 0 do
+          raise "Valid list_of boundaries could not be computed for length (#{compile_time_length}) and count (#{compile_time_count})"
+        end
+
+        if Integer.mod(compile_time_length, compile_time_item_size) != 0 do
+          raise "Valid list_of boundaries could not be computed for length (#{compile_time_length}) and item size (#{compile_time_item_size})"
+        end
+
         %{
           length: compile_time_length,
           count: compile_time_count,
@@ -238,6 +247,7 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
           is_integer(compile_time_count) and
           is_integer(compile_time_item_size)
         ->
+
           %{
             length: compile_time_count * compile_time_item_size,
             count: compile_time_count,
@@ -249,6 +259,12 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
           is_integer(compile_time_length) and
           is_integer(compile_time_item_size)
         ->
+
+
+          if Integer.mod(compile_time_length, compile_time_item_size) != 0 do
+            raise "Valid list_of boundaries could not be computed for length (#{compile_time_length}) and item size (#{compile_time_item_size})"
+          end
+
           %{
             length: compile_time_length,
             count: Integer.floor_div(compile_time_length, compile_time_item_size),
@@ -260,14 +276,19 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
           is_integer(compile_time_length) and
           is_integer(compile_time_count)
         ->
+
+          if Integer.mod(compile_time_length, compile_time_count) != 0 do
+            raise "Valid list_of boundaries could not be computed for length (#{compile_time_length}) and count (#{compile_time_count})"
+          end
+
           %{
             length: compile_time_length,
             count: compile_time_count,
             item_size: Integer.floor_div(compile_time_length, compile_time_count)
           }
-          
+
        _ -> :unknown
-       
+
     end
     
   end
@@ -297,22 +318,23 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
   defp compile_time_item_size(item_type, opts) do
 
-    item_size_bytes =
-      FieldSize.type_size_bits(item_type, opts)
-      |> Utils.bit_size_to_byte_size()
+    item_size = opts[:item_size]
 
-    case item_size_bytes do
+    case item_size do
 
-      item_size_bytes when is_integer(item_size_bytes) -> item_size_bytes
+      item_size when not is_nil(item_size) -> item_size
 
-      :unknown ->
+      nil ->
 
-        item_size = opts[:item_size]
+        known_item_size_bytes =
+          FieldSize.type_size_bits(item_type, [])
+          |> Utils.bit_size_to_byte_size()
 
-        case item_size do
-          item_size when not is_nil(item_size) -> item_size
-          _item_size = nil -> :unknown
+        case known_item_size_bytes do
+          item_size when is_integer(item_size) -> item_size
+          :unknown -> :unknown
         end
+
 
     end
 
