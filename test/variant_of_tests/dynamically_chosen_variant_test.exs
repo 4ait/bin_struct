@@ -1,4 +1,4 @@
-defmodule BinStructTest.VariantOfTests.SimpleVariantOfTest do
+defmodule BinStructTest.VariantOfTests.DynamicallyChosenVariantTest do
 
   use ExUnit.Case
 
@@ -49,7 +49,7 @@ defmodule BinStructTest.VariantOfTests.SimpleVariantOfTest do
 
 
 
-  test "struct with variant field works" do
+  test "variant_of dynamically chosen correct child by validate_by" do
 
     token = Token.new(binary: "Token: SomeToken")
     cookie = Cookie.new(binary: "Cookie: SomeCookie")
