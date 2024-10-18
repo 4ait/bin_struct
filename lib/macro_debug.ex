@@ -4,7 +4,7 @@ defmodule BinStruct.MacroDebug do
   def code(ast) do
 
     Macro.to_string(ast)
-    #|> Code.format_string!()
+    |> Code.format_string!()
 
   end
 

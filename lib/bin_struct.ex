@@ -307,6 +307,9 @@ defmodule BinStruct do
 
      module_code = BinStruct.MacroDebug.code(result_quote)
 
+     #BinStruct.MacroDebug.puts_code(result_quote)
+
+
       quote do
 
         unquote(result_quote)
