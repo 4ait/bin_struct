@@ -25,7 +25,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
 
   end
 
-  test "could parse primitives by while_by" do
+  test "could parse primitives by take_while_by" do
 
     items = [ 1, 2, 3 ]
 
