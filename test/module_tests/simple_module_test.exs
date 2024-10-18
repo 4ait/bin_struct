@@ -1,4 +1,4 @@
-defmodule BinStructTest.ModuleTests.ModuleTest do
+defmodule BinStructTest.ModuleTests.SimpleModuleTest do
 
   use ExUnit.Case
 
@@ -31,7 +31,7 @@ defmodule BinStructTest.ModuleTests.ModuleTest do
     values = Parent.decode(parsed_struct)
 
     %{
-      child: ^child,
+      child: ^child
     } = values
 
   end
