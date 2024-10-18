@@ -48,7 +48,7 @@ defmodule BinStruct.Macro.DecodeFieldFunction do
     value_access = { Bind.bind_value_name(name), [], __MODULE__ }
     deep_access = { :deep, [], __MODULE__ }
 
-    is_optional = BinStruct.Macro.Utils.is_optional_field(field)
+    is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
 
     decode_type_expr = DecodeFunction.decode_type(type, opts, value_access, deep_access)
 

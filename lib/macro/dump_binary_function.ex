@@ -2,7 +2,7 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
 
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Utils
+  alias BinStruct.Macro.IsOptionalField
 
   def dump_binary_function(fields, _env) do
 
@@ -52,7 +52,7 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
 
           %Field{ type: type } = field
 
-          is_optional = Utils.is_optional_field(field)
+          is_optional = IsOptionalField.is_optional_field(field)
 
           case type do
             { :static_value, _ } when not is_optional -> true
@@ -250,7 +250,7 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
 
     name_field = { Bind.bind_value_name(name), [], __MODULE__}
 
-    is_optional = Utils.is_optional_field(field)
+    is_optional = IsOptionalField.is_optional_field(field)
 
     encode_type_for_dump(name_field, type, opts, is_optional)
 

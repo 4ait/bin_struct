@@ -137,7 +137,7 @@ defmodule BinStruct.Macro.DecodeFunction do
 
     decode_type_expr = decode_type(type, opts, value_access, deep_access)
 
-    is_optional = BinStruct.Macro.Utils.is_optional_field(field)
+    is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
 
     if is_optional do
       decode_expr_wrap_optional(decode_type_expr, value_access)

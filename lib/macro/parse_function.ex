@@ -326,7 +326,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
     is_optional =
       case field_or_one_of_pack do
-        %Field{} = field ->  BinStruct.Macro.Utils.is_optional_field(field)
+        %Field{} = field ->  BinStruct.Macro.IsOptionalField.is_optional_field(field)
         %OneOfPack{} -> false
       end
 

@@ -3,7 +3,7 @@ defmodule BinStruct.Macro.AllFieldsSize do
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.OneOfPack
   alias BinStruct.Macro.FieldSize
-  alias BinStruct.Macro.Utils
+  alias BinStruct.Macro.BitSizeConverter
 
   def get_all_fields_and_packs_size_bytes(fields_or_packs) do
 
@@ -38,7 +38,7 @@ defmodule BinStruct.Macro.AllFieldsSize do
         end
       )
 
-    Utils.bit_size_to_byte_size(size_in_bits)
+    BitSizeConverter.bit_size_to_byte_size(size_in_bits)
 
   end
 

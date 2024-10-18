@@ -2,8 +2,8 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
   alias BinStruct.Macro.Preprocess.RemapType
   alias BinStruct.Macro.FieldSize
-  alias BinStruct.Macro.Utils
   alias BinStruct.Macro.Termination
+  alias BinStruct.Macro.BitSizeConverter
 
   def remap_list_of({:list_of, item_type}, opts, env) do
 
@@ -334,7 +334,7 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
         known_item_size_bytes =
           FieldSize.type_size_bits(item_type, [])
-          |> Utils.bit_size_to_byte_size()
+          |> BitSizeConverter.bit_size_to_byte_size()
 
         case known_item_size_bytes do
           item_size when is_integer(item_size) -> item_size

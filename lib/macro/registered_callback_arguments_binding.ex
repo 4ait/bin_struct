@@ -52,7 +52,7 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
               :binary ->
 
-                is_optional = BinStruct.Macro.Utils.is_optional_field(field)
+                is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
                 expr = BinStruct.Macro.DumpBinaryFunction.encode_type_for_dump(bind, type, opts, is_optional)
                 Encoder.encode_term_to_bin_struct_field(type, expr)
 

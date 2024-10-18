@@ -8,7 +8,7 @@ defmodule BinStruct.Macro.NewFunction do
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
   alias BinStruct.Macro.DependenciesTopology
-  alias BinStruct.Macro.Utils
+  alias BinStruct.Macro.IsOptionalField
   alias BinStruct.Macro.NonVirtualFields
   alias BinStruct.Macro.Structs.VirtualField
 
@@ -146,7 +146,7 @@ defmodule BinStruct.Macro.NewFunction do
       ^field_bind_value_access -> nil
       encode_expr ->
 
-        is_optional = Utils.is_optional_field(field)
+        is_optional = IsOptionalField.is_optional_field(field)
 
         case is_optional do
 

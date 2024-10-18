@@ -2,7 +2,7 @@ defmodule BinStruct.Macro.SizeFunction do
 
   alias BinStruct.Macro.FieldSize
   alias BinStruct.Macro.AllFieldsSize
-  alias BinStruct.Macro.Utils
+  alias BinStruct.Macro.BitSizeConverter
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.OneOfPack
 
@@ -36,7 +36,7 @@ defmodule BinStruct.Macro.SizeFunction do
 
           field_access = { name, [], __MODULE__ }
 
-          is_optional = BinStruct.Macro.Utils.is_optional_field(field)
+          is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
 
           size_expr = unknown_size_type_size_expr(type, field_access, opts, is_optional)
 
@@ -103,7 +103,7 @@ defmodule BinStruct.Macro.SizeFunction do
         case field_or_pack do
           %Field{} = field ->
 
-            is_optional = BinStruct.Macro.Utils.is_optional_field(field)
+            is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
 
             case FieldSize.field_size_bits(field) do
               size when is_integer(size) and not is_optional -> { [field | known_size_fields], unknown_size_fields }
@@ -131,7 +131,7 @@ defmodule BinStruct.Macro.SizeFunction do
     if is_primitive_type do
 
       FieldSize.type_size_bits(type, [])
-      |> Utils.bit_size_to_byte_size()
+      |> BitSizeConverter.bit_size_to_byte_size()
 
     else
       unknown_size_type_size_expr(type, field_access, opts, is_optional)
