@@ -13,3 +13,5 @@ ExUnit.start()
 #todo ... ( like take_while_by will be unused if list already have bounds, etc)
 
 #todo add benchmarks
+#todo add BinStructCustomType with custom_type_arguments
+#todo type managed unmanaged table
