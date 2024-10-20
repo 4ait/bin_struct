@@ -3,19 +3,33 @@ defmodule BinStruct.Macro.Termination do
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.OneOfPack
 
-  def is_bin_struct_custom_type_terminated(custom_type_module_info) do
+  def is_child_module_terminated(module_info) do
 
-    %{
-      module_full_name: module_full_name,
-      custom_type_args: custom_type_args
-    } = custom_type_module_info
+    case module_info do
 
-    apply(module_full_name, :is_custom_type_terminated, [custom_type_args])
+      %{
+        module_type: :bin_struct,
+        module_full_name: module_full_name
+      } ->
+        is_child_bin_struct_terminated(module_full_name)
+
+      %{
+        module_type: :bin_struct_custom_type,
+        module_full_name: module_full_name,
+        custom_type_args: custom_type_args
+      } ->
+        is_child_bin_struct_custom_type_terminated(module_full_name, custom_type_args)
+
+    end
 
   end
 
-  def is_child_bin_struct_terminated(module_full_name) do
+  defp is_child_bin_struct_terminated(module_full_name) do
     apply(module_full_name, :is_bin_struct_terminated, [])
+  end
+
+  defp is_child_bin_struct_custom_type_terminated(module_full_name, custom_type_args) do
+    apply(module_full_name, :is_custom_type_terminated, [custom_type_args])
   end
 
   def is_current_bin_struct_terminated(_no_fields_or_packs = [], _env), do: true
@@ -133,14 +147,14 @@ defmodule BinStruct.Macro.Termination do
 
           _type when not is_nil(length_by) -> true
 
-          {:module, %{ module_full_name: module_full_name }} -> is_child_bin_struct_terminated(module_full_name)
+          {:module, module_info } -> is_child_module_terminated(module_info)
 
           {:variant_of, variants } ->
 
             Enum.all?(
               Enum.map(
                 variants,
-                fn {:module, %{ module_full_name: module_full_name } } -> is_child_bin_struct_terminated(module_full_name)
+                fn {:module, module_info } -> is_child_module_terminated(module_info)
                 end
               )
             )

@@ -21,9 +21,7 @@ defmodule TestCustomType do
   def decode(%TestCustomType{ data: data }, custom_type_args, _opts), do: data
 
   def size(%TestCustomType{ data: data }, custom_type_args) do
-
     byte_size(data) + byte_size(<<0>>)
-
   end
 
   def dump_binary(%TestCustomType{ data: data }, custom_type_args) do
@@ -37,6 +35,14 @@ defmodule TestCustomType do
 
   def is_custom_type_terminated(_custom_type_args) do
     true
+  end
+
+  def to_managed(unmanaged, custom_type_args) do
+
+  end
+
+  def to_unmanaged(managed, custom_type_args) do
+
   end
 
   defp parse_dynamic_terminated(bin, termination, acc \\ <<>>)

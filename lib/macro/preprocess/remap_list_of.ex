@@ -57,9 +57,9 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
                   case item_type do
 
-                    { :module, %{ module_full_name: module_full_name } } ->
+                    { :module, module_info } ->
 
-                      if Termination.is_child_bin_struct_terminated(module_full_name) do
+                      if Termination.is_child_bin_struct_terminated(module_info) do
 
                         %{
                           type: :variable,
@@ -86,9 +86,9 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
                       case item_type do
 
-                        { :module, %{ module_full_name: module_full_name } } ->
+                        { :module, module_info } ->
 
-                          if Termination.is_child_bin_struct_terminated(module_full_name) do
+                          if Termination.is_child_bin_struct_terminated(module_info) do
 
                             %{
                               type: :variable,
@@ -171,9 +171,9 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
                               case item_type do
 
-                                { :module, %{ module_full_name: module_full_name } } ->
+                                { :module, module_info } ->
 
-                                  if Termination.is_child_bin_struct_terminated(module_full_name) do
+                                  if Termination.is_child_module_terminated(module_info) do
 
                                     %{
                                       type: :variable,
