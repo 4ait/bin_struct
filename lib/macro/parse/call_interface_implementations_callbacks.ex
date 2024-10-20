@@ -39,7 +39,6 @@ defmodule BinStruct.Macro.Parse.CallInterfaceImplementationsCallbacks do
 
     end
 
-
-
   end
+
 end
