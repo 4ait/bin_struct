@@ -237,25 +237,41 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 variants,
                 fn variant ->
 
-                  {:module, %{ module: module } = module_info } = variant
+                  {:module, module_info } = variant
 
                   is_child_variant_bin_struct_terminated = Termination.is_module_terminated(module_info)
+
 
                   case variant do
                     _variant when is_child_variant_bin_struct_terminated ->
 
+
+                      parse_expr =
+                        case module_info do
+
+                          %{ module_type: :bin_struct, module: module } ->
+                            quote do
+                              unquote(module).parse_returning_options(unquote(field_name_access), options)
+                            end
+
+                          %{
+                            module_type: :bin_struct_custom_type,
+                            module: module,
+                            custom_type_args: custom_type_args
+                          } ->
+                            quote do
+                              unquote(module).parse_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                            end
+                        end
+
                       quote do
                         { :no_match, _reason, not_enough_bytes_seen } <-
 
-                          (
-                            result =  unquote(module).parse_returning_options(unquote(field_name_access), options)
-
-                            case result do
+                            case unquote(parse_expr) do
                               { :ok, _variant, _options, _rest } = ok_result ->  ok_result
                               :not_enough_bytes -> { :no_match, :not_enough_bytes, _not_enough_bytes_seen = true }
                               { :wrong_data, _wrong_data } = wrong_data -> { :no_match, wrong_data, not_enough_bytes_seen }
                             end
-                            )
 
                       end
 
@@ -489,10 +505,30 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
 
+
+            parse_expr =
+              case module_info do
+
+                %{ module_type: :bin_struct, module: module } ->
+
+                  quote do
+                    unquote(module).parse_returning_options(unquote(field_name_access), options)
+                  end
+
+                %{
+                  module_type: :bin_struct_custom_type,
+                  module: module,
+                  custom_type_args: custom_type_args
+                } ->
+                  quote do
+                    unquote(module).parse_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                  end
+              end
+
             body =
               quote do
 
-                case unquote(module).parse_returning_options(unquote(field_name_access), options) do
+                case unquote(parse_expr) do
 
                   { :ok, unquote(field_name_access), rest, options } -> unquote(validate_and_return_clause)
                   { :wrong_data, _wrong_data } = wrong_data_clause -> wrong_data_clause

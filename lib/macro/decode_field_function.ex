@@ -35,7 +35,7 @@ defmodule BinStruct.Macro.DecodeFieldFunction do
     Enum.map(
       non_virtual_fields ++ virtual_fields_with_defined_read_by_callback,
       fn field ->
-        BinStruct.Macro.DecodeFieldFunction.decode_field_function(field, registered_callbacks_map, env)
+        decode_field_function(field, registered_callbacks_map, env)
       end
     )
 

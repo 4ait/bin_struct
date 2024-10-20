@@ -165,6 +165,7 @@ defmodule BinStruct do
       )
 
     decode_function = BinStruct.Macro.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
+
     decode_field_functions = BinStruct.Macro.DecodeFieldFunction.decode_field_functions(fields, registered_callbacks_map, env)
 
     decode_field_functions =

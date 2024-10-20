@@ -2,30 +2,42 @@ defmodule TestCustomType do
 
   use BinStructCustomType
 
-  defstruct [
-    :data
-  ]
-
   #assuming we trying to implement custom type for binary terminated with zero
 
-  def parse_returning_options(bin, _custom_type_args, opts) do
+  def parse_returning_options(bin, custom_type_args, opts) do
 
-    case parse_dynamic_terminated(bin, <<0>>) do
+    %{
+      termination: termination
+    } = custom_type_args
 
-      { :ok, parsed, rest } -> { :ok, %TestCustomType{ data: parsed }, rest, opts  }
+    case parse_dynamic_terminated(bin, termination) do
+
+      { :ok, parsed, rest } -> { :ok, parsed, rest, opts  }
       :not_enough_bytes -> :not_enough_bytes
     end
 
   end
 
-  def decode(%TestCustomType{ data: data }, _custom_type_args, _opts), do: data
+  def decode(data, _custom_type_args, _opts), do: data
 
-  def size(%TestCustomType{ data: data }, _custom_type_args) do
-    byte_size(data) + byte_size(<<0>>)
+  def size(data, custom_type_args) do
+
+    %{
+      termination: termination
+    } = custom_type_args
+
+    byte_size(data) + byte_size(termination)
+
   end
 
-  def dump_binary(%TestCustomType{ data: data }, _custom_type_args) do
-    <<data::binary>> <> <<0>>
+  def dump_binary(data, custom_type_args) do
+
+    %{
+      termination: termination
+    } = custom_type_args
+
+    <<data::binary, termination::binary>>
+
   end
 
 
@@ -37,13 +49,8 @@ defmodule TestCustomType do
     true
   end
 
-  def to_managed(_unmanaged, _custom_type_args) do
-
-  end
-
-  def to_unmanaged(_managed, _custom_type_args) do
-
-  end
+  def to_managed(unmanaged, _custom_type_args), do: unmanaged
+  def to_unmanaged(managed, _custom_type_args), do: managed
 
   defp parse_dynamic_terminated(bin, termination, acc \\ <<>>)
 

@@ -40,6 +40,7 @@ defmodule BinStruct.Macro.DecodeFunction do
 
   end
 
+
   def decode_type(type, _opts, value_access, deep_access) do
 
       case type do
@@ -51,7 +52,15 @@ defmodule BinStruct.Macro.DecodeFunction do
               variants,
               fn variant ->
 
-                { :module, %{ module_full_name: module_full_name } }  = variant
+                { :module, module_info }  = variant
+
+                if module_info[:module_type] == :bin_struct_custom_type do
+
+                  raise "decode of custom type as variant argument not implemented"
+
+                end
+
+                %{ module_full_name: module_full_name } = module_info
 
                 left =
                   quote do
@@ -84,33 +93,90 @@ defmodule BinStruct.Macro.DecodeFunction do
 
           end
 
-        { :module, %{ module_full_name: module_full_name } } ->
+        { :module, module_info } ->
 
-          quote do
+          case module_info do
 
-            case unquote(deep_access) do
-              true -> unquote(module_full_name).decode(unquote(value_access), deep: true)
-              false -> unquote(value_access)
-            end
+            %{
+              module_type: :bin_struct,
+              module: module
+            } ->
+
+              quote do
+
+                case unquote(deep_access) do
+                  true -> unquote(module).decode(unquote(value_access), deep: true)
+                  false -> unquote(value_access)
+                end
+
+              end
+
+            %{
+              module_type: :bin_struct_custom_type,
+              module: module,
+              custom_type_args: custom_type_args
+            } ->
+
+              quote do
+
+                case unquote(deep_access) do
+                  true -> unquote(module).decode(unquote(value_access), unquote(custom_type_args), deep: true)
+                  false -> unquote(value_access)
+                end
+
+              end
 
           end
 
-        { :list_of, %{ item_type: {:module, %{ module_full_name: item_module_full_name }} } } ->
 
-          quote do
+        { :list_of, %{ item_type: { :module, module_info } } } ->
 
-            case unquote(deep_access) do
-              true ->
-                Enum.map(
-                  unquote(value_access),
-                  fn item ->
-                    unquote(item_module_full_name).decode(item, deep: true)
-                  end
-                )
-              false -> unquote(value_access)
-            end
+
+          case module_info do
+
+            %{
+              module_type: :bin_struct,
+              module: module
+            } ->
+
+              quote do
+
+                case unquote(deep_access) do
+                  true ->
+                    Enum.map(
+                      unquote(value_access),
+                      fn item ->
+                        unquote(module).decode(item, deep: true)
+                      end
+                    )
+                  false -> unquote(value_access)
+                end
+
+              end
+
+            %{
+              module_type: :bin_struct_custom_type,
+              module: module,
+              custom_type_args: custom_type_args
+            } ->
+
+              quote do
+
+                case unquote(deep_access) do
+                  true ->
+                    Enum.map(
+                      unquote(value_access),
+                      fn item ->
+                        unquote(module).decode(item, unquote(custom_type_args), deep: true)
+                      end
+                    )
+                  false -> unquote(value_access)
+                end
+
+              end
 
           end
+
 
         { :list_of, %{ item_type: item_type } } ->
 
