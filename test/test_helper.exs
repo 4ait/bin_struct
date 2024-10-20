@@ -14,4 +14,7 @@ ExUnit.start()
 #implemented: remove entirely one_of_pack system in favor of virtual fields system
 
 #todo type managed unmanaged table
+
+#todo implement virtual field working as registered callbacks arguments
+
 #todolater add more detailed examples of uses virtual field system in practice

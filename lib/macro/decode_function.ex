@@ -286,68 +286,42 @@ defmodule BinStruct.Macro.DecodeFunction do
 
     fields_to_decode =  non_virtual_fields ++ virtual_fields_with_defined_read_by_callback
 
-    decoded_values =
+    decoded_map_fields_with_values =
       Enum.map(
         fields_to_decode,
         fn field ->
 
-          case field do
-            %Field{ name: name } = field ->
+          { opts, name } =
 
-              value_access = { Bind.bind_value_name(name), [], __MODULE__ }
-
-              quote do
-                unquote(value_access) = unquote(decode_field(field, env))
-              end
-
-            %VirtualField{ name: name } = virtual_field ->
-
-              value_access = { Bind.bind_value_name(name), [], __MODULE__ }
-
-              quote do
-                unquote(value_access) = unquote(decode_virtual_field(virtual_field, registered_callbacks_map, env))
-              end
-
-          end
-
-        end
-      )
-
-    map_fields_with_decoded_values =
-
-      Enum.map(
-        fields_to_decode,
-        fn field ->
-
-          opts =
             case field do
-              %Field{ opts: opts } -> opts
-              %VirtualField{  opts: opts } -> opts
+              %Field{opts: opts, name: name} ->
+                {opts, name}
+
+              %VirtualField{opts: opts, name: name} ->
+                {opts, name}
             end
 
+          # Decode the field
+          decoded_value =
+            case field do
+              %Field{} ->
+                quote do
+                  unquote(decode_field(field, env))
+                end
+
+              %VirtualField{} ->
+                quote do
+                  unquote(decode_virtual_field(field, registered_callbacks_map, env))
+                end
+            end
+
+          # Conditionally map field to {name, value_access} if :show_on_decode is not false
           case opts[:show_on_decode] do
             false -> nil
-            _ ->
-
-              case field do
-                %Field{ name: name } ->
-
-                  value_access = { Bind.bind_value_name(name), [], __MODULE__ }
-
-                  { name, value_access }
-
-                %VirtualField{ name: name } ->
-
-                  value_access = { Bind.bind_value_name(name), [], __MODULE__ }
-
-                  { name, value_access }
-
-              end
-
+            _ -> {name, decoded_value}
           end
-
-        end
-      ) |> Enum.reject(&is_nil/1)
+      end)
+      |> Enum.reject(&is_nil/1)
 
 
     quote do
@@ -362,10 +336,8 @@ defmodule BinStruct.Macro.DecodeFunction do
             value when is_boolean(value) -> value
           end
 
-        unquote_splicing(decoded_values)
-
         %{
-          unquote_splicing(map_fields_with_decoded_values)
+          unquote_splicing(decoded_map_fields_with_values)
         }
 
       end
