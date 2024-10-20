@@ -29,7 +29,15 @@ defmodule BinStruct.Macro.Termination do
         module_full_name: module_full_name,
         custom_type_args: custom_type_args
       } ->
-        is_bin_struct_custom_type_terminated(module_full_name, custom_type_args)
+
+
+        is_bin_struct_custom_type_terminated = is_bin_struct_custom_type_terminated(module_full_name, custom_type_args)
+
+        if !is_bin_struct_custom_type_terminated do
+          raise "Not terminated BinStructCustomType not supported yet."
+        end
+
+        is_bin_struct_custom_type_terminated
 
     end
 
