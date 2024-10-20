@@ -119,13 +119,13 @@ defmodule BinStruct.Macro.DecodeFunction do
             Enum.map(
               unquote(value_access),
               fn unquote(value_access) ->
-                unquote(Encoder.decode_bin_struct_field_to_term(item_type, value_access))
+                unquote(Encoder.convert_unmanaged_value_to_managed(item_type, value_access))
               end
             )
 
           end
 
-        type -> Encoder.decode_bin_struct_field_to_term(type, value_access)
+        type -> Encoder.convert_unmanaged_value_to_managed(type, value_access)
 
       end
 

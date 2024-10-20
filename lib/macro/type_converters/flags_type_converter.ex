@@ -1,9 +1,9 @@
-defmodule BinStruct.Macro.FlagsEncoderDecoder do
+defmodule BinStruct.Macro.TypeConverters.FlagsTypeConverter do
 
 
-  def encode_term_to_bin_struct_field({:flags, %{} = flags_info}, quoted) do
+  def from_managed_to_unmanaged_flags( { :flags, flags_info }, quoted) do
 
-    #quoted is array of names and we should produce binary
+    #quoted is array of atom names and we should produce binary
 
     %{
       type: flags_representation_type,
@@ -118,7 +118,7 @@ defmodule BinStruct.Macro.FlagsEncoderDecoder do
   end
 
 
-  def decode_bin_struct_field_to_term({:flags, %{} = flags_info}, quoted) do
+  def from_unmanaged_to_managed_flags( { :flags, flags_info }, quoted) do
 
     %{
       type: flags_representation_type,

@@ -140,7 +140,7 @@ defmodule BinStruct.Macro.NewFunction do
 
     field_bind_value_access = { Bind.bind_value_name(name), [], __MODULE__ }
 
-    encode_expr = Encoder.encode_term_to_bin_struct_field(type, field_bind_value_access)
+    encode_expr = Encoder.convert_managed_value_to_unmanaged(type, field_bind_value_access)
 
     case encode_expr do
       ^field_bind_value_access -> nil

@@ -1,9 +1,9 @@
-defmodule BinStruct.Macro.EnumEncoderDecoder do
+defmodule BinStruct.Macro.TypeConverters.EnumTypeConverter do
 
   alias BinStruct.Macro.Common
   alias BinStruct.Macro.Encoder
 
-  def encode_term_to_bin_struct_field({:enum, %{} = enum_info}, quoted) do
+  def from_managed_to_unmanaged_enum({ :enum, enum_info }, quoted) do
 
     %{
       type: enum_representation_type,
@@ -40,7 +40,7 @@ defmodule BinStruct.Macro.EnumEncoderDecoder do
         end
 
       unquote(
-        Encoder.encode_term_to_bin_struct_field(enum_representation_type, matched_enum_name_access)
+        Encoder.convert_managed_value_to_unmanaged(enum_representation_type, matched_enum_name_access)
       )
 
     end
@@ -48,7 +48,7 @@ defmodule BinStruct.Macro.EnumEncoderDecoder do
   end
 
 
-  def decode_bin_struct_field_to_term({:enum, %{} = enum_info}, quoted) do
+  def from_unmanaged_to_managed_enum({ :enum, enum_info }, quoted) do
 
     %{
       type: enum_representation_type,
@@ -82,7 +82,7 @@ defmodule BinStruct.Macro.EnumEncoderDecoder do
 
       enum_value =
         unquote(
-          Encoder.decode_bin_struct_field_to_term(enum_representation_type, binary_value_access)
+          Encoder.convert_unmanaged_value_to_managed(enum_representation_type, binary_value_access)
         )
 
       case enum_value do

@@ -17,7 +17,7 @@ defmodule BinStructTest.VirtualFieldSystem.WriteByTest do
                         :utf16_le_terminated_binary
                       ]
 
-    virtual :utf8_binary, :unmanaged, write_by: &write_unicode_string/1
+    virtual :utf8_binary, :any, write_by: &write_unicode_string/1
 
     field :length, :uint16_be
     field :utf16_le_terminated_binary, :binary

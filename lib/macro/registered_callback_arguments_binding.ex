@@ -29,7 +29,7 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
             bind = { BinStruct.Macro.Bind.bind_value_name(name), [], context }
 
-            encode_expr = Encoder.decode_bin_struct_field_to_term(type, bind)
+            encode_expr = Encoder.convert_unmanaged_value_to_managed(type, bind)
 
             case options[:encode] do
               :raw -> bind
@@ -71,9 +71,9 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
                 is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
                 expr = BinStruct.Macro.DumpBinaryFunction.encode_type_for_dump(bind, type, opts, is_optional)
-                Encoder.encode_term_to_bin_struct_field(type, expr)
+                Encoder.convert_managed_value_to_unmanaged(type, expr)
 
-              :raw -> Encoder.encode_term_to_bin_struct_field(type, bind)
+              :raw -> Encoder.convert_managed_value_to_unmanaged(type, bind)
 
               _ -> bind
 
