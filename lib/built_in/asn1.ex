@@ -30,7 +30,6 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
       { :ok, decoded_asn1, "" = _rest } ->
 
-
         unmanaged_format_with_binary = { decoded_asn1, bin }
 
         { :ok, unmanaged_format_with_binary, "", opts}
@@ -46,7 +45,6 @@ defmodule BinStruct.BuiltIn.Asn1 do
         {:ok, unmanaged_format_with_binary, "", opts }
 
       { :ok, decoded_asn1, rest } ->
-
 
         parsed_bytes_count = byte_size(bin) - byte_size(rest)
 
@@ -74,6 +72,7 @@ defmodule BinStruct.BuiltIn.Asn1 do
   def dump_binary(data, _custom_type_args) do
 
     { _elixir_term, encoded_binary } = data
+
     encoded_binary
 
   end
@@ -83,9 +82,6 @@ defmodule BinStruct.BuiltIn.Asn1 do
     :unknown
   end
 
-  def is_custom_type_terminated(_custom_type_args) do
-    true
-  end
 
   def to_managed(unmanaged, _custom_type_args) do
 
