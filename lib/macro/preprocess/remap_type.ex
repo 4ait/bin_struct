@@ -4,6 +4,7 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
   alias BinStruct.Macro.Preprocess.RemapAsn1
   alias BinStruct.Macro.Preprocess.RemapEnum
   alias BinStruct.Macro.Preprocess.RemapFlags
+  alias BinStruct.Macro.Preprocess.RemapModule
 
   def remap_type(type, opts, env) do
 
@@ -14,7 +15,7 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
 
       case type do
 
-        module when is_module -> remap_module(module, opts, env)
+        module when is_module -> RemapModule.remap_module(module, opts, env)
 
         { :enum, _enum_info } = enum ->  RemapEnum.remap_enum(enum, opts, env)
         { :flags, _flags_info } = flags ->  RemapFlags.remap_flags(flags, opts, env)
@@ -43,24 +44,6 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
         type -> type
 
       end
-
-  end
-
-
-  defp remap_module(module, _opts, env) do
-
-    module_full_name = Macro.expand(module, env)
-
-    size = apply(module_full_name, :known_total_size_bytes, [])
-
-    {
-      :module,
-      %{
-        module: module,
-        module_full_name: module_full_name,
-        known_total_size_bytes: size
-      }
-    }
 
   end
 

@@ -1,12 +1,18 @@
 defmodule BinStruct.Macro.Termination do
 
-
-  #todo add :optional type, allowed only on tail, making struct not terminated
-  #todo optional = opts[:optional]
-  #todo add way to initialize static value LE
-
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.OneOfPack
+
+  def is_bin_struct_custom_type_terminated(custom_type_module_info) do
+
+    %{
+      module_full_name: module_full_name,
+      custom_type_args: custom_type_args
+    } = custom_type_module_info
+
+    apply(module_full_name, :is_custom_type_terminated, [custom_type_args])
+
+  end
 
   def is_child_bin_struct_terminated(module_full_name) do
     apply(module_full_name, :is_bin_struct_terminated, [])

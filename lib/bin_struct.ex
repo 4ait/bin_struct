@@ -306,6 +306,8 @@ defmodule BinStruct do
 
           end
 
+          def __module_type__(), do: :bin_struct
+
       end
 
      module_code = BinStruct.MacroDebug.code(result_quote)
