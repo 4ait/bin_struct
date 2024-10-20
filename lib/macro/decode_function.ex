@@ -9,6 +9,11 @@ defmodule BinStruct.Macro.DecodeFunction do
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
 
+  #assuming we have managed type, such type to work people expect most comfortable to work this
+  #and unmanaged type we expect it to be close to stream of binary for easy parse/dump binaries
+
+  #we will try to abstract away from decode/encode naming in any internals
+
   def decode_expr_wrap_empty_binary(read_expr, value_access) do
 
     quote do
