@@ -10,8 +10,8 @@ defmodule BinStructTest.CustomTypesTests.NonTerminatedCustomTypeTest do
       { :ok, bin, opts }
     end
 
-    def size(_data, _custom_type_args) do
-      3
+    def size(data, _custom_type_args) do
+      byte_size(data)
     end
 
     def dump_binary(data, _custom_type_args) do
@@ -36,8 +36,7 @@ defmodule BinStructTest.CustomTypesTests.NonTerminatedCustomTypeTest do
   end
 
 
-
-  test "struct with binary values works" do
+  test "struct with non terminated (with only parse_exact_returning_options defined) works" do
 
     struct = Struct.new(custom: "123")
 

@@ -54,10 +54,6 @@ defmodule BinStruct.BuiltIn.TerminatedBinary do
     :unknown
   end
 
-  def is_custom_type_terminated(_custom_type_args) do
-    true
-  end
-
   def to_managed(unmanaged, _custom_type_args), do: unmanaged
   def to_unmanaged(managed, _custom_type_args), do: managed
 
