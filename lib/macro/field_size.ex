@@ -58,8 +58,6 @@ defmodule BinStruct.Macro.FieldSize do
       { :module, _module_info } = module -> module_size_bits(module, opts)
       { :variant_of, _variants } = variant_of -> variant_of_size_bits(variant_of, opts)
 
-      { :asn1, _asn1_info } -> :unknown
-
       {:static_value, %{size_bits: size_bits}} -> size_bits
 
       { :uint, %{ bit_size: bit_size } } -> bit_size

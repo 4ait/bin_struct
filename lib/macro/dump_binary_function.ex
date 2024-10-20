@@ -111,13 +111,6 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
             is_optional
           )
 
-        { :asn1, _asn1_info } ->
-
-          quote do
-            %{binary: binary} = unquote(value_access)
-            binary
-          end
-
         {:list_of, %{ item_type: item_type } } ->
 
           item_access = { :item, [], __MODULE__ }

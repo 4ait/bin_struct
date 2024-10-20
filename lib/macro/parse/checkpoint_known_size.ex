@@ -131,8 +131,6 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
                 { :ok, unquote(access_field), options } <- unquote(encode_expr)
               end
 
-            { :asn1_parse_result, asn1_encode_expr } -> asn1_encode_expr
-
             { :items_parse_result, encode_expr } ->
 
               quote do

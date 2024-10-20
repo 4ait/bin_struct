@@ -6,7 +6,7 @@ defmodule BinStructTest.BinaryValuesTest do
 
     use BinStruct
 
-    alias BinStruct.BuiltInCustomTypes.TerminatedBinary
+    alias BinStruct.BuiltIn.TerminatedBinary
 
     field :binary_fixed_lenght, :binary, length: 3
     field :binary_terminated, { TerminatedBinary, termination: <<0, 0, 0>> }

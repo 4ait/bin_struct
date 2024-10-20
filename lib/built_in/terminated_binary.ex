@@ -1,4 +1,4 @@
-defmodule BinStruct.BuiltInCustomTypes.TerminatedBinary do
+defmodule BinStruct.BuiltIn.TerminatedBinary do
 
   use BinStructCustomType
 

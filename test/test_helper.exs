@@ -7,7 +7,6 @@ ExUnit.start()
 #implemented: tests for options/option interfaces
 
 #todolater add more detailed examples of uses virtual field system in practice
-#todo add tests for asn1
 
 #todo add exceptions and warnings for unsupported options where it will be unused
 #todo ... ( like take_while_by will be unused if list already have bounds, etc)

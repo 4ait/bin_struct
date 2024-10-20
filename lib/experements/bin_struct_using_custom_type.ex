@@ -2,7 +2,7 @@ defmodule TestBinStructUsingCustomType do
 
   use BinStruct
 
-  alias BinStruct.BuiltInCustomTypes.TerminatedBinary
+  alias BinStruct.BuiltIn.TerminatedBinary
 
   field :custom, { TerminatedBinary, termination: <<0, 0>> }
 

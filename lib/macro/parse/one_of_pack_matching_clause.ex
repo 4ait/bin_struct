@@ -35,7 +35,7 @@ defmodule BinStruct.Macro.Parse.OneOfPackMatchingClause do
       case KnownSizeTypeBinaryToUnmanagedConverter.convert_known_size_type_binary_to_unmanaged(pack_value_binding, type, opts, context) do
         { :static_value, static_value_expr } -> static_value_expr
         { :bin_struct_parse_exact_result, _result_expr } -> raise "bin_struct as part of one of not implemented"
-        { :asn1_parse_result, _result_expr } -> raise "asn1 as part of one of not implemented"
+
         nil -> pack_value_binding
       end
 

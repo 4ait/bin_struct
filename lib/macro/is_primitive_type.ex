@@ -8,7 +8,6 @@ defmodule BinStruct.Macro.IsPrimitiveType do
       {:module, _module_info} -> false
       {:variant_of, _module_info} -> false
       {:list_of, _module_info} -> false
-      {:asn1, _asn1_info} -> false
 
       type ->
 

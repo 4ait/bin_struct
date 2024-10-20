@@ -146,8 +146,6 @@ defmodule BinStruct.Macro.Termination do
 
         case type do
 
-          { :asn1, _asn1_info } -> true
-
           {:list_of, list_of_info } ->
 
             case list_of_info do

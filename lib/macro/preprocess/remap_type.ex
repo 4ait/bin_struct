@@ -1,7 +1,6 @@
 defmodule BinStruct.Macro.Preprocess.RemapType do
 
   alias BinStruct.Macro.Preprocess.RemapListOf
-  alias BinStruct.Macro.Preprocess.RemapAsn1
   alias BinStruct.Macro.Preprocess.RemapEnum
   alias BinStruct.Macro.Preprocess.RemapFlags
   alias BinStruct.Macro.Preprocess.RemapModule
@@ -32,7 +31,6 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
         { :enum, _enum_info } = enum ->  RemapEnum.remap_enum(enum, opts, env)
         { :flags, _flags_info } = flags ->  RemapFlags.remap_flags(flags, opts, env)
 
-        { :asn1, _asn1_info_ast } = asn1 ->  RemapAsn1.remap_asn1(asn1, opts, env)
         { :list_of, _item_type } = list_of ->  RemapListOf.remap_list_of(list_of, opts, env)
 
         { :variant_of, _variants } = variant_of -> remap_variant_of(variant_of, opts, env)

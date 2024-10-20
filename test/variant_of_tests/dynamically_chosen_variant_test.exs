@@ -6,7 +6,7 @@ defmodule BinStructTest.VariantOfTests.DynamicallyChosenVariantTest do
 
     use BinStruct
 
-    alias BinStruct.BuiltInCustomTypes.TerminatedBinary
+    alias BinStruct.BuiltIn.TerminatedBinary
 
     register_callback &check_if_starting_with_cookie_pattern/1,
                       binary: :field
@@ -25,7 +25,7 @@ defmodule BinStructTest.VariantOfTests.DynamicallyChosenVariantTest do
 
     use BinStruct
 
-    alias BinStruct.BuiltInCustomTypes.TerminatedBinary
+    alias BinStruct.BuiltIn.TerminatedBinary
 
     register_callback &check_if_starting_with_token_pattern/1,
                       binary: :field

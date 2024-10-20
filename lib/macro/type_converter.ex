@@ -231,29 +231,6 @@ defmodule BinStruct.Macro.TypeConverter do
     ModuleTypeConverter.from_managed_to_unmanaged_module(module_type, quoted)
   end
 
-
-  def convert_managed_value_to_unmanaged({:asn1, asn1_info}, quoted) do
-
-    %{
-      module: asn1_module,
-      type: asn1_type
-    } = asn1_info
-
-    quote do
-
-      asn1_data = unquote(quoted)
-
-      { :ok, binary } = unquote(asn1_module).encode(unquote(asn1_type), asn1_data)
-
-      %{
-        binary: binary,
-        asn1_data: asn1_data
-      }
-
-    end
-
-  end
-
   def convert_managed_value_to_unmanaged({:list_of, _list_of_info } = list_of_type, quoted) do
     ListOfTypeConverter.from_managed_to_unmanaged_list_of(list_of_type, quoted)
   end
@@ -473,31 +450,6 @@ defmodule BinStruct.Macro.TypeConverter do
   end
 
   def convert_unmanaged_value_to_managed(:binary, quoted), do: quoted
-
-  def convert_unmanaged_value_to_managed({:asn1, %{} = asn1_info}, quoted) do
-
-    %{
-      module: asn1_module,
-      type: asn1_type
-    } = asn1_info
-
-    quote do
-
-      case unquote(quoted) do
-
-        %{ asn1_data: asn1_data } when not is_nil(asn1_data) -> asn1_data
-
-        %{ asn1_data: nil, binary: binary} ->
-
-          { :ok, asn1_data, "" } = unquote(asn1_module).decode(unquote(asn1_type), binary)
-
-          asn1_data
-
-      end
-
-    end
-
-  end
 
   def convert_unmanaged_value_to_managed({:module, _module_info} = module_type, quoted) do
     ModuleTypeConverter.from_unmanaged_to_managed_module(module_type, quoted)

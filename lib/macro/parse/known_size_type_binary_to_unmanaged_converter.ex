@@ -18,18 +18,6 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
 
         { :bin_struct_parse_exact_result, expr }
 
-      {:asn1, _asn1_info } ->
-
-        expr =
-          quote do
-            %{
-              binary: unquote(access_field),
-              asn1_data: nil
-            }
-          end
-
-        { :asn1_encode_expr, expr }
-
       {:variant_of, variants} ->
 
         with_patterns =

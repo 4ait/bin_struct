@@ -1,4 +1,4 @@
-defmodule BinStruct.BuiltInCustomTypes.Asn1 do
+defmodule BinStruct.BuiltIn.Asn1 do
 
   use BinStructCustomType
 

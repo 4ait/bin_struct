@@ -5,7 +5,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.NotTerminated.UntilEndBy
   defmodule Item do
     use BinStruct
 
-    alias BinStruct.BuiltInCustomTypes.TerminatedBinary
+    alias BinStruct.BuiltIn.TerminatedBinary
 
     field :binary, { TerminatedBinary, termination: <<0>> }
   end

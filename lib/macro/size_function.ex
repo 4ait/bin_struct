@@ -203,17 +203,6 @@ defmodule BinStruct.Macro.SizeFunction do
 
       {:module, module_info } -> module_size(module_info, field_access)
 
-
-      { :asn1, _asn1_info } ->
-
-        quote do
-
-          %{ binary: binary } = unquote(field_access)
-
-          byte_size(binary)
-
-        end
-
       _type when is_integer(length) ->
 
           quote do
