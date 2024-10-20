@@ -5,6 +5,7 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
   alias BinStruct.Macro.Preprocess.RemapEnum
   alias BinStruct.Macro.Preprocess.RemapFlags
   alias BinStruct.Macro.Preprocess.RemapModule
+  alias BinStruct.Macro.Preprocess.RemapStaticValue
 
   def remap_type(type, opts, env) do
 
@@ -50,7 +51,7 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
         :int_be when is_integer(bits) -> { :int, %{ bit_size: bits, endianness: :big } }
         :int_le when is_integer(bits) -> { :int, %{ bit_size: bits, endianness: :little } }
 
-        static_value when is_static_value -> remap_static_value(static_value, opts, env)
+        static_value when is_static_value -> RemapStaticValue.remap_static_value(static_value, opts, env)
 
         type -> type
 
@@ -71,95 +72,10 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
 
   end
 
+  defp is_static_value(value) when is_binary(value), do: true
+  defp is_static_value({:<<>>, _meta, _value}), do: true
+  defp is_static_value({ :static, _ast }), do: true
 
-  defp remap_static_value(static_value, opts, env) do
-
-
-      case static_value do
-
-        static_value when is_binary(static_value) or is_bitstring(static_value) ->
-
-          value = escape_static_value(static_value)
-          size_bits = bit_size(static_value)
-
-          {
-            :static_value,
-            %{
-              value: value,
-              size_bits: size_bits
-            }
-          }
-
-        bin_struct when is_struct(bin_struct) ->
-
-          module = bin_struct.__struct__
-
-          bin_struct_binary_dump = module.dump_binary(bin_struct)
-          size_bits = bit_size(bin_struct_binary_dump)
-
-          {
-            :static_value,
-            %{
-              bin_struct: bin_struct,
-              value: bin_struct_binary_dump,
-              size_bits: size_bits
-            }
-          }
-
-        { {:., _, [{:__aliases__, _, [:BinStructStaticValue]}, static_value_function]},_, static_value_function_arguments} ->
-
-          expr =
-            quote do
-              unquote(:"Elixir.BinStructStaticValue").unquote(static_value_function)(unquote_splicing(static_value_function_arguments))
-            end
-
-          { value, _ } = Code.eval_quoted(expr, [], env)
-
-          remap_static_value(value, opts, env)
-
-        {:@, _meta, _value} = constant_ast ->
-
-          { value, _ } = Code.eval_quoted(constant_ast, [], env)
-          remap_static_value(value, opts, env)
-
-        {:<<>>, _meta, _value} = bitstring_ast ->
-
-          { value, _ } = Code.eval_quoted(bitstring_ast, [], env)
-          remap_static_value(value, opts, env)
-
-        {:fn, _meta, _value } = function ->
-
-          static_value = call_function_and_get_value(function, env)
-          remap_static_value(static_value, opts, env)
-
-        {:&, _meta, _value } = function ->
-
-          static_value = call_function_and_get_value(function, env)
-          remap_static_value(static_value, opts, env)
-
-      end
-
-  end
-
-  defp call_function_and_get_value(function, env) do
-
-    function_call =
-      quote do
-        (unquote(function)).()
-      end
-
-    { value, _ } = Code.eval_quoted(function_call, [], env)
-
-    value
-
-  end
-
-  defp is_static_value({{:., _, [{:__aliases__, _, [:BinStructStaticValue]}, _static_value_function]}, _, _static_value_function_arguments}), do: true
-  defp is_static_value({:<<>>, _meta, _modules}), do: true
-  defp is_static_value({:fn, _meta, _modules}), do: true
-  defp is_static_value({:@, _meta, _modules}), do: true
-  defp is_static_value({:&, _meta, _modules}), do: true
-  defp is_static_value({value, _meta, _modules}) when is_binary(value), do: true
   defp is_static_value(_), do: false
 
 
@@ -175,22 +91,6 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
       are_all_variants_are_modules(tail)
     else
       { :not_module,  head}
-    end
-
-  end
-
-
-  defp escape_static_value(static_value) do
-
-    escaped = Macro.escape(static_value)
-
-    case escaped do
-
-      static_value when is_binary(static_value) -> static_value
-
-      {:<<>>, _meta, [pattern, {:"::", [], ["", {:binary, [], nil}]} ]} ->  { :<<>>, [], [pattern] }
-      {:<<>>, _meta, _children } = bitstring ->  bitstring
-
     end
 
   end

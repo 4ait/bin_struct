@@ -98,17 +98,6 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
 
         end
 
-      {:static_value, %{ bin_struct: bin_struct } } ->
-
-        bin_struct_escaped = Macro.escape(bin_struct)
-
-        expr =
-          quote do
-            unquote(bin_struct_escaped)
-          end
-
-        { :static_value, expr }
-
       {:static_value, %{value: value} } ->
 
         expr = 
