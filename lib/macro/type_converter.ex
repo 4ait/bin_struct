@@ -243,7 +243,7 @@ defmodule BinStruct.Macro.TypeConverter do
     EnumTypeConverter.from_managed_to_unmanaged_enum(enum_type, quoted)
   end
 
-  def convert_managed_value_to_unmanaged(:any, quoted), do: quoted
+  def convert_managed_value_to_unmanaged(:unspecified, quoted), do: quoted
 
 
   def convert_unmanaged_value_to_managed({:static_value, _value} = static_value_type, _quoted) do
@@ -471,6 +471,6 @@ defmodule BinStruct.Macro.TypeConverter do
     ListOfTypeConverter.from_unmanaged_to_managed_list_of(list_of_type, quoted)
   end
 
-  def convert_unmanaged_value_to_managed(:any, quoted), do: quoted
+  def convert_unmanaged_value_to_managed(:unspecified, quoted), do: quoted
   
 end
