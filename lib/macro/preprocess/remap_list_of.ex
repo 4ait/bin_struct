@@ -59,7 +59,7 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
                     { :module, module_info } ->
 
-                      if Termination.is_child_bin_struct_terminated(module_info) do
+                      if Termination.is_module_terminated(module_info) do
 
                         %{
                           type: :variable,
@@ -88,7 +88,7 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
                         { :module, module_info } ->
 
-                          if Termination.is_child_bin_struct_terminated(module_info) do
+                          if Termination.is_module_terminated(module_info) do
 
                             %{
                               type: :variable,

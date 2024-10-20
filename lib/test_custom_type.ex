@@ -8,7 +8,7 @@ defmodule TestCustomType do
 
   #assuming we trying to implement custom type for binary terminated with zero
 
-  def parse_returning_options(bin, custom_type_args, opts) do
+  def parse_returning_options(bin, _custom_type_args, opts) do
 
     case parse_dynamic_terminated(bin, <<0>>) do
 
@@ -18,13 +18,13 @@ defmodule TestCustomType do
 
   end
 
-  def decode(%TestCustomType{ data: data }, custom_type_args, _opts), do: data
+  def decode(%TestCustomType{ data: data }, _custom_type_args, _opts), do: data
 
-  def size(%TestCustomType{ data: data }, custom_type_args) do
+  def size(%TestCustomType{ data: data }, _custom_type_args) do
     byte_size(data) + byte_size(<<0>>)
   end
 
-  def dump_binary(%TestCustomType{ data: data }, custom_type_args) do
+  def dump_binary(%TestCustomType{ data: data }, _custom_type_args) do
     <<data::binary>> <> <<0>>
   end
 
@@ -37,11 +37,11 @@ defmodule TestCustomType do
     true
   end
 
-  def to_managed(unmanaged, custom_type_args) do
+  def to_managed(_unmanaged, _custom_type_args) do
 
   end
 
-  def to_unmanaged(managed, custom_type_args) do
+  def to_unmanaged(_managed, _custom_type_args) do
 
   end
 

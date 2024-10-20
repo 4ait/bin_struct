@@ -202,11 +202,8 @@ defmodule BinStruct.Macro.SizeFunction do
 
           end
 
-      {:module, %{module: module} } ->
+      {:module, module_info } -> module_size(module_info, field_access)
 
-          quote do
-            unquote(module).size(unquote(field_access))
-          end
 
       { :asn1, _asn1_info } ->
 
@@ -252,6 +249,31 @@ defmodule BinStruct.Macro.SizeFunction do
         end
 
     end
+
+  end
+
+  defp module_size(module_info, field_access) do
+
+    case module_info do
+
+      %{ module_type: :bin_struct, module: module } ->
+
+        quote do
+          unquote(module).size(unquote(field_access))
+        end
+
+      %{
+        module_type: :bin_struct_custom_type,
+        module: module,
+        custom_type_args: custom_type_args
+      } ->
+
+        quote do
+          unquote(module).size(unquote(field_access), unquote(custom_type_args))
+        end
+
+    end
+
 
   end
 

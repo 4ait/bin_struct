@@ -140,11 +140,7 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
 
           end
 
-        {:module, %{ module: module } } ->
-
-          quote do
-            unquote(module).dump_binary(unquote(value_access))
-          end
+        {:module, module_info } -> dump_module(module_info, value_access)
 
         {:variant_of, variants } ->
 
@@ -153,17 +149,16 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
               variants,
               fn variant ->
 
-                { :module, %{ module_full_name: module_full_name } }  = variant
+                { :module, module_info }  = variant
+
+                %{ module_full_name: module_full_name } = module_info
 
                 left =
                   quote do
                     %unquote(module_full_name){} = unquote(value_access)
                   end
 
-                right =
-                  quote do
-                    unquote(module_full_name).dump_binary(unquote(value_access))
-                  end
+                right = dump_module(module_info, value_access)
 
                 BinStruct.Macro.Common.case_pattern(left, right)
 
@@ -253,6 +248,32 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
     is_optional = IsOptionalField.is_optional_field(field)
 
     encode_type_for_dump(name_field, type, opts, is_optional)
+
+  end
+
+  defp dump_module(module_info, value_access) do
+
+    case module_info do
+      %{ module_type: :bin_struct, module: module } ->
+
+        quote do
+          unquote(module).dump_binary(unquote(value_access))
+        end
+
+      %{
+        module_type: :bin_struct_custom_type,
+        module: module,
+        custom_type_args: custom_type_args
+      } ->
+
+        quote do
+          unquote(module).dump_binary(unquote(value_access), unquote(custom_type_args))
+        end
+
+    end
+
+
+
 
   end
 
