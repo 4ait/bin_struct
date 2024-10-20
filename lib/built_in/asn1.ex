@@ -28,13 +28,33 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
     case asn1_module.decode(asn1_type, bin) do
 
-      { :ok, decoded_asn1, "" = _rest } -> { :ok, decoded_asn1, "", opts}
+      { :ok, decoded_asn1, "" = _rest } ->
+
+
+        unmanaged_format_with_binary = { decoded_asn1, bin }
+
+        { :ok, unmanaged_format_with_binary, "", opts}
 
       { :ok, decoded_asn1, bits_remainder } when is_bitstring(bits_remainder) and bit_size(bits_remainder) < 8 ->
 
-        {:ok, decoded_asn1, "", opts }
+        bytes_size_without_bit_tail = byte_size(bin) - 1
 
-      { :ok, decoded_asn1, rest } -> { :ok, decoded_asn1, rest, opts }
+        <<bytes_without_bit_tail::bytes-size(bytes_size_without_bit_tail), _rest::bitstring>> = bin
+
+        unmanaged_format_with_binary = { decoded_asn1, bytes_without_bit_tail }
+
+        {:ok, unmanaged_format_with_binary, "", opts }
+
+      { :ok, decoded_asn1, rest } ->
+
+
+        parsed_bytes_count = byte_size(bin) - byte_size(rest)
+
+        << bytes_parsed::size(parsed_bytes_count)-bytes, _rest::binary>> = bin
+
+        unmanaged_format_with_binary = { decoded_asn1, bytes_parsed  }
+
+        { :ok, unmanaged_format_with_binary, rest, opts }
 
       { :error, error } -> { :error, error }
 
@@ -77,6 +97,7 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
   def to_unmanaged(managed, custom_type_args) do
 
+
     %{
       asn1_module: asn1_module,
       asn1_type: asn1_type
@@ -88,17 +109,13 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
       elixir_term ->
 
-        encoded_binary = encode(asn1_module, asn1_type, elixir_term)
+        { :ok, encoded_binary } = asn1_module.encode(asn1_type, elixir_term)
 
         { elixir_term, encoded_binary }
 
 
     end
 
-  end
-
-  defp encode(asn1_module, asn1_type, data) do
-    asn1_module.encode(asn1_type, data)
   end
 
 end

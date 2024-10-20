@@ -8,9 +8,11 @@ defmodule BinStruct.MixProject do
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: ["lib"] |> maybe_add_test_elixirc_path(),
-      deps: deps()
+      deps: deps(),
+      erlc_paths: maybe_add_test_erlc_path([])
     ]
   end
+
 
   defp maybe_add_test_elixirc_path(elixirc_paths) do
 
@@ -20,6 +22,18 @@ defmodule BinStruct.MixProject do
       ]
     else
       elixirc_paths
+    end
+
+  end
+
+  defp maybe_add_test_erlc_path(erlc_paths) do
+
+    if Mix.env() == :test do
+      erlc_paths ++ [
+        "test/support/asn1_generated"
+      ]
+    else
+      erlc_paths
     end
 
   end
