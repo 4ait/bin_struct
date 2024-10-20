@@ -239,7 +239,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
                   {:module, %{ module: module } = module_info } = variant
 
-                  is_child_variant_bin_struct_terminated = Termination.is_child_module_terminated(module_info)
+                  is_child_variant_bin_struct_terminated = Termination.is_module_terminated(module_info)
 
                   case variant do
                     _variant when is_child_variant_bin_struct_terminated ->
@@ -398,7 +398,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
       {:module, %{ module: module } = module_info } = module_type ->
 
-        is_child_bin_struct_terminated = BinStruct.Macro.Termination.is_child_module_terminated(module_info)
+        is_child_bin_struct_terminated = BinStruct.Macro.Termination.is_module_terminated(module_info)
 
         case module_type do
 

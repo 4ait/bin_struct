@@ -3,35 +3,6 @@ defmodule BinStruct.Macro.Termination do
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.OneOfPack
 
-  def is_child_module_terminated(module_info) do
-
-    case module_info do
-
-      %{
-        module_type: :bin_struct,
-        module_full_name: module_full_name
-      } ->
-        is_child_bin_struct_terminated(module_full_name)
-
-      %{
-        module_type: :bin_struct_custom_type,
-        module_full_name: module_full_name,
-        custom_type_args: custom_type_args
-      } ->
-        is_child_bin_struct_custom_type_terminated(module_full_name, custom_type_args)
-
-    end
-
-  end
-
-  defp is_child_bin_struct_terminated(module_full_name) do
-    apply(module_full_name, :is_bin_struct_terminated, [])
-  end
-
-  defp is_child_bin_struct_custom_type_terminated(module_full_name, custom_type_args) do
-    apply(module_full_name, :is_custom_type_terminated, [custom_type_args])
-  end
-
   def is_current_bin_struct_terminated(_no_fields_or_packs = [], _env), do: true
 
   def is_current_bin_struct_terminated(fields_or_packs, env) do
@@ -42,6 +13,36 @@ defmodule BinStruct.Macro.Termination do
     end
 
   end
+
+  def is_module_terminated(module_info) do
+
+    case module_info do
+
+      %{
+        module_type: :bin_struct,
+        module_full_name: module_full_name
+      } ->
+        is_bin_struct_terminated(module_full_name)
+
+      %{
+        module_type: :bin_struct_custom_type,
+        module_full_name: module_full_name,
+        custom_type_args: custom_type_args
+      } ->
+        is_bin_struct_custom_type_terminated(module_full_name, custom_type_args)
+
+    end
+
+  end
+
+  defp is_bin_struct_terminated(module_full_name) do
+    apply(module_full_name, :is_bin_struct_terminated, [])
+  end
+
+  defp is_bin_struct_custom_type_terminated(module_full_name, custom_type_args) do
+    apply(module_full_name, :is_custom_type_terminated, [custom_type_args])
+  end
+
 
   defp is_fields_or_packs_terminated([ last_field_or_pack | []], _env), do: is_field_or_pack_terminated(last_field_or_pack)
 
@@ -119,18 +120,22 @@ defmodule BinStruct.Macro.Termination do
 
   defp is_field_terminated(%Field{} = field) do
 
-    %Field{ opts: opts } = field
+    %Field{ type: type, opts: opts } = field
+
+    is_type_terminated(type, opts)
+
+  end
+
+  defp is_type_terminated(type, opts) do
 
     termination = opts[:termination]
     length_by = opts[:length_by]
 
-    case BinStruct.Macro.FieldSize.field_size_bits(field) do
+    case BinStruct.Macro.FieldSize.type_size_bits(type, opts) do
 
       size_bits when is_integer(size_bits) -> true
 
       :unknown ->
-
-        %Field{ type: type } = field
 
         case type do
 
@@ -147,14 +152,14 @@ defmodule BinStruct.Macro.Termination do
 
           _type when not is_nil(length_by) -> true
 
-          {:module, module_info } -> is_child_module_terminated(module_info)
+          { :module, child_module_info } -> is_module_terminated(child_module_info)
 
           {:variant_of, variants } ->
 
             Enum.all?(
               Enum.map(
                 variants,
-                fn {:module, module_info } -> is_child_module_terminated(module_info)
+                fn { :module, child_module_info } -> is_module_terminated(child_module_info)
                 end
               )
             )
