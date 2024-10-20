@@ -9,14 +9,29 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
       {:enum, %{type: enum_representation_type} } -> convert_known_size_type_binary_to_unmanaged(access_field, enum_representation_type, opts, context)
       {:flags, %{type: flags_representation_type} } -> convert_known_size_type_binary_to_unmanaged(access_field, flags_representation_type, opts, context)
 
-      {:module, %{module_full_name: module_full_name} } ->
+      {:module, module_info } ->
 
-        expr =
-          quote do
-            unquote(module_full_name).parse_exact_returning_options(unquote(access_field), unquote(options_access))
+        module_parse_expr =
+
+          case module_info do
+
+            %{ module_type: :bin_struct, module: module } ->
+
+              quote do
+                unquote(module).parse_exact_returning_options(unquote(access_field), unquote(options_access))
+              end
+
+            %{
+              module_type: :bin_struct_custom_type,
+              module: module,
+              custom_type_args: custom_type_args
+            } ->
+              quote do
+                unquote(module).parse_exact_returning_options(unquote(access_field), unquote(custom_type_args), unquote(options_access))
+              end
           end
 
-        { :bin_struct_parse_exact_result, expr }
+        { :module_parse_exact_result, module_parse_expr }
 
       {:variant_of, variants} ->
 
@@ -25,18 +40,34 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
             variants,
             fn variant ->
 
-              {:module, %{ module: module } } = variant
+              {:module, module_info } = variant
+
+              module_parse_expr =
+                case module_info do
+
+                  %{ module_type: :bin_struct, module: module } ->
+
+                    quote do
+                      unquote(module).parse_exact_returning_options(unquote(access_field), unquote(options_access))
+                    end
+
+                  %{
+                    module_type: :bin_struct_custom_type,
+                    module: module,
+                    custom_type_args: custom_type_args
+                  } ->
+                    quote do
+                      unquote(module).parse_exact_returning_options(unquote(access_field), unquote(custom_type_args), unquote(options_access))
+                    end
+                end
 
               quote do
-                { :no_match, _reason, not_enough_bytes_seen } <-
+                { :no_match, _reason } <-
 
                   (
-                    result =  unquote(module).parse_exact_returning_options(unquote(access_field), unquote(options_access))
-
-                    case result do
+                    case unquote(module_parse_expr) do
                       { :ok, _variant, _options } = ok_result ->  ok_result
-                      :not_enough_bytes -> { :no_match, :not_enough_bytes, _not_enough_bytes_seen = true }
-                      { :wrong_data, _wrong_data } = wrong_data -> { :no_match, wrong_data, not_enough_bytes_seen }
+                      { :wrong_data, _wrong_data } = wrong_data -> { :no_match, wrong_data }
                     end
                   )
 
@@ -48,20 +79,13 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
         expr =
           quote do
 
-              not_enough_bytes_seen = false
-
               with unquote_splicing(with_patterns) do
-
-                case not_enough_bytes_seen do
-                  true -> :not_enough_bytes
-                  false ->  { :wrong_data, unquote(access_field) }
-                end
-
+                { :wrong_data, unquote(access_field) }
               end
               
           end
           
-        { :bin_struct_parse_exact_result, expr }
+        { :module_parse_exact_result, expr }
         
 
       { :list_of, list_of_info } ->
@@ -118,7 +142,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
 
       { :module, _module_info }  ->
 
-        { :bin_struct_parse_exact_result, item_encode_expr } = convert_known_size_type_binary_to_unmanaged(bind_item, item_type, opts, context)
+        { :module_parse_exact_result, item_encode_expr } = convert_known_size_type_binary_to_unmanaged(bind_item, item_type, opts, context)
 
         quote do
 

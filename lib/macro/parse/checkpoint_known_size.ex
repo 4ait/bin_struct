@@ -125,7 +125,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
           case conversion do
 
-            { :bin_struct_parse_exact_result, encode_expr } ->
+            { :module_parse_exact_result, encode_expr } ->
 
               quote do
                 { :ok, unquote(access_field), options } <- unquote(encode_expr)
@@ -236,10 +236,5 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
     ]
 
   end
-
-
-  
-
-
 
 end

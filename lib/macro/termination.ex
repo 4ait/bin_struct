@@ -27,17 +27,9 @@ defmodule BinStruct.Macro.Termination do
       %{
         module_type: :bin_struct_custom_type,
         module_full_name: module_full_name,
-        custom_type_args: custom_type_args
       } ->
 
-
-        is_bin_struct_custom_type_terminated = is_bin_struct_custom_type_terminated(module_full_name, custom_type_args)
-
-        if !is_bin_struct_custom_type_terminated do
-          raise "Not terminated BinStructCustomType not supported yet."
-        end
-
-        is_bin_struct_custom_type_terminated
+        is_bin_struct_custom_type_terminated(module_full_name)
 
     end
 
@@ -47,8 +39,8 @@ defmodule BinStruct.Macro.Termination do
     apply(module_full_name, :is_bin_struct_terminated, [])
   end
 
-  defp is_bin_struct_custom_type_terminated(module_full_name, custom_type_args) do
-    apply(module_full_name, :is_custom_type_terminated, [custom_type_args])
+  def is_bin_struct_custom_type_terminated(module_full_name) do
+    Kernel.function_exported?(module_full_name, :parse_returning_options, 3)
   end
 
 

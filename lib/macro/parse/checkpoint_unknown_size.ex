@@ -161,15 +161,36 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 variants,
                 fn variant ->
 
-                  {:module, %{ module: module } } = variant
+                  {:module, module_info } = variant
+
+
+                  parse_exact_expr =
+                    case module_info do
+
+                      %{ module_type: :bin_struct, module: module } ->
+
+                        quote do
+                          unquote(module).parse_exact_returning_options(unquote(field_name_access), options)
+                        end
+
+                      %{
+                        module_type: :bin_struct_custom_type,
+                        module: module,
+                        custom_type_args: custom_type_args
+                      } ->
+
+                        quote do
+                          unquote(module).parse_exact_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                        end
+
+                    end
 
                   quote do
                     { :no_match, _reason, not_enough_bytes_seen } <-
 
                       (
-                        result =  unquote(module).parse_exact_returning_options(unquote(field_name_access), options)
 
-                        case result do
+                        case unquote(parse_exact_expr) do
                           { :ok, _variant, _options } = ok_result ->  ok_result
                           :not_enough_bytes -> { :no_match, :not_enough_bytes, _not_enough_bytes_seen = true }
                           { :wrong_data, _wrong_data } = wrong_data -> { :no_match, wrong_data, not_enough_bytes_seen }
@@ -240,10 +261,8 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
                   is_child_variant_bin_struct_terminated = Termination.is_module_terminated(module_info)
 
-
                   case variant do
                     _variant when is_child_variant_bin_struct_terminated ->
-
 
                       parse_expr =
                         case module_info do
@@ -337,19 +356,40 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
         end
 
-      {:module, %{ module: module } = module_info } = module_type ->
+      {:module, module_info } ->
 
-        is_child_bin_struct_terminated = BinStruct.Macro.Termination.is_module_terminated(module_info)
+        is_child_module_terminated = BinStruct.Macro.Termination.is_module_terminated(module_info)
 
-        case module_type do
+        case module_info do
 
-          _module_type when not is_nil(length_by) ->
+          _module_info when not is_nil(length_by) ->
+
+            parse_exact_expr =
+              case module_info do
+
+                %{ module_type: :bin_struct, module: module } ->
+
+                  quote do
+                    unquote(module).parse_exact_returning_options(unquote(field_name_access), options)
+                  end
+
+                %{
+                  module_type: :bin_struct_custom_type,
+                  module: module,
+                  custom_type_args: custom_type_args
+                } ->
+
+                  quote do
+                    unquote(module).parse_exact_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                  end
+
+              end
 
             ok_clause =
 
               quote do
 
-                case unquote(module).parse_exact_returning_options(unquote(field_name_access), options) do
+                case unquote(parse_exact_expr) do
                   { :ok, unquote(field_name_access), options } -> unquote(Result.return_ok_tuple([field], __MODULE__))
                   { :wrong_data, _wrong_data } = wrong_data -> wrong_data
                 end
@@ -379,13 +419,35 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             end
 
-          _module_type when not is_child_bin_struct_terminated ->
+          _module_info when not is_child_module_terminated ->
+
+
+            parse_exact_expr =
+              case module_info do
+
+                %{ module_type: :bin_struct, module: module } ->
+
+                  quote do
+                    unquote(module).parse_exact_returning_options(unquote(field_name_access), options)
+                  end
+
+                %{
+                  module_type: :bin_struct_custom_type,
+                  module: module,
+                  custom_type_args: custom_type_args
+                } ->
+
+                  quote do
+                    unquote(module).parse_exact_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                  end
+
+              end
 
             ok_clause =
 
               quote do
 
-                case unquote(module).parse_exact_returning_options(unquote(field_name_access), options) do
+                case unquote(parse_exact_expr) do
                   { :ok, unquote(field_name_access), options } ->
                     rest = ""
                     unquote(Result.return_ok_tuple([field], __MODULE__))
@@ -422,14 +484,13 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             end
 
-          _module_type when is_child_bin_struct_terminated ->
+          _module_type when is_child_module_terminated ->
 
             ok_clause = Result.return_ok_tuple([field], __MODULE__)
 
             validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
 
             validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
-
 
             parse_expr =
               case module_info do
@@ -483,7 +544,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
 
         end
-
 
       :binary = binary_type ->
 
@@ -583,10 +643,30 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
         _item_type when is_item_of_primitive_type -> item_bind_name
 
-        {:module, %{ module: module } = _module_info} ->
+        {:module, module_info} ->
+
+          module_parse_expr =
+
+            case module_info do
+
+              %{ module_type: :bin_struct, module: module } ->
+
+                quote do
+                  unquote(module).parse_returning_options(unquote(field_name_access), options)
+                end
+
+              %{
+                module_type: :bin_struct_custom_type,
+                module: module,
+                custom_type_args: custom_type_args
+              } ->
+                quote do
+                  unquote(module).parse_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                end
+            end
 
           quote do
-            { :ok, struct, _options } = unquote(module).parse_exact_returning_options(unquote(item_bind_name), options)
+            { :ok, struct, _options } = unquote(module_parse_expr)
             struct
           end
 
