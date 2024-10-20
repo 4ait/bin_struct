@@ -8,6 +8,10 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
 
   def remap_type(type, opts, env) do
 
+      if opts[:termination] do
+        raise "termination option support has been dropped, use TerminatedBinary custom type instead"
+      end
+
       is_module =
         case type do
           { first_element, _second_element } -> is_module(first_element)

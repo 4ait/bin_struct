@@ -1,15 +1,16 @@
-defmodule TerminatedString do
+defmodule BinStruct.BuiltInCustomTypes.TerminatedBinary do
 
   use BinStructCustomType
 
-  #todo implement custom type support for non terminated structs
-  #assuming we trying to implement custom type for binary terminated with zero
+  def init_args(custom_type_args) do
 
-  def validate_custom_type_args(custom_type_args) do
+    args = %{
+      termination: custom_type_args[:termination]
+    }
 
-    case custom_type_args do
-      %{ termination: termination } when is_binary(termination) -> :ok
-      _ -> :invalid_args
+    case args do
+      %{ termination: termination } when is_binary(termination) -> { :ok, args }
+      _ -> { :error, "Termination argument required by not provided" }
     end
 
   end
@@ -27,8 +28,6 @@ defmodule TerminatedString do
     end
 
   end
-
-  def decode(data, _custom_type_args, _opts), do: data
 
   def size(data, custom_type_args) do
 

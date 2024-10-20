@@ -60,8 +60,6 @@ defmodule BinStruct.Macro.FieldSize do
 
       { :asn1, _asn1_info } -> :unknown
 
-      :binary = binary -> binary_size_bits(binary, opts)
-
       {:static_value, %{size_bits: size_bits}} -> size_bits
 
       { :uint, %{ bit_size: bit_size } } -> bit_size
@@ -89,6 +87,8 @@ defmodule BinStruct.Macro.FieldSize do
       :int64_le -> 64
       :float32_le -> 32
       :float64_le -> 64
+
+      :binary -> :unknown
 
       type -> raise "invalid #{inspect(type)} with options #{inspect(opts)}"
 
@@ -152,15 +152,6 @@ defmodule BinStruct.Macro.FieldSize do
 
   end
 
-  defp binary_size_bits(:binary, opts) do
-
-    termination = opts[:termination]
-
-    case termination do
-      termination when not is_nil(termination) -> :unknown
-      nil -> :unknown
-    end
-  end
 
 
 

@@ -88,7 +88,6 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
 
   def encode_type_for_dump(value_access, type, opts, is_optional) do
 
-    termination = opts[:termination]
     length = opts[:length]
 
     expr =
@@ -182,14 +181,7 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
 
         :binary when is_integer(length) -> value_access
 
-        :binary when not is_nil(termination) ->
-
-          quote do
-            unquote(value_access) <> unquote(termination)
-          end
-
         :binary -> value_access
-
 
         { :uint, _typedef }->  value_access
         { :int, _typedef } ->  value_access

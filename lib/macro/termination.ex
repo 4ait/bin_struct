@@ -128,7 +128,6 @@ defmodule BinStruct.Macro.Termination do
 
   defp is_type_terminated(type, opts) do
 
-    termination = opts[:termination]
     length_by = opts[:length_by]
 
     case BinStruct.Macro.FieldSize.type_size_bits(type, opts) do
@@ -164,8 +163,7 @@ defmodule BinStruct.Macro.Termination do
               )
             )
 
-          :binary when not is_nil(termination) -> true
-          :binary when is_nil(termination) -> false
+          :binary -> false
 
         end
 

@@ -41,23 +41,20 @@ defmodule BinStruct.Macro.Preprocess.RemapModule do
 
     size = apply(module_full_name, :known_total_size_bytes, [ custom_type_args ])
 
-    if function_exported?(module_full_name, :validate_custom_type_args, 1) do
+    { init_args_result, _binding} =
+      Code.eval_quoted(
+        quote do
+          unquote(module_full_name).init_args(unquote(custom_type_args))
+        end,
+        [],
+        env
+      )
 
-      { validation_result, _binding} =
-        Code.eval_quoted(
-          quote do
-            unquote(module_full_name).validate_custom_type_args(unquote(custom_type_args))
-          end,
-          [],
-          env
-        )
-
-      case validation_result do
-        :ok -> :ok
-        bad_result -> raise "Custom type args validation failed with error #{bad_result}"
+    custom_type_args =
+      case init_args_result do
+        { :ok, custom_type_args } -> Macro.escape(custom_type_args)
+        { :error, error } -> raise "Custom type #{module_full_name} args validation failed with error #{error}"
       end
-
-    end
 
     {
       :module,

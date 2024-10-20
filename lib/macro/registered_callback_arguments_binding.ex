@@ -42,7 +42,7 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
                   wrap_with_nil_check(
                     bind,
-                    TypeConverter.convert_managed_value_to_unmanaged(type, bind)
+                    TypeConverter.convert_unmanaged_value_to_managed(type, bind)
                   )
 
                 else

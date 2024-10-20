@@ -17,7 +17,7 @@ defmodule BinStruct do
       require Logger
 
       unquote(
-        BinStruct.Encoder.encoders()
+        BinStruct.Macro.TypeConverters.PrimitiveTypeConverter.primitive_type_converters()
       )
 
       @before_compile BinStruct

@@ -118,12 +118,7 @@ defmodule BinStruct.Macro.DecodeFunction do
             } ->
 
               quote do
-
-                case unquote(deep_access) do
-                  true -> unquote(module).decode(unquote(value_access), unquote(custom_type_args), deep: true)
-                  false -> unquote(value_access)
-                end
-
+                unquote(module).to_managed(unquote(value_access), unquote(custom_type_args))
               end
 
           end

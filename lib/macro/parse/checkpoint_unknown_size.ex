@@ -19,7 +19,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
     %Field{ name: name, type: type, opts: opts } = field
 
-    termination = opts[:termination]
     length_by = opts[:length_by]
     optional_by = opts[:optional_by]
 
@@ -563,46 +562,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
       :binary = binary_type ->
 
         case binary_type do
-
-          :binary when not is_nil(termination) ->
-
-            ok_clause = Result.return_ok_tuple([field], __MODULE__)
-
-            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
-
-            validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
-
-            body =
-
-              quote do
-
-                case BinStruct.ParseDynamicTerminated.parse_dynamic_terminated(unquote(field_name_access), unquote(termination)) do
-
-                  { :ok, unquote(field_name_access), rest } -> unquote(validate_and_return_clause)
-                  :not_enough_bytes -> :not_enough_bytes
-
-                end
-
-              end
-
-
-            quote do
-
-              defp unquote(function_name)(
-                     unquote(field_name_access) = _bin,
-                     unquote_splicing(value_arguments_binds),
-                     options
-                   ) when is_binary(unquote(field_name_access)) do
-
-                unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
-
-                unquote(
-                  WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, field_name_access, registered_callbacks_map, __MODULE__)
-                )
-
-              end
-
-            end
 
           :binary when not is_nil(length_by) ->
 

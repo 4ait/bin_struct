@@ -141,7 +141,6 @@ defmodule BinStruct.Macro.SizeFunction do
 
   defp unknown_size_type_size_expr(type, field_access, opts, is_optional) do
 
-    termination = opts[:termination]
     length = opts[:length]
 
     case type do
@@ -219,13 +218,6 @@ defmodule BinStruct.Macro.SizeFunction do
 
           quote do
             unquote(length)
-          end
-
-
-      :binary when not is_nil(termination) ->
-
-          quote do
-            byte_size(unquote(field_access)) + byte_size(unquote(termination))
           end
 
       :binary ->

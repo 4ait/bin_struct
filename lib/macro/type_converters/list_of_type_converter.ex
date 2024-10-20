@@ -21,7 +21,7 @@ defmodule BinStruct.Macro.TypeConverters.ListOfTypeConverter do
   end
 
 
-  def from_unmanaged_to_managed_list_of({ :variant_of, _list_of_info }, quoted) do
+  def from_unmanaged_to_managed_list_of({ :list_of, _list_of_info }, quoted) do
     quoted
   end
 

@@ -6,11 +6,12 @@ defmodule BinStructTest.DynamicValidationTest do
 
     use BinStruct
 
+    alias BinStruct.BuiltInCustomTypes.TerminatedBinary
+
     register_callback &check_if_starting_with_pattern/1,
                       binary: :field
 
-    field :binary, :binary,
-          termination: <<0>>,
+    field :binary, { TerminatedBinary, termination: <<0>> },
           validate_by: &check_if_starting_with_pattern/1
 
     defp check_if_starting_with_pattern(binary) do
