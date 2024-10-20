@@ -7,7 +7,7 @@ defmodule BinStruct.Macro.Parse.OneOfPackMatchingClause do
   alias BinStruct.Macro.OneOfPackName
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
-  alias BinStruct.Macro.Parse.KnownSizeTypeEncoder
+  alias BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter
 
   def returning_tuple_with_bindings(%OneOfPack{} = one_of_pack, context) do
 
@@ -32,7 +32,7 @@ defmodule BinStruct.Macro.Parse.OneOfPackMatchingClause do
 
   defp encode_exp_for_pack_value(pack_value_binding, type, opts, context) do
 
-      case KnownSizeTypeEncoder.encode_known_size_type(pack_value_binding, type, opts, context) do
+      case KnownSizeTypeBinaryToUnmanagedConverter.convert_known_size_type_binary_to_unmanaged(pack_value_binding, type, opts, context) do
         { :static_value, static_value_expr } -> static_value_expr
         { :bin_struct_parse_exact_result, _result_expr } -> raise "bin_struct as part of one of not implemented"
         { :asn1_parse_result, _result_expr } -> raise "asn1 as part of one of not implemented"

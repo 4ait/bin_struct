@@ -5,10 +5,11 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
-  alias BinStruct.Macro.Encoder
+  alias BinStruct.Macro.TypeConverter
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.IsOptionalField
+  alias BinStruct.Macro.Bind
 
   def registered_callback_arguments_bindings(
         %RegisteredCallback{ arguments: arguments },
@@ -29,25 +30,23 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
             bind = { BinStruct.Macro.Bind.bind_value_name(name), [], context }
 
-            encode_expr = Encoder.convert_unmanaged_value_to_managed(type, bind)
+            type_conversion = options[:type_conversion] || :managed
 
-            case options[:encode] do
-              :raw -> bind
-              _ ->
+            case type_conversion do
+
+              :unmanaged -> bind
+
+              :managed ->
 
                 if IsOptionalField.is_optional_field(field) do
 
-                    quote do
-
-                      case unquote(bind) do
-                        nil -> nil
-                        unquote(bind) -> unquote(encode_expr)
-                      end
-
-                    end
+                  wrap_with_nil_check(
+                    bind,
+                    TypeConverter.convert_managed_value_to_unmanaged(type, bind)
+                  )
 
                 else
-                  encode_expr
+                  TypeConverter.convert_unmanaged_value_to_managed(type, bind)
                 end
 
             end
@@ -56,26 +55,34 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
             %RegisteredCallbackNewArgument{ field: field, options: options } = new_argument
 
-            { name, type, opts } =
+            { name, type } =
               case field do
-                %Field { name: name, type: type, opts: opts } ->  { name, type, opts }
-                %VirtualField { name: name, type: type, opts: opts } -> { name, type, opts }
+                %Field { name: name, type: type } ->  { name, type }
+                %VirtualField { name: name, type: type } -> { name, type }
               end
 
-            bind = { BinStruct.Macro.Bind.bind_value_name(name), [], context }
+            bind = { Bind.bind_value_name(name), [], context }
 
+            type_conversion = options[:type_conversion] || :none
 
-            case options[:encode] do
+            case type_conversion do
 
-              :binary ->
+              :none -> bind
 
-                is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
-                expr = BinStruct.Macro.DumpBinaryFunction.encode_type_for_dump(bind, type, opts, is_optional)
-                Encoder.convert_managed_value_to_unmanaged(type, expr)
+              :managed -> bind
 
-              :raw -> Encoder.convert_managed_value_to_unmanaged(type, bind)
+              :unmanaged ->
 
-              _ -> bind
+                if IsOptionalField.is_optional_field(field) do
+
+                  wrap_with_nil_check(
+                    bind,
+                    TypeConverter.convert_managed_value_to_unmanaged(type, bind)
+                  )
+
+                else
+                    TypeConverter.convert_managed_value_to_unmanaged(type, bind)
+                end
 
             end
 
@@ -85,13 +92,27 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
               interface: interface,
               name: name
             }
-          } -> { BinStruct.Macro.Bind.bind_option_name(interface, name), [], context }
+
+          } -> { Bind.bind_option_name(interface, name), [], context }
 
 
         end
 
       end
     )
+
+  end
+
+  defp wrap_with_nil_check(bind, if_not_nil_quote) do
+
+    quote do
+
+      case unquote(bind) do
+        nil -> nil
+        unquote(bind) -> unquote(if_not_nil_quote)
+      end
+
+    end
 
   end
 

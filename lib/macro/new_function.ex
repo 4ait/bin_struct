@@ -2,7 +2,7 @@ defmodule BinStruct.Macro.NewFunction do
 
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Encoder
+  alias BinStruct.Macro.TypeConverter
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.RegisteredCallback
@@ -140,7 +140,7 @@ defmodule BinStruct.Macro.NewFunction do
 
     field_bind_value_access = { Bind.bind_value_name(name), [], __MODULE__ }
 
-    encode_expr = Encoder.convert_managed_value_to_unmanaged(type, field_bind_value_access)
+    encode_expr = TypeConverter.convert_managed_value_to_unmanaged(type, field_bind_value_access)
 
     case encode_expr do
       ^field_bind_value_access -> nil

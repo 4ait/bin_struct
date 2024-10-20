@@ -2,12 +2,12 @@ defmodule BinStruct.Macro.DecodeFunction do
 
 
   alias BinStruct.Macro.Bind
-  alias BinStruct.Macro.Encoder
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.NonVirtualFields
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
+  alias BinStruct.Macro.TypeConverter
 
   #assuming we have managed type, such type to work people expect most comfortable to work this
   #and unmanaged type we expect it to be close to stream of binary for easy parse/dump binaries
@@ -119,13 +119,13 @@ defmodule BinStruct.Macro.DecodeFunction do
             Enum.map(
               unquote(value_access),
               fn unquote(value_access) ->
-                unquote(Encoder.convert_unmanaged_value_to_managed(item_type, value_access))
+                unquote(TypeConverter.convert_unmanaged_value_to_managed(item_type, value_access))
               end
             )
 
           end
 
-        type -> Encoder.convert_unmanaged_value_to_managed(type, value_access)
+        type -> TypeConverter.convert_unmanaged_value_to_managed(type, value_access)
 
       end
 

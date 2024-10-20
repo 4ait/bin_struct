@@ -5,13 +5,13 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
   alias BinStruct.Macro.Parse.Validation
   alias BinStruct.Macro.Parse.Result
   alias BinStruct.Macro.Parse.BinaryMatchPatternKnownSize
-  alias BinStruct.Macro.Parse.KnownSizeTypeEncoder
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.OneOfPack
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Parse.OneOfPackMatchingClause
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
   alias BinStruct.Macro.Parse.ExternalFieldDependencies
+  alias BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter
 
   def checkpoint_known_size(fields_or_packs = _checkpoint, function_name, interface_implementations, registered_callbacks_map, _env) do
 
@@ -57,7 +57,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
       |> List.flatten()
 
 
-    fields_encoding =
+    fields_from_binary_to_unmanaged_conversion =
       Enum.map(
         fields_or_packs,
         fn field_or_pack ->
@@ -69,15 +69,15 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
               access_field = { Bind.bind_value_name(name), [], __MODULE__ }
 
-              encoding = KnownSizeTypeEncoder.encode_known_size_type(access_field, type, opts, __MODULE__)
+              parsed_unmanaged_type = KnownSizeTypeBinaryToUnmanagedConverter.convert_known_size_type_binary_to_unmanaged(access_field, type, opts, __MODULE__)
 
-              case encoding do
+              case parsed_unmanaged_type do
                 nil -> nil
-                encoding -> { field, encoding }
+                parsed_unmanaged_type -> { field, parsed_unmanaged_type }
               end
 
 
-            #pack values should be encoded separately
+            #pack values should be converted separately
             %OneOfPack{} = _one_of_pack -> nil
 
           end
@@ -87,12 +87,13 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
     static_values_bindings =
       Enum.map(
-        fields_encoding,
-        fn field_encoding ->
+        fields_from_binary_to_unmanaged_conversion,
+        fn field_conversion ->
 
-          { field, encoding } = field_encoding
+          { field, conversion } = field_conversion
 
-          case encoding do
+          case conversion do
+
             {:static_value, static_value_expr } ->
 
               %Field{ name: name } = field
@@ -104,6 +105,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
               end
 
             _ -> nil
+
           end
 
         end
@@ -112,16 +114,16 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
     structs_parse_with_clauses =
       Enum.map(
-        fields_encoding,
-        fn field_encoding ->
+        fields_from_binary_to_unmanaged_conversion,
+        fn field_conversion ->
 
-          { field, encoding } = field_encoding
+          { field, conversion } = field_conversion
 
           %Field{ name: name } = field
 
           access_field = { Bind.bind_value_name(name), [], __MODULE__ }
 
-          case encoding do
+          case conversion do
 
             { :bin_struct_parse_exact_result, encode_expr } ->
 
