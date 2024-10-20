@@ -2,6 +2,7 @@ defmodule TestCustomType do
 
   use BinStructCustomType
 
+  #todo implement custom type support for non terminated structs
   #assuming we trying to implement custom type for binary terminated with zero
 
   def parse_returning_options(bin, custom_type_args, opts) do
