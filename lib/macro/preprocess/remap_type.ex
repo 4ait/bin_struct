@@ -8,14 +8,21 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
 
   def remap_type(type, opts, env) do
 
-      is_module = is_module(type)
+      is_module =
+        case type do
+          { first_element, _second_element } -> is_module(first_element)
+          single_declaration -> is_module(single_declaration)
+        end
+
       is_static_value = is_static_value(type)
 
       bits = opts[:bits]
 
       case type do
 
-        module when is_module -> RemapModule.remap_module(module, opts, env)
+        { module, custom_type_args } when is_module -> RemapModule.remap_module(module, opts, custom_type_args, env)
+
+        module when is_module -> RemapModule.remap_module(module, opts, nil, env)
 
         { :enum, _enum_info } = enum ->  RemapEnum.remap_enum(enum, opts, env)
         { :flags, _flags_info } = flags ->  RemapFlags.remap_flags(flags, opts, env)
