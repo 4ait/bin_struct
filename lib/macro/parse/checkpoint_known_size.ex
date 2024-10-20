@@ -6,16 +6,12 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
   alias BinStruct.Macro.Parse.Result
   alias BinStruct.Macro.Parse.BinaryMatchPatternKnownSize
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Structs.OneOfPack
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
-  alias BinStruct.Macro.Parse.OneOfPackMatchingClause
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
   alias BinStruct.Macro.Parse.ExternalFieldDependencies
   alias BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter
 
-  def checkpoint_known_size(fields_or_packs = _checkpoint, function_name, interface_implementations, registered_callbacks_map, _env) do
-
-    fields = BinStruct.Macro.ExpandOneOfPacksFields.expand_one_of_packs_fields(fields_or_packs)
+  def checkpoint_known_size(fields = _checkpoint, function_name, interface_implementations, registered_callbacks_map, _env) do
 
     external_field_dependencies = ExternalFieldDependencies.external_field_dependencies(fields, interface_implementations, registered_callbacks_map)
 
@@ -33,36 +29,12 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
         end
       )
 
-    one_of_packs_fields_values =
-      Enum.map(
-        fields_or_packs,
-        fn field_or_pack ->
-
-          case field_or_pack do
-            %Field{} -> nil
-            %OneOfPack{} = pack ->
-
-              matching_clause = OneOfPackMatchingClause.one_of_pack_matching_clause(pack, registered_callbacks_map, __MODULE__)
-              returning_tuple = OneOfPackMatchingClause.returning_tuple_with_bindings(pack, __MODULE__)
-
-              quote do
-                unquote(returning_tuple) = unquote(matching_clause)
-              end
-
-          end
-
-        end
-      )
-      |> Enum.reject(&is_nil/1)
-      |> List.flatten()
-
-
     fields_from_binary_to_unmanaged_conversion =
       Enum.map(
-        fields_or_packs,
-        fn field_or_pack ->
+        fields,
+        fn field ->
 
-          case field_or_pack do
+          case field do
             %Field{} = field ->
 
               %Field{ name: name, type: type, opts: opts } = field
@@ -75,10 +47,6 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
                 nil -> nil
                 parsed_unmanaged_type -> { field, parsed_unmanaged_type }
               end
-
-
-            #pack values should be converted separately
-            %OneOfPack{} = _one_of_pack -> nil
 
           end
 
@@ -147,8 +115,8 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
     binary_match_patterns =
       Enum.map(
-        fields_or_packs,
-        fn field_or_pack -> BinaryMatchPatternKnownSize.binary_match_pattern_for_known_size_field_or_pack(field_or_pack, __MODULE__) end
+        fields,
+        fn field -> BinaryMatchPatternKnownSize.binary_match_pattern_for_known_size_field(field, __MODULE__) end
       )
 
     binary_match_patterns =
@@ -183,7 +151,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
       end
 
 
-    size = AllFieldsSize.get_all_fields_and_packs_size_bytes(fields_or_packs)
+    size = AllFieldsSize.get_all_fields_size_bytes(fields)
 
     not_enough_bytes_clause =
       quote do
@@ -221,7 +189,6 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
           unquote(DeconstructOptionsForField.deconstruct_options_for_fields(fields, interface_implementations, registered_callbacks_map, __MODULE__))
 
-          unquote_splicing(one_of_packs_fields_values)
           unquote_splicing(static_values_bindings)
 
           unquote(returning_clause)

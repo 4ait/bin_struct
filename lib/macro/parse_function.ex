@@ -8,15 +8,13 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Parse.CheckpointUnknownSize
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Structs.OneOfPack
-  alias BinStruct.Macro.ExpandOneOfPacksFields
   alias BinStruct.Macro.Parse.MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
   alias BinStruct.Macro.Parse.ExternalFieldDependencies
 
 
-  def parse_function(fields_and_one_of_packs, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
+  def parse_function(fields, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
 
-    checkpoints = hydrate_checkpoints([], fields_and_one_of_packs)
+    checkpoints = hydrate_checkpoints([], fields)
 
     checkpoints_functions =
       Enum.with_index(checkpoints, 1)
@@ -35,9 +33,7 @@ defmodule BinStruct.Macro.ParseFunction do
     checkpoints_with_clauses =
       Enum.map(
         Enum.with_index(checkpoints, 1),
-        fn {checkpoint, index} ->
-
-          fields = ExpandOneOfPacksFields.expand_one_of_packs_fields(checkpoint)
+        fn {fields, index} ->
 
           external_field_dependencies = ExternalFieldDependencies.external_field_dependencies(fields, interface_implementations, registered_callbacks_map)
 
@@ -77,9 +73,7 @@ defmodule BinStruct.Macro.ParseFunction do
     returning_struct_key_values =
       Enum.map(
         checkpoints,
-        fn checkpoint ->
-
-          fields = ExpandOneOfPacksFields.expand_one_of_packs_fields(checkpoint)
+        fn fields ->
 
           Enum.map(
             fields,
@@ -229,11 +223,11 @@ defmodule BinStruct.Macro.ParseFunction do
   end
 
 
-  defp checkpoint_function(fields_or_packs = _checkpoint, checkpoint_index, interface_implementations, registered_callbacks_map, env) do
+  defp checkpoint_function(fields = _checkpoint, checkpoint_index, interface_implementations, registered_callbacks_map, env) do
 
     function_name = checkpoint_function_name(checkpoint_index)
 
-    case fields_or_packs do
+    case fields do
       #if its single element we need check is that optional or unknown
       [ %Field{ opts: opts } = field ] ->
 
@@ -258,7 +252,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
         [ optional_not_present_clause, main_clause ]
 
-      fields_or_packs -> CheckpointKnownSize.checkpoint_known_size(fields_or_packs, function_name, interface_implementations, registered_callbacks_map, env)
+      fields -> CheckpointKnownSize.checkpoint_known_size(fields, function_name, interface_implementations, registered_callbacks_map, env)
 
   end
 
@@ -316,32 +310,24 @@ defmodule BinStruct.Macro.ParseFunction do
 
   defp hydrate_checkpoint_fields(checkpoint, []), do: { Enum.reverse(checkpoint), []}
 
-  defp hydrate_checkpoint_fields(checkpoint, [ field_or_one_of_pack | rest ]) do
+  defp hydrate_checkpoint_fields(checkpoint, [ field | rest ]) do
 
-    size =
-      case field_or_one_of_pack do
-        %Field{} = field -> FieldSize.field_size_bits(field)
-        %OneOfPack{} = one_of_pack -> FieldSize.pack_size_bits(one_of_pack)
-      end
+    size = FieldSize.field_size_bits(field)
 
-    is_optional =
-      case field_or_one_of_pack do
-        %Field{} = field ->  BinStruct.Macro.IsOptionalField.is_optional_field(field)
-        %OneOfPack{} -> false
-      end
+    is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
 
     case size do
 
       size when is_integer(size) and not is_optional ->
 
-        new_checkpoint = [ field_or_one_of_pack | checkpoint ]
+        new_checkpoint = [ field | checkpoint ]
         hydrate_checkpoint_fields(new_checkpoint, rest)
 
       _ ->
 
         case checkpoint do
-          [] -> { [field_or_one_of_pack], rest }
-          checkpoint -> { Enum.reverse(checkpoint), [ field_or_one_of_pack | rest ] }
+          [] -> { [field], rest }
+          checkpoint -> { Enum.reverse(checkpoint), [ field | rest ] }
         end
 
     end

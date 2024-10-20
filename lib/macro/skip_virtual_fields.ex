@@ -2,18 +2,16 @@ defmodule BinStruct.Macro.NonVirtualFields do
 
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
-  alias BinStruct.Macro.Structs.OneOfPack
 
-  def skip_virtual_fields(fields_or_one_of_packs) do
+  def skip_virtual_fields(fields) do
 
     Enum.map(
-      fields_or_one_of_packs,
-      fn field_or_one_of_pack ->
+      fields,
+      fn field ->
 
-        case field_or_one_of_pack do
+        case field do
           %Field{} = field -> field
           %VirtualField{} = _virtual_field -> nil
-          %OneOfPack{} = one_of_pack -> one_of_pack
         end
       end
     )

@@ -1,14 +1,13 @@
 defmodule BinStruct.Macro.Termination do
 
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Structs.OneOfPack
 
-  def is_current_bin_struct_terminated(_no_fields_or_packs = [], _env), do: true
+  def is_current_bin_struct_terminated(_no_fields = [], _env), do: true
 
-  def is_current_bin_struct_terminated(fields_or_packs, env) do
+  def is_current_bin_struct_terminated(fields, env) do
 
-    case is_terminated_by_optional_sequence(fields_or_packs, env) do
-      true -> is_fields_or_packs_terminated(fields_or_packs, env)
+    case is_terminated_by_optional_sequence(fields, env) do
+      true -> is_fields_terminated(fields, env)
       false -> false
     end
 
@@ -44,45 +43,31 @@ defmodule BinStruct.Macro.Termination do
   end
 
 
-  defp is_fields_or_packs_terminated([ last_field_or_pack | []], _env), do: is_field_or_pack_terminated(last_field_or_pack)
+  defp is_fields_terminated([ last_field | []], _env), do: is_field_terminated(last_field)
 
-  defp is_fields_or_packs_terminated([ head_field_or_pack | tail_field_or_pack], env) do
+  defp is_fields_terminated([ head_field | tail_field], env) do
 
-    if is_field_or_pack_terminated(head_field_or_pack) do
-      is_fields_or_packs_terminated(tail_field_or_pack, env)
+    if is_field_terminated(head_field) do
+      is_fields_terminated(tail_field, env)
     else
       raise "Only last field of bin_struct without termination allowed."
     end
 
   end
 
-
-  defp is_field_or_pack_terminated(field_or_pack) do
-
-    case field_or_pack do
-      %Field{} = field -> is_field_terminated(field)
-      %OneOfPack{ fields: fields } ->
-
-        Enum.map(
-          fields,
-          fn field -> is_field_terminated(field) end
-        )
-        |> Enum.all?()
-
-    end
-
-  end
-
-  defp is_terminated_by_optional_sequence(fields_or_packs, _env) do
+  defp is_terminated_by_optional_sequence(fields, _env) do
 
     is_optional_sequence =
       Enum.map(
-        fields_or_packs,
-        fn field_or_pack ->
+        fields,
+        fn field ->
 
-          case field_or_pack do
-            %Field{ opts: opts } ->(if opts[:optional], do: true, else: false)
-            %OneOfPack{} -> false
+          %Field{ opts: opts } = field
+
+          if opts[:optional] do
+            true
+          else
+            false
           end
 
         end

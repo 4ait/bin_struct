@@ -10,29 +10,14 @@ defmodule BinStruct.Macro.Preprocess.Remap do
 
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
-  alias BinStruct.Macro.Structs.OneOfPack
 
-  def remap_raw_fields_and_one_of_packs(raw_fields_or_packs, env) do
+  def remap_raw_fields(raw_fields, env) do
 
     Enum.map(
-      raw_fields_or_packs,
-      fn raw_field_or_pack ->
+      raw_fields,
+      fn raw_field ->
 
-         case raw_field_or_pack do
-
-           { :one_of_pack, raw_fields } ->
-
-            fields =
-              Enum.map(
-                raw_fields,
-                fn raw_field ->
-                  remap_raw_field(raw_field, env)
-                end
-              )
-
-            %OneOfPack{
-              fields: fields
-            }
+         case raw_field do
 
            { :virtual_field, _name, _type, _opts } = raw_virtual_field ->  remap_raw_virtual_field(raw_virtual_field, env)
 

@@ -5,7 +5,6 @@ defmodule BinStruct.Macro.Parse.CallbacksOnField do
   def callbacks(%Field{ opts: opts}) do
 
     [
-      opts[:one_of_by],
       opts[:optional_by],
       opts[:length_by],
       opts[:count_by],

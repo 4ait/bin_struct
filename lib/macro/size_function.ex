@@ -4,7 +4,6 @@ defmodule BinStruct.Macro.SizeFunction do
   alias BinStruct.Macro.AllFieldsSize
   alias BinStruct.Macro.BitSizeConverter
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Structs.OneOfPack
 
 
   def size_function(fields_and_packs, _env) do
@@ -23,7 +22,7 @@ defmodule BinStruct.Macro.SizeFunction do
         end
       )
 
-    static_size = AllFieldsSize.get_all_fields_and_packs_size_bytes(known_size_fields_and_packs)
+    static_size = AllFieldsSize.get_all_fields_size_bytes(known_size_fields_and_packs)
 
     size =
       Enum.reduce(
@@ -96,22 +95,15 @@ defmodule BinStruct.Macro.SizeFunction do
     Enum.reduce(
       fields_and_packs,
       { _known_size_fields_with_size = [], _unknown_size_fields = [] },
-      fn field_or_pack, acc ->
+      fn field, acc ->
 
         { known_size_fields, unknown_size_fields } = acc
 
-        case field_or_pack do
-          %Field{} = field ->
+        is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
 
-            is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
-
-            case FieldSize.field_size_bits(field) do
-              size when is_integer(size) and not is_optional -> { [field | known_size_fields], unknown_size_fields }
-              _ -> { known_size_fields, [ field | unknown_size_fields] }
-            end
-
-          %OneOfPack{} = pack -> { [ pack | known_size_fields ], unknown_size_fields }
-
+        case FieldSize.field_size_bits(field) do
+          size when is_integer(size) and not is_optional -> { [field | known_size_fields], unknown_size_fields }
+          _ -> { known_size_fields, [ field | unknown_size_fields] }
         end
 
       end

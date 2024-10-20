@@ -42,28 +42,6 @@ defmodule BinStruct do
 
   end
 
-  defmacro one_of([do: block]) do
-
-    { :__block__, _meta, fields } = block
-
-    raw_fields =
-      Enum.map(
-        fields,
-        fn field ->
-
-          { :field, _meta, [ name, type, opts ] } = field
-
-          _raw_field = { name, type, opts }
-
-        end
-      )
-
-    one_of_pack = { :one_of_pack, raw_fields }
-
-    Module.put_attribute(__CALLER__.module, :fields, one_of_pack)
-
-  end
-
   defmacro register_option(name, parameters \\ []) do
 
     raw_registered_option = { name, parameters }
@@ -123,11 +101,8 @@ defmodule BinStruct do
     raw_registered_callbacks = Module.get_attribute(env.module, :callbacks) |> Enum.reverse()
     raw_interface_implementations = Module.get_attribute(env.module, :interface_implementations) |> Enum.reverse()
 
-    fields_and_one_of_packs = Remap.remap_raw_fields_and_one_of_packs(raw_fields, env)
+    fields = Remap.remap_raw_fields(raw_fields, env)
 
-    fields = BinStruct.Macro.ExpandOneOfPacksFields.expand_one_of_packs_fields(fields_and_one_of_packs)
-
-    non_virtual_fields_and_one_of_packs = NonVirtualFields.skip_virtual_fields(fields_and_one_of_packs)
     non_virtual_fields = NonVirtualFields.skip_virtual_fields(fields)
 
     registered_options = Remap.remap_raw_registered_options(raw_registered_options, env)
@@ -139,7 +114,7 @@ defmodule BinStruct do
 
     is_bin_struct_terminated =
       BinStruct.Macro.Termination.is_current_bin_struct_terminated(
-        non_virtual_fields_and_one_of_packs,
+        non_virtual_fields,
         env
       )
 
@@ -157,7 +132,7 @@ defmodule BinStruct do
 
     parse_functions =
       BinStruct.Macro.ParseFunction.parse_function(
-        non_virtual_fields_and_one_of_packs,
+        non_virtual_fields,
         interface_implementations,
         registered_callbacks_map,
         env,
@@ -187,7 +162,7 @@ defmodule BinStruct do
 
     size_function =
       BinStruct.Macro.SizeFunction.size_function(
-        non_virtual_fields_and_one_of_packs,
+        non_virtual_fields,
         env
       )
 
@@ -209,8 +184,8 @@ defmodule BinStruct do
       )
 
     known_total_size_bytes =
-      BinStruct.Macro.AllFieldsSize.get_all_fields_and_packs_size_bytes(
-        non_virtual_fields_and_one_of_packs
+      BinStruct.Macro.AllFieldsSize.get_all_fields_size_bytes(
+        non_virtual_fields
       )
 
     struct_fields =

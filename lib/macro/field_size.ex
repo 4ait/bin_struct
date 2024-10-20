@@ -1,41 +1,12 @@
 defmodule BinStruct.Macro.FieldSize do
 
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Structs.OneOfPack
 
   def field_size_bits(%Field{} = field) do
 
     %Field{ type: type, opts: opts } = field
 
     type_size_bits(type, opts)
-
-  end
-
-  def pack_size_bits(%OneOfPack{fields: fields}) do
-
-    Enum.reduce_while(
-      fields,
-      0,
-      fn field, acc ->
-
-        field_of_pack_size_bits = field_size_bits(field)
-
-        case field_of_pack_size_bits do
-
-          field_of_pack_size_bits when is_integer(field_of_pack_size_bits) ->
-
-            case acc do
-              0 -> { :cont, field_of_pack_size_bits }
-              acc when acc == field_of_pack_size_bits -> { :cont, field_of_pack_size_bits }
-              _ -> {:halt, :different_size}
-            end
-
-          :unknown -> {:halt, :unknown}
-
-        end
-
-      end
-   )
 
   end
 

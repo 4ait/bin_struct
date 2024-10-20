@@ -11,7 +11,7 @@ ExUnit.start()
 
 #implemented: BinStructCustomType with custom_type_arguments
 
-#todo remove entirely one_of_pack system in favor of virtual fields system
+#implemented: remove entirely one_of_pack system in favor of virtual fields system
 
 #todo type managed unmanaged table
 #todolater add more detailed examples of uses virtual field system in practice
