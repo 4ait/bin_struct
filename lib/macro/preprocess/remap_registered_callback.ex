@@ -112,14 +112,12 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
   end
 
 
-  defp normalize_raw_callback_argument(name, type, fields_map, registered_options_map, env) when not is_map(type)  do
+  defp normalize_raw_callback_argument(name, type_atom, fields_map, registered_options_map, env) when is_atom(type_atom)  do
 
     argument_type =
       case type do
         :field -> %{ type: :field }
         :option -> %{ type: :option, interface: env.module }
-        :item -> %{ type: :item }
-        :argument -> %{ type: :argument }
       end
 
     normalize_raw_callback_argument(name, argument_type, fields_map, registered_options_map, env)
@@ -128,13 +126,20 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
 
   defp normalize_raw_callback_argument(
          name,
-         %{} = argument_type,
+         %{} = argument_type_map,
          %FieldsMap{} = fields_map,
          %RegisteredOptionsMap{} = registered_options_map,
          _env
        ) do
 
-      case argument_type do
+      case argument_type_map do
+
+        %{ type: :field } = type_map ->
+
+          %RegisteredCallbackFieldArgument{
+            field: FieldsMap.get_field_by_name(fields_map, name),
+            type_conversion: type_conversion_from_argument_type_map(argument_type_map)
+          }
 
           %{ type: :option, interface: interface } ->
 
@@ -142,22 +147,23 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
               registered_option: RegisteredOptionsMap.get_registered_option_by_interface_and_name(registered_options_map, interface, name)
             }
 
-          %{ type: :field } = type_map ->
-
-            %RegisteredCallbackFieldArgument{
-              field: FieldsMap.get_field_by_name(fields_map, name),
-              options: Map.delete(type_map, :type)
-            }
-
-
-        %{ type: :argument } = type_map ->
-
-          %RegisteredCallbackNewArgument{
-            field: FieldsMap.get_field_by_name(fields_map, name),
-            options: Map.delete(type_map, :type)
-          }
-
       end
+
+  end
+
+  defp type_conversion_from_argument_type_map(argument_type_map) do
+
+    type_conversion = argument_type_map[:type_conversion]
+
+    case type_conversion do
+      :managed -> %BinStruct.Macro.Structs.TypeConversionManaged{}
+      :unmanaged -> %BinStruct.Macro.Structs.TypeConversionUnmanaged{}
+      nil -> %BinStruct.Macro.Structs.TypeConversionUnspecified{}
+
+      _ -> raise "Type conversion argument support values :managed and :unmanaged, given: #{inspect(type_conversion)}"
+
+    end
+    
 
   end
 

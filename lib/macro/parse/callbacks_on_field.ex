@@ -11,7 +11,8 @@ defmodule BinStruct.Macro.Parse.CallbacksOnField do
       opts[:item_size_by],
       opts[:take_while_by],
       opts[:validate_by]
-    ] |> Enum.reject(&is_nil/1)
+    ]
+    |> Enum.reject(&is_nil/1)
 
   end
 
