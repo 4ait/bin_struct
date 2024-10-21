@@ -276,10 +276,8 @@ defmodule BinStruct.Macro.DecodeFunction do
         fn %Field{} = field ->
 
           %Field{ name: name } = field
-           
-          unmanaged_value_access = { Bind.bind_value_name(name), [], __MODULE__ }
 
-          { name, unmanaged_value_access }
+          { name, Bind.bind_unmanaged_value(name, __MODULE__) }
 
         end
       )
@@ -301,8 +299,7 @@ defmodule BinStruct.Macro.DecodeFunction do
                 {opts, name}
             end
 
-
-          managed_value_access = { Bind.bind_managed_value_name(name), [], __MODULE__ }
+          managed_value_access = { Bind.bind_managed_value(name, __MODULE__) }
 
           case field do
             %Field{} ->
@@ -334,9 +331,8 @@ defmodule BinStruct.Macro.DecodeFunction do
                 {opts, name}
             end
 
-          managed_value_access = { Bind.bind_managed_value_name(name), [], __MODULE__ }
+          managed_value_access = Bind.bind_managed_value(name, __MODULE__)
 
-          # Conditionally map field to {name, value_access} if :show_on_decode is not false
           case opts[:show_on_decode] do
             false -> nil
             _ -> { name, managed_value_access }

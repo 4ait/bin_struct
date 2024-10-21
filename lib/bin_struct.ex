@@ -141,23 +141,6 @@ defmodule BinStruct do
 
     decode_function = BinStruct.Macro.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
 
-    decode_field_functions = BinStruct.Macro.DecodeFieldFunction.decode_field_functions(fields, registered_callbacks_map, env)
-
-    decode_field_functions =
-      case decode_field_functions do
-        [] -> []
-
-        decode_field_functions ->
-
-          declare_head =
-            quote do
-              def decode_field(struct, field_name, opts \\ [])
-            end
-
-          [ declare_head | decode_field_functions]
-
-      end
-
     new_function = BinStruct.Macro.NewFunction.new_function(fields, registered_callbacks_map)
 
     size_function =
@@ -229,7 +212,6 @@ defmodule BinStruct do
           unquote(dump_io_data_function)
           unquote(options_default_values_function)
           unquote_splicing(parse_functions)
-          #unquote_splicing(decode_field_functions)
           unquote_splicing(option_functions)
 
           unquote(decode_function)
