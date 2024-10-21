@@ -277,14 +277,47 @@ defmodule BinStruct.Macro.DecodeFunction do
 
           %Field{ name: name } = field
            
-          value_access = { Bind.bind_value_name(name), [], __MODULE__ }
+          unmanaged_value_access = { Bind.bind_value_name(name), [], __MODULE__ }
 
-          { name, value_access }
+          { name, unmanaged_value_access }
 
         end
       )
 
     fields_to_decode =  non_virtual_fields ++ virtual_fields_with_defined_read_by_callback
+
+    managed_values_bindings =
+      Enum.map(
+        fields_to_decode,
+        fn field ->
+
+          { opts, name } =
+
+            case field do
+              %Field{opts: opts, name: name} ->
+                {opts, name}
+
+              %VirtualField{opts: opts, name: name} ->
+                {opts, name}
+            end
+
+
+          managed_value_access = { Bind.bind_managed_value_name(name), [], __MODULE__ }
+
+          case field do
+            %Field{} ->
+              quote do
+                unquote(managed_value_access) = unquote(decode_field(field, env))
+              end
+
+            %VirtualField{} ->
+              quote do
+                unquote(managed_value_access) = unquote(decode_virtual_field(field, registered_callbacks_map, env))
+              end
+          end
+
+        end
+      )
 
     decoded_map_fields_with_values =
       Enum.map(
@@ -301,24 +334,12 @@ defmodule BinStruct.Macro.DecodeFunction do
                 {opts, name}
             end
 
-          # Decode the field
-          decoded_value =
-            case field do
-              %Field{} ->
-                quote do
-                  unquote(decode_field(field, env))
-                end
-
-              %VirtualField{} ->
-                quote do
-                  unquote(decode_virtual_field(field, registered_callbacks_map, env))
-                end
-            end
+          managed_value_access = { Bind.bind_managed_value_name(name), [], __MODULE__ }
 
           # Conditionally map field to {name, value_access} if :show_on_decode is not false
           case opts[:show_on_decode] do
             false -> nil
-            _ -> {name, decoded_value}
+            _ -> { name, managed_value_access }
           end
       end)
       |> Enum.reject(&is_nil/1)
@@ -335,6 +356,8 @@ defmodule BinStruct.Macro.DecodeFunction do
             nil -> false
             value when is_boolean(value) -> value
           end
+
+          unquote_splicing(managed_values_bindings)
 
         %{
           unquote_splicing(decoded_map_fields_with_values)

@@ -98,10 +98,14 @@ defmodule BinStruct.Macro.DecodeFieldFunction do
         fn %RegisteredCallbackFieldArgument{} = field_argument ->
 
           %RegisteredCallbackFieldArgument{
-            field: %Field{} = field
+            field: field
           } = field_argument
 
-          %Field{name: name} = field
+          name =
+            case field do
+              %Field{ name: name } -> name
+              %VirtualField{ name: name } -> name
+            end
 
           { name, { Bind.bind_value_name(name), [], __MODULE__ } }
         end

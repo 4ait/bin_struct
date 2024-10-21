@@ -229,7 +229,7 @@ defmodule BinStruct do
           unquote(dump_io_data_function)
           unquote(options_default_values_function)
           unquote_splicing(parse_functions)
-          unquote_splicing(decode_field_functions)
+          #unquote_splicing(decode_field_functions)
           unquote_splicing(option_functions)
 
           unquote(decode_function)
@@ -288,8 +288,7 @@ defmodule BinStruct do
 
      module_code = BinStruct.MacroDebug.code(result_quote)
 
-     #BinStruct.MacroDebug.puts_code(result_quote)
-
+     BinStruct.MacroDebug.puts_code(result_quote)
 
       quote do
 

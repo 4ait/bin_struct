@@ -6,7 +6,7 @@ defmodule BinStructTest.VirtualFieldSystem.ReadConsumedInCallbackTest do
 
     use BinStruct
 
-    register_callback &read_enum/1,
+    register_callback &read_open_or_close_enum/1,
                       number: %{ type: :field, type_conversion: :unmanaged }
 
     register_callback &read_bool_flag/1,
@@ -21,13 +21,13 @@ defmodule BinStructTest.VirtualFieldSystem.ReadConsumedInCallbackTest do
           { 0x01, :open },
         ]
       }
-    }, read_by: &read_enum/1
+    }, read_by: &read_open_or_close_enum/1
 
     virtual :open_or_close_flag, :unspecified, read_by: &read_bool_flag/1
 
     field :number, :uint8
 
-    defp read_enum(number), do: number
+    defp read_open_or_close_enum(number), do: number
 
     defp read_bool_flag(open_or_close_enum) do
 

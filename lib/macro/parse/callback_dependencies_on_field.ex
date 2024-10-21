@@ -9,6 +9,7 @@ defmodule BinStruct.Macro.Parse.CallbackDependenciesOnField do
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.Structs.InterfaceImplementation
   alias BinStruct.Macro.Parse.CallbacksOnField
+  alias BinStruct.Macro.Structs.VirtualField
 
 
   def field_dependencies_of_interface_implementation(%InterfaceImplementation{} = interface_implementation, registered_callbacks_map) do
@@ -59,8 +60,12 @@ defmodule BinStruct.Macro.Parse.CallbackDependenciesOnField do
            case argument do
 
              %RegisteredCallbackFieldArgument{field: field} ->
-               %Field{ name: name } = field
-               name
+
+              case field do
+                %Field{ name: name } ->  name
+                %VirtualField{ name: name } ->  name
+              end
+
 
            end
 
