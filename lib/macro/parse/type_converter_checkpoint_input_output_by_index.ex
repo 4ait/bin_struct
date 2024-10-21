@@ -2,12 +2,12 @@ defmodule BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex do
 
   alias BinStruct.Macro.Structs.ParseCheckpointProduceConsumeInfo
 
-  def type_converter_checkpoint_input_output_by_index(checkpoint_infos) do
+  def type_converter_checkpoint_input_output_by_index(produce_consume_infos) do
 
     consume_dependency_by_checkpoint_index =
       Enum.map(
-        checkpoint_infos,
-        fn checkpoint_info ->
+        produce_consume_infos,
+        fn produce_consume_info ->
 
           %ParseCheckpointProduceConsumeInfo{
             checkpoint_index: checkpoint_index,

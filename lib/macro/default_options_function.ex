@@ -25,6 +25,7 @@ defmodule BinStruct.Macro.DefaultOptionsFunction do
                     %RegisteredOption{
                       name: name,
                       interface: interface,
+                      parameters: parameters
                     } = registered_option
 
                     default_value =

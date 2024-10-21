@@ -11,22 +11,38 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
   alias BinStruct.Macro.IsOptionalField
   alias BinStruct.Macro.Bind
 
+  alias BinStruct.Macro.Structs.TypeConversionUnspecified
+  alias BinStruct.Macro.Structs.TypeConversionManaged
+  alias BinStruct.Macro.Structs.TypeConversionUnmanaged
+
+
 
   defp arguments_bindings_for_field_argument(argument, context) do
 
-    %RegisteredCallbackFieldArgument{ field: field, options: options } = argument
+    %RegisteredCallbackFieldArgument{ field: field, type_conversion: type_conversion } = argument
 
     %Field { name: name, type: type } = field
 
     bind = { BinStruct.Macro.Bind.bind_value_name(name), [], context }
 
-    type_conversion = options[:type_conversion] || :managed
-
     case type_conversion do
 
-      :unmanaged -> bind
+      %TypeConversionUnmanaged{} -> bind
 
-      :managed ->
+      %TypeConversionManaged{} ->
+
+        if IsOptionalField.is_optional_field(field) do
+
+          wrap_with_nil_check(
+            bind,
+            TypeConverter.convert_unmanaged_value_to_managed(type, bind)
+          )
+
+        else
+          TypeConverter.convert_unmanaged_value_to_managed(type, bind)
+        end
+
+      %TypeConversionUnspecified{} ->
 
         if IsOptionalField.is_optional_field(field) do
 
@@ -45,84 +61,28 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
   defp arguments_bindings_for_virtual_field_argument(argument, context) do
 
-    %RegisteredCallbackFieldArgument{ field: virtual_field, options: options } = argument
+    %RegisteredCallbackFieldArgument{ field: virtual_field, type_conversion: type_conversion } = argument
 
     %VirtualField { name: name, type: type } = virtual_field
 
     bind = { BinStruct.Macro.Bind.bind_value_name(name), [], context }
 
-    type_conversion = options[:type_conversion] || :managed
-
     case type_conversion do
 
-      :unmanaged -> bind
+      %TypeConversionUnmanaged{} -> bind
 
-      :managed ->
+      %TypeConversionManaged{} ->
 
         wrap_with_nil_check(
           bind,
           TypeConverter.convert_unmanaged_value_to_managed(type, bind)
         )
 
-    end
-
-  end
-
-
-  defp arguments_bindings_for_new_argument_of_field(new_argument, context) do
-
-    %RegisteredCallbackNewArgument{ field: field, options: options } = new_argument
-
-    %Field { name: name, type: type } = field
-
-    bind = { Bind.bind_value_name(name), [], context }
-
-    type_conversion = options[:type_conversion] || :none
-
-    case type_conversion do
-
-      :none -> bind
-
-      :managed -> bind
-
-      :unmanaged ->
-
-        if IsOptionalField.is_optional_field(field) do
-
-          wrap_with_nil_check(
-            bind,
-            TypeConverter.convert_managed_value_to_unmanaged(type, bind)
-          )
-
-        else
-          TypeConverter.convert_managed_value_to_unmanaged(type, bind)
-        end
-
-    end
-
-  end
-
-  defp arguments_bindings_for_new_argument_of_virtual_field(new_argument, context) do
-
-    %RegisteredCallbackNewArgument{ field: virtual_field, options: options } = new_argument
-
-    %VirtualField { name: name, type: type } = virtual_field
-
-    bind = { Bind.bind_value_name(name), [], context }
-
-    type_conversion = options[:type_conversion] || :none
-
-    case type_conversion do
-
-      :none -> bind
-
-      :managed -> bind
-
-      :unmanaged ->
+      %TypeConversionUnspecified{} ->
 
         wrap_with_nil_check(
           bind,
-          TypeConverter.convert_managed_value_to_unmanaged(type, bind)
+          TypeConverter.convert_unmanaged_value_to_managed(type, bind)
         )
 
     end
@@ -145,12 +105,6 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
           %RegisteredCallbackFieldArgument{ field: %VirtualField{} } = argument ->
             arguments_bindings_for_virtual_field_argument(argument, context)
-
-          %RegisteredCallbackNewArgument{ field: %Field{} } = new_argument ->
-            arguments_bindings_for_new_argument_of_field(new_argument, context)
-
-          %RegisteredCallbackNewArgument{ field: %VirtualField{} } = new_argument ->
-            arguments_bindings_for_new_argument_of_virtual_field(new_argument, context)
 
           %RegisteredCallbackOptionArgument{
             registered_option: %RegisteredOption {

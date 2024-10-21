@@ -83,9 +83,9 @@ defmodule BinStruct.Macro.ParseFunction do
 
     checkpoints_with_clauses =
       Enum.map(
+
         Enum.with_index(parse_checkpoints, 1),
         fn { fields, index } ->
-
 
           type_converter_checkpoint =
             Enum.find(
@@ -171,11 +171,22 @@ defmodule BinStruct.Macro.ParseFunction do
                   ) |> Enum.reject(&is_nil/1)
 
                 quote do
-                  { unquote_splicing(outputs) } <-
+                  { unquote_splicing(output_binds) } <-
                     unquote(type_conversion_checkpoint_function_name(index))(unquote_splicing(input_binds))
                 end
 
             end
+
+          registered_callbacks =
+            Enum.map(
+              fields,
+              fn field ->
+                CallbacksOnField.callbacks_used_while_parsing(field, registered_callbacks_map)
+              end
+            )
+
+          receiving_dependencies_arguments_bindings =
+            ReceivingDependenciesArgumentsBindings.receiving_dependencies_arguments_bindings(registered_callbacks, __MODULE__)
 
           parse_checkpoint_with_clause =
             quote do
@@ -553,16 +564,6 @@ defmodule BinStruct.Macro.ParseFunction do
 
   defp checkpoint_produce_consume_info(checkpoint, checkpoint_index, registered_callbacks_map) do
 
-    %ParseCheckpointProduceConsumeInfo{
-      checkpoint_index: checkpoint_index,
-      produce_fields: checkpoint,
-      consume_dependencies: checkpoint_consume_dependencies(checkpoint, registered_callbacks_map),
-    }
-
-  end
-
-  defp checkpoint_consume_dependencies(checkpoint, registered_callbacks_map) do
-
     registered_callbacks =
       Enum.map(
         checkpoint,
@@ -573,7 +574,10 @@ defmodule BinStruct.Macro.ParseFunction do
 
     consume_dependencies = BinStruct.Macro.ReceivingDependenciesArguments.receiving_dependencies_arguments(registered_callbacks)
 
-    %ParseCheckpointConsumeInfo{
+
+    %ParseCheckpointProduceConsumeInfo{
+      checkpoint_index: checkpoint_index,
+      produce_fields: checkpoint,
       consume_dependencies: consume_dependencies
     }
 

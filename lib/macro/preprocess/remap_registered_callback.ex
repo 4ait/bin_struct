@@ -115,7 +115,7 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
   defp normalize_raw_callback_argument(name, type_atom, fields_map, registered_options_map, env) when is_atom(type_atom)  do
 
     argument_type =
-      case type do
+      case type_atom do
         :field -> %{ type: :field }
         :option -> %{ type: :option, interface: env.module }
       end

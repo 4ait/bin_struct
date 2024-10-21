@@ -19,7 +19,7 @@ defmodule BinStruct.Macro.CallbacksOnField do
 
   end
 
-  def callbacks_used_while_creating_new_struct(%Field{ opts: opts }) do
+  def callbacks_used_while_creating_new_struct(%Field{ opts: opts }, registered_callbacks_map) do
 
     [
       opts[:builder],
@@ -30,7 +30,7 @@ defmodule BinStruct.Macro.CallbacksOnField do
 
   end
 
-  def callbacks_used_while_decoding(%Field{ opts: opts }) do
+  def callbacks_used_while_decoding(%Field{ opts: opts }, registered_callbacks_map) do
 
     [
       opts[:read_by]
