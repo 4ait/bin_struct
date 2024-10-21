@@ -22,7 +22,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
     length_by = opts[:length_by]
     optional_by = opts[:optional_by]
 
-    field_name_access = { Bind.bind_value_name(name), [], __MODULE__ }
+    binary_value_access_bind = Bind.bind_binary_value(name, __MODULE__)
 
     external_field_dependencies = ExternalFieldDependencies.external_field_dependencies([field], interface_implementations, registered_callbacks_map)
 
@@ -170,7 +170,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                       %{ module_type: :bin_struct, module: module } ->
 
                         quote do
-                          unquote(module).parse_exact_returning_options(unquote(field_name_access), options)
+                          unquote(module).parse_exact_returning_options(unquote(binary_value_access_bind), options)
                         end
 
                       %{
@@ -180,7 +180,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                       } ->
 
                         quote do
-                          unquote(module).parse_exact_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                          unquote(module).parse_exact_returning_options(unquote(binary_value_access_bind), unquote(custom_type_args), options)
                         end
 
                     end
@@ -214,18 +214,18 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
                 not_enough_bytes_seen = false
 
-                unquote(field_name_access) =
+                unquote(binary_value_access_bind) =
                   with unquote_splicing(with_patterns_variants_parsing) do
 
                     case not_enough_bytes_seen do
                       true -> :not_enough_bytes
-                      false ->  { :wrong_data, unquote(field_name_access) }
+                      false ->  { :wrong_data, unquote(binary_value_access_bind) }
                     end
 
                   end
 
-                case unquote(field_name_access) do
-                  {:ok, unquote(field_name_access), options } -> unquote(validate_and_return_clause)
+                case unquote(binary_value_access_bind) do
+                  {:ok, unquote(binary_value_access_bind), options } -> unquote(validate_and_return_clause)
                   { :wrong_data, _wrong_data } = wrong_data_clause -> wrong_data_clause
                   :not_enough_bytes -> :not_enough_bytes
                 end
@@ -235,16 +235,16 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             quote do
 
-              defp unquote(function_name)(unquote(field_name_access) = _bin,
+              defp unquote(function_name)(unquote(binary_value_access_bind) = _bin,
                      unquote_splicing(value_arguments_binds),
                      options
-                   ) when is_binary(unquote(field_name_access)) do
+                   ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
                 unquote(
-                  WrapWithLengthBy.wrap_with_length_by(body, length_by, field_name_access, registered_callbacks_map, __MODULE__)
-                  |> WrapWithOptionalBy.maybe_wrap_with_optional_by(optional_by, field_name_access, registered_callbacks_map, __MODULE__)
+                  WrapWithLengthBy.wrap_with_length_by(body, length_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
+                  |> WrapWithOptionalBy.maybe_wrap_with_optional_by(optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
                 )
               end
 
@@ -269,7 +269,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
                           %{ module_type: :bin_struct, module: module } ->
                             quote do
-                              unquote(module).parse_returning_options(unquote(field_name_access), options)
+                              unquote(module).parse_returning_options(unquote(binary_value_access_bind), options)
                             end
 
                           %{
@@ -278,7 +278,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                             custom_type_args: custom_type_args
                           } ->
                             quote do
-                              unquote(module).parse_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                              unquote(module).parse_returning_options(unquote(binary_value_access_bind), unquote(custom_type_args), options)
                             end
                         end
 
@@ -318,18 +318,18 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
                 not_enough_bytes_seen = false
 
-                unquote(field_name_access) =
+                unquote(binary_value_access_bind) =
                   with unquote_splicing(with_patterns_variants_parsing) do
 
                     case not_enough_bytes_seen do
                       true -> :not_enough_bytes
-                      false ->  { :wrong_data, unquote(field_name_access) }
+                      false ->  { :wrong_data, unquote(binary_value_access_bind) }
                     end
 
                   end
 
-                case unquote(field_name_access) do
-                  { :ok, unquote(field_name_access), rest, options } -> unquote(validate_and_return_clause)
+                case unquote(binary_value_access_bind) do
+                  { :ok, unquote(binary_value_access_bind), rest, options } -> unquote(validate_and_return_clause)
                   { :wrong_data, _wrong_data } = wrong_data_clause -> wrong_data_clause
                   :not_enough_bytes -> :not_enough_bytes
                 end
@@ -339,15 +339,15 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             quote do
 
               defp unquote(function_name)(
-                     unquote(field_name_access) = _bin,
+                     unquote(binary_value_access_bind) = _bin,
                      unquote_splicing(value_arguments_binds),
                      options
-                   ) when is_binary(unquote(field_name_access)) do
+                   ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
                 unquote(
-                  WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, field_name_access, registered_callbacks_map, __MODULE__)
+                  WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
                 )
 
               end
@@ -370,7 +370,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 %{ module_type: :bin_struct, module: module } ->
 
                   quote do
-                    unquote(module).parse_exact_returning_options(unquote(field_name_access), options)
+                    unquote(module).parse_exact_returning_options(unquote(binary_value_access_bind), options)
                   end
 
                 %{
@@ -380,7 +380,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 } ->
 
                   quote do
-                    unquote(module).parse_exact_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                    unquote(module).parse_exact_returning_options(unquote(binary_value_access_bind), unquote(custom_type_args), options)
                   end
 
               end
@@ -390,7 +390,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
               quote do
 
                 case unquote(parse_exact_expr) do
-                  { :ok, unquote(field_name_access), options } -> unquote(Result.return_ok_tuple([field], __MODULE__))
+                  { :ok, unquote(binary_value_access_bind), options } -> unquote(Result.return_ok_tuple([field], __MODULE__))
                   { :wrong_data, _wrong_data } = wrong_data -> wrong_data
                 end
 
@@ -403,16 +403,16 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             quote do
 
               defp unquote(function_name)(
-                     unquote(field_name_access) = _bin,
+                     unquote(binary_value_access_bind) = _bin,
                      unquote_splicing(value_arguments_binds),
                      options
-                   ) when is_binary(unquote(field_name_access)) do
+                   ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
                 unquote(
-                  WrapWithLengthBy.wrap_with_length_by(validate_and_return_clause, length_by, field_name_access, registered_callbacks_map, __MODULE__)
-                  |> WrapWithOptionalBy.maybe_wrap_with_optional_by(optional_by, field_name_access, registered_callbacks_map, __MODULE__)
+                  WrapWithLengthBy.wrap_with_length_by(validate_and_return_clause, length_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
+                  |> WrapWithOptionalBy.maybe_wrap_with_optional_by(optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
                 )
 
               end
@@ -428,7 +428,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 %{ module_type: :bin_struct, module: module } ->
 
                   quote do
-                    unquote(module).parse_exact_returning_options(unquote(field_name_access), options)
+                    unquote(module).parse_exact_returning_options(unquote(binary_value_access_bind), options)
                   end
 
                 %{
@@ -438,7 +438,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 } ->
 
                   quote do
-                    unquote(module).parse_exact_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                    unquote(module).parse_exact_returning_options(unquote(binary_value_access_bind), unquote(custom_type_args), options)
                   end
 
               end
@@ -448,7 +448,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
               quote do
 
                 case unquote(parse_exact_expr) do
-                  { :ok, unquote(field_name_access), options } ->
+                  { :ok, unquote(binary_value_access_bind), options } ->
                     rest = ""
                     unquote(Result.return_ok_tuple([field], __MODULE__))
                   { :wrong_data, _wrong_data } = wrong_data -> wrong_data
@@ -463,10 +463,10 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             quote do
 
               defp unquote(function_name)(
-                     unquote(field_name_access) = _bin,
+                     unquote(binary_value_access_bind) = _bin,
                      unquote_splicing(value_arguments_binds),
                      options
-                   ) when is_binary(unquote(field_name_access)) do
+                   ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
@@ -474,7 +474,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                   WrapWithOptionalBy.maybe_wrap_with_optional_by(
                     validate_and_return_clause,
                     optional_by,
-                    field_name_access,
+                    binary_value_access_bind,
                     registered_callbacks_map,
                     __MODULE__
                   )
@@ -498,7 +498,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 %{ module_type: :bin_struct, module: module } ->
 
                   quote do
-                    unquote(module).parse_returning_options(unquote(field_name_access), options)
+                    unquote(module).parse_returning_options(unquote(binary_value_access_bind), options)
                   end
 
                 %{
@@ -507,7 +507,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                   custom_type_args: custom_type_args
                 } ->
                   quote do
-                    unquote(module).parse_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                    unquote(module).parse_returning_options(unquote(binary_value_access_bind), unquote(custom_type_args), options)
                   end
               end
 
@@ -516,7 +516,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
                 case unquote(parse_expr) do
 
-                  { :ok, unquote(field_name_access), rest, options } -> unquote(validate_and_return_clause)
+                  { :ok, unquote(binary_value_access_bind), rest, options } -> unquote(validate_and_return_clause)
                   { :wrong_data, _wrong_data } = wrong_data_clause -> wrong_data_clause
                   :not_enough_bytes -> :not_enough_bytes
 
@@ -527,15 +527,15 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             quote do
 
               defp unquote(function_name)(
-                     unquote(field_name_access) = _bin,
+                     unquote(binary_value_access_bind) = _bin,
                      unquote_splicing(value_arguments_binds),
                      options
-                   ) when is_binary(unquote(field_name_access)) do
+                   ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
                 unquote(
-                  WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, field_name_access, registered_callbacks_map, __MODULE__)
+                  WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
                 )
               end
 
@@ -560,16 +560,16 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             quote do
 
               defp unquote(function_name)(
-                     unquote(field_name_access) = _bin,
+                     unquote(binary_value_access_bind) = _bin,
                      unquote_splicing(value_arguments_binds),
                      options
-                   ) when is_binary(unquote(field_name_access)) do
+                   ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
                 unquote(
-                  WrapWithLengthBy.wrap_with_length_by(body, length_by, field_name_access, registered_callbacks_map, __MODULE__)
-                  |> WrapWithOptionalBy.maybe_wrap_with_optional_by(optional_by, field_name_access, registered_callbacks_map, __MODULE__)
+                  WrapWithLengthBy.wrap_with_length_by(body, length_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
+                  |> WrapWithOptionalBy.maybe_wrap_with_optional_by(optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
                 )
               end
 
@@ -579,7 +579,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             ok_clause =
               quote do
-                { :ok, unquote(field_name_access), "", options }
+                { :ok, unquote(binary_value_access_bind), "", options }
               end
 
             validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
@@ -589,15 +589,15 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             quote do
 
               defp unquote(function_name)(
-                     unquote(field_name_access) = _bin,
+                     unquote(binary_value_access_bind) = _bin,
                      unquote_splicing(value_arguments_binds),
                      options
-                   ) when is_binary(unquote(field_name_access)) do
+                   ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
                 unquote(
-                  WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, field_name_access, registered_callbacks_map, __MODULE__)
+                  WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
                 )
               end
 
@@ -627,9 +627,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
     %Field{name: name, opts: opts} = field
 
-    field_name_access = { Bind.bind_value_name(name), [], __MODULE__ }
+    binary_value_access_bind = { Bind.bind_value_name(name), [], __MODULE__ }
     rest_bind = { :rest, [], __MODULE__ }
-    item_bind_name = { :item, [], __MODULE__ }
+    item_binary_bind = { :item_binary, [], __MODULE__ }
 
     optional_by = opts[:optional_by]
 
@@ -641,7 +641,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
       case item_type do
 
-        _item_type when is_item_of_primitive_type -> item_bind_name
+        _item_type when is_item_of_primitive_type -> item_binary_bind
 
         {:module, module_info} ->
 
@@ -652,7 +652,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
               %{ module_type: :bin_struct, module: module } ->
 
                 quote do
-                  unquote(module).parse_returning_options(unquote(field_name_access), options)
+                  unquote(module).parse_returning_options(unquote(item_binary_bind), options)
                 end
 
               %{
@@ -661,7 +661,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 custom_type_args: custom_type_args
               } ->
                 quote do
-                  unquote(module).parse_returning_options(unquote(field_name_access), unquote(custom_type_args), options)
+                  unquote(module).parse_returning_options(unquote(item_binary_bind), unquote(custom_type_args), options)
                 end
             end
 
@@ -681,16 +681,16 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
           item_size: item_size,
         } = unquote(runtime_bounds_expr)
 
-        if byte_size(unquote(field_name_access)) >= length do
+        if byte_size(unquote(binary_value_access_bind)) >= length do
 
-          <<unquote(field_name_access)::size(length)-bytes, unquote(rest_bind)::binary>> = unquote(field_name_access)
+          <<target_binary::size(length)-bytes, unquote(rest_bind)::binary>> = unquote(binary_value_access_bind)
 
-          unquote(field_name_access) =
-            for << unquote(item_bind_name)::binary-size(item_size) <- unquote(field_name_access) >> do
+          items =
+            for << unquote(item_binary_bind)::binary-size(item_size) <- target_binary >> do
               unquote(parse_expr)
             end
 
-          { :ok, unquote(field_name_access), unquote(rest_bind), options }
+          { :ok, items, unquote(rest_bind), options }
 
         else
           :not_enough_bytes
@@ -705,15 +705,15 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
     quote do
 
       defp unquote(function_name)(
-             unquote(field_name_access) = _bin,
+             unquote(binary_value_access_bind) = _bin,
              unquote_splicing(value_arguments_binds),
              options
-        ) when is_binary(unquote(field_name_access)) do
+        ) when is_binary(unquote(binary_value_access_bind)) do
 
         unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
         unquote(
-          WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, field_name_access, registered_callbacks_map, __MODULE__)
+          WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
         )
       end
 

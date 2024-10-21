@@ -6,7 +6,6 @@ defmodule BinStruct.Macro.CallbacksDependencies do
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
-  alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
   alias BinStruct.Macro.Structs.DependencyOnField
   alias BinStruct.Macro.Structs.DependencyOnOption
   alias BinStruct.Macro.Structs.RegisteredOption
@@ -55,7 +54,6 @@ defmodule BinStruct.Macro.CallbacksDependencies do
 
        end
     ) |> List.flatten()
-
 
     keep_only_unique_dependencies(dependencies)
 

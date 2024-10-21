@@ -4,7 +4,6 @@ defmodule BinStruct.Macro.DefaultOptionsFunction do
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
-  alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
 
   def default_options_function(registered_callbacks, children_modules, _env) do
 
@@ -40,7 +39,6 @@ defmodule BinStruct.Macro.DefaultOptionsFunction do
                     { first_key, second_key, default_value }
 
                 %RegisteredCallbackFieldArgument{} -> nil
-                %RegisteredCallbackNewArgument{} -> nil
               end
 
             end

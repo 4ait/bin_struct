@@ -6,7 +6,6 @@ defmodule BinStruct.Macro.NewFunction do
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.RegisteredCallback
-  alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
   alias BinStruct.Macro.DependenciesTopology
   alias BinStruct.Macro.IsOptionalField
   alias BinStruct.Macro.NonVirtualFields
@@ -452,16 +451,6 @@ defmodule BinStruct.Macro.NewFunction do
                 fn argument ->
 
                   case argument  do
-                    %RegisteredCallbackNewArgument{ field: dependent_field } ->
-
-                      dependent_field_name =
-                        case dependent_field do
-                          %Field{ name: field_name } -> field_name
-                          %VirtualField{ name: field_name } -> field_name
-                        end
-
-                      dependent_field_name
-
                     _ -> nil
                   end
 

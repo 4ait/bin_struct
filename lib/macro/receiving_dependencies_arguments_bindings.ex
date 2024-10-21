@@ -7,6 +7,9 @@ defmodule BinStruct.Macro.ReceivingDependenciesArgumentsBindings do
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.Bind
+  alias BinStruct.Macro.Structs.TypeConversionManaged
+  alias BinStruct.Macro.Structs.TypeConversionUnmanaged
+  alias BinStruct.Macro.Structs.TypeConversionUnspecified
 
   def receiving_dependencies_arguments_bindings(registered_callbacks, context) do
 

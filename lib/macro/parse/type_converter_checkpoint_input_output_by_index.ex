@@ -1,6 +1,11 @@
 defmodule BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex do
 
   alias BinStruct.Macro.Structs.ParseCheckpointProduceConsumeInfo
+  alias BinStruct.Macro.Structs.DependencyOnOption
+  alias BinStruct.Macro.Structs.DependencyOnField
+  alias BinStruct.Macro.Structs.Field
+  alias BinStruct.Macro.Structs.VirtualField
+  alias BinStruct.Macro.Structs.RegisteredOption
 
   def type_converter_checkpoint_input_output_by_index(produce_consume_infos) do
 

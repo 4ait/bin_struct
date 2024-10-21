@@ -11,7 +11,6 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Parse.MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
   alias BinStruct.Macro.Parse.ExternalFieldDependencies
   alias BinStruct.Macro.CallbacksOnField
-  alias BinStruct.Macro.CallbacksDependencies
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.Structs.TypeConversionManaged
@@ -52,6 +51,7 @@ defmodule BinStruct.Macro.ParseFunction do
           checkpoint_produce_consume_info(checkpoint, index, registered_callbacks_map)
         end
       )
+
 
     type_converter_checkpoint_input_output_by_index =
       TypeConverterCheckpointInputOutputByIndex.type_converter_checkpoint_input_output_by_index(produce_consume_info_list)
@@ -571,6 +571,10 @@ defmodule BinStruct.Macro.ParseFunction do
           CallbacksOnField.callbacks_used_while_parsing(field, registered_callbacks_map)
         end
       )
+      |> List.flatten()
+
+
+      IO.inspect(registered_callbacks)
 
     consume_dependencies = BinStruct.Macro.ReceivingDependenciesArguments.receiving_dependencies_arguments(registered_callbacks)
 

@@ -8,12 +8,14 @@ defmodule BinStruct.Macro.RegisteredCallbackFunctionCall do
 
   def registered_callback_function_call(
         %RegisteredCallback{ function: callback_function } = registered_callbacks,
+        how_to_treat_unspecified_type_conversions,
         context
       ) do
 
     arguments_binding =
       RegisteredCallbackArgumentsBinding.registered_callback_arguments_bindings(
         registered_callbacks,
+        how_to_treat_unspecified_type_conversions,
         context
       )
 

@@ -5,7 +5,6 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
   alias BinStruct.Macro.FunctionName
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
-  alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.FieldsMap
   alias BinStruct.Macro.Structs.RegisteredOptionsMap

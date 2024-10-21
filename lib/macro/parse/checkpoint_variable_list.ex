@@ -262,10 +262,14 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
       end
 
-
     take_while_by_registered_callback = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, take_while_by)
 
-    take_while_by_function_call = RegisteredCallbackFunctionCall.registered_callback_function_call(take_while_by_registered_callback, __MODULE__)
+    take_while_by_function_call =
+      RegisteredCallbackFunctionCall.registered_callback_function_call(
+        take_while_by_registered_callback,
+        :unspecified_as_managed,
+        __MODULE__
+      )
 
     halt_clause =
       quote do
@@ -386,7 +390,12 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     take_while_by_registered_callback = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, take_while_by)
 
-    take_while_by_function_call = RegisteredCallbackFunctionCall.registered_callback_function_call(take_while_by_registered_callback, __MODULE__)
+    take_while_by_function_call =
+      RegisteredCallbackFunctionCall.registered_callback_function_call(
+        take_while_by_registered_callback,
+        :unspecified_as_managed,
+        __MODULE__
+      )
 
     halt_clause =
       quote do

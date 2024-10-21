@@ -68,8 +68,8 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
         fn %Field{} = field ->
 
           %Field{name: name} = field
+          { name, Bind.bind_unmanaged_value(name, __MODULE__) }
 
-          { name, { Bind.bind_value_name(name), [], __MODULE__ } }
         end
       ) |> Keyword.new()
 
@@ -228,11 +228,11 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
 
     %Field{name: name, type: type, opts: opts} = field
 
-    name_field = { Bind.bind_value_name(name), [], __MODULE__}
+    unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
 
     is_optional = IsOptionalField.is_optional_field(field)
 
-    encode_type_for_dump(name_field, type, opts, is_optional)
+    encode_type_for_dump(unmanaged_value_access, type, opts, is_optional)
 
   end
 

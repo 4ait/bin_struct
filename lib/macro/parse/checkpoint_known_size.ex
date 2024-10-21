@@ -39,7 +39,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
               %Field{ name: name, type: type, opts: opts } = field
 
-              access_field = { Bind.bind_value_name(name), [], __MODULE__ }
+              binary_access_bind = Bind.bind_binary_value(name, __MODULE__)
 
               parsed_unmanaged_type = KnownSizeTypeBinaryToUnmanagedConverter.convert_known_size_type_binary_to_unmanaged(access_field, type, opts, __MODULE__)
 
@@ -89,20 +89,20 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
           %Field{ name: name } = field
 
-          access_field = { Bind.bind_value_name(name), [], __MODULE__ }
+          binary_value_access = Bind.bind_binary_value(name, __MODULE__)
 
           case conversion do
 
             { :module_parse_exact_result, encode_expr } ->
 
               quote do
-                { :ok, unquote(access_field), options } <- unquote(encode_expr)
+                { :ok, unquote(binary_value_access), options } <- unquote(encode_expr)
               end
 
             { :items_parse_result, encode_expr } ->
 
               quote do
-                { :ok, unquote(access_field), options } <- unquote(encode_expr)
+                { :ok, unquote(binary_value_access), options } <- unquote(encode_expr)
               end
 
             _ -> nil

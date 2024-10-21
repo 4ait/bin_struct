@@ -5,7 +5,6 @@ defmodule BinStruct.Macro.Parse.CallbackDependenciesOnField do
   alias BinStruct.Macro.Structs.Callback
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
-  alias BinStruct.Macro.Structs.RegisteredCallbackNewArgument
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.Structs.InterfaceImplementation
   alias BinStruct.Macro.Parse.CallbacksOnField
@@ -45,7 +44,6 @@ defmodule BinStruct.Macro.Parse.CallbackDependenciesOnField do
             case argument do
               %RegisteredCallbackFieldArgument{} = field_argument -> field_argument
               %RegisteredCallbackOptionArgument{} = _option_argument -> nil
-              %RegisteredCallbackNewArgument{} = _new_argument -> nil
             end
 
           end

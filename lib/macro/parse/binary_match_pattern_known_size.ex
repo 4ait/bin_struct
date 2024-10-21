@@ -8,7 +8,7 @@ defmodule BinStruct.Macro.Parse.BinaryMatchPatternKnownSize do
 
     %Field{ name: name, type: type } = field
 
-    value_access = { Bind.bind_value_name(name), [], context }
+    binary_value_access = Bind.bind_binary_value(name, context)
 
     case type do
 
@@ -29,13 +29,13 @@ defmodule BinStruct.Macro.Parse.BinaryMatchPatternKnownSize do
             field_size_bytes = Integer.floor_div(field_size_bits, 8)
 
             quote do
-              unquote(value_access)::(unquote(field_size_bytes)-bytes)
+              unquote(binary_value_access)::(unquote(field_size_bytes)-bytes)
             end
 
           _ ->
 
             quote  do
-              unquote(value_access)::(unquote(field_size_bits)-bits)
+              unquote(binary_value_access)::(unquote(field_size_bits)-bits)
             end
 
         end

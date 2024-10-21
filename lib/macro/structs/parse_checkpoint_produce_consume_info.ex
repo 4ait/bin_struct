@@ -3,7 +3,7 @@ defmodule BinStruct.Macro.Structs.ParseCheckpointProduceConsumeInfo do
 
   alias BinStruct.Macro.Structs.ParseCheckpointProduceConsumeInfo
 
-  @type t :: %ParseCheckpointConsumeInfo {
+  @type t :: %ParseCheckpointProduceConsumeInfo {
                checkpoint_index: integer(),
                produce_fields: list(
                  Field.t()
