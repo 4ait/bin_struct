@@ -11,6 +11,14 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Parse.MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
   alias BinStruct.Macro.Parse.ExternalFieldDependencies
 
+  #todo working on common type conversion system
+  #three type of values:
+  #
+  #1. Binary (can only be access in parse functions and constructed from dump_binary functions)
+  #2. Managed
+  #3. Unmanaged
+  #
+  #managed and unmanaged can be converted between vice versa
 
   def parse_function(fields, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
 
