@@ -19,9 +19,6 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
 
           is_optional = IsOptionalField.is_optional_field(field)
 
-
-          #unquote(encoded)::bitstring
-
           to_binary_value_expression =  TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_access)
 
           encoded =
