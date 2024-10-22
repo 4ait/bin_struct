@@ -270,7 +270,11 @@ defmodule BinStruct do
 
      module_code = BinStruct.MacroDebug.code(result_quote)
 
-     BinStruct.MacroDebug.puts_code(result_quote)
+
+     #if env.module == TestBinStructUsingCustomType do
+      BinStruct.MacroDebug.puts_code(result_quote)
+
+     #end
 
       quote do
 

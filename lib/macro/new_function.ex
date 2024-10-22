@@ -48,7 +48,7 @@ defmodule BinStruct.Macro.NewFunction do
 
     has_default_value = has_default_option || is_static_value
 
-    value_access = { Bind.bind_value_name(name), [], __MODULE__ }
+    managed_value_access = Bind.bind_managed_value(name, __MODULE__)
 
     if has_default_value do
 
@@ -73,8 +73,8 @@ defmodule BinStruct.Macro.NewFunction do
 
                quote do
 
-                 unquote(value_access) =
-                   case unquote(value_access) do
+                 unquote(managed_value_access) =
+                   case unquote(managed_value_access) do
                      :present -> unquote(default)
                      user_value when not is_nil(user_value) -> user_value
                      nil -> nil
@@ -86,8 +86,8 @@ defmodule BinStruct.Macro.NewFunction do
 
                quote do
 
-                 unquote(value_access) =
-                   case unquote(value_access) do
+                 unquote(managed_value_access) =
+                   case unquote(managed_value_access) do
                      :present -> unquote(static_value)
                      user_value when not is_nil(user_value) -> user_value
                      nil -> nil
@@ -105,8 +105,8 @@ defmodule BinStruct.Macro.NewFunction do
 
                quote do
 
-                 unquote(value_access) =
-                   case unquote(value_access) do
+                 unquote(managed_value_access) =
+                   case unquote(managed_value_access) do
                      user_value when not is_nil(user_value) -> user_value
                      nil -> unquote(default)
                    end
@@ -117,8 +117,8 @@ defmodule BinStruct.Macro.NewFunction do
 
                quote do
 
-                 unquote(value_access) =
-                   case unquote(value_access) do
+                 unquote(managed_value_access) =
+                   case unquote(managed_value_access) do
                      user_value when not is_nil(user_value) -> user_value
                      nil -> unquote(static_value)
                    end
@@ -137,12 +137,13 @@ defmodule BinStruct.Macro.NewFunction do
 
     %Field{ name: name, type: type } = field
 
-    field_bind_value_access = { Bind.bind_value_name(name), [], __MODULE__ }
+    managed_value_access = Bind.bind_managed_value(name, __MODULE__)
 
-    encode_expr = TypeConverter.convert_managed_value_to_unmanaged(type, field_bind_value_access)
+    encode_expr = TypeConverter.convert_managed_value_to_unmanaged(type, managed_value_access)
 
     case encode_expr do
-      ^field_bind_value_access -> nil
+      ^managed_value_access -> nil
+
       encode_expr ->
 
         is_optional = IsOptionalField.is_optional_field(field)
@@ -152,66 +153,22 @@ defmodule BinStruct.Macro.NewFunction do
           true ->
 
             quote do
-              unquote(field_bind_value_access) =
-                case unquote(field_bind_value_access) do
+              unquote(managed_value_access) =
+                case unquote(managed_value_access) do
                   nil -> nil
-                  unquote(field_bind_value_access) -> unquote(encode_expr)
+                  unquote(managed_value_access) -> unquote(encode_expr)
                 end
             end
 
           false ->
 
             quote do
-              unquote(field_bind_value_access) = unquote(encode_expr)
+              unquote(managed_value_access) = unquote(encode_expr)
             end
 
         end
 
     end
-
-  end
-
-  defp call_virtual_field_write_by_callback(%VirtualField{} = virtual_field, %RegisteredCallbacksMap{} = registered_callbacks_map) do
-
-    %VirtualField{ opts: opts } = virtual_field
-
-    write_by = opts[:write_by]
-
-    write_by_registered_callback =
-      RegisteredCallbacksMap.get_registered_callback_by_callback(
-        registered_callbacks_map,
-        write_by
-      )
-
-    write_by_callback_call = RegisteredCallbackFunctionCall.registered_callback_function_call(write_by_registered_callback, __MODULE__)
-
-    %RegisteredCallback{ returns: returns_fields } = write_by_registered_callback
-
-    results_returned_from_callback =
-      Enum.map(
-        returns_fields,
-        fn %Field{} = returns_field ->
-
-          %Field{ name: name } = returns_field
-
-          value_access = { Bind.bind_value_name(name), [], __MODULE__ }
-
-          { name, value_access }
-
-        end
-      )
-      |> Keyword.new()
-
-
-    quote do
-
-      %{
-        unquote_splicing(results_returned_from_callback)
-      } = unquote(write_by_callback_call)
-
-    end
-
-
 
   end
 
@@ -221,21 +178,6 @@ defmodule BinStruct.Macro.NewFunction do
     non_virtual_fields = NonVirtualFields.skip_virtual_fields(fields)
 
     virtual_fields = fields -- non_virtual_fields
-
-    virtual_fields_with_defined_write_by_callback =
-      Enum.filter(
-        virtual_fields,
-        fn %VirtualField{} = virtual_field ->
-
-          %VirtualField{ opts: opts } = virtual_field
-
-          case opts[:write_by] do
-            write_by when not is_nil(write_by) -> true
-            nil -> false
-          end
-
-        end
-      )
 
     virtual_fields_with_defined_write_operation =
       Enum.filter(
@@ -278,7 +220,7 @@ defmodule BinStruct.Macro.NewFunction do
 
     args_deconstruction_fields =
       Enum.map(
-        non_virtual_fields ++ virtual_fields_with_defined_write_by_callback ++ virtual_fields_with_defined_write_operation,
+        non_virtual_fields ++ virtual_fields_with_defined_write_operation,
         fn field ->
 
           name =
@@ -287,9 +229,7 @@ defmodule BinStruct.Macro.NewFunction do
               %VirtualField{ name: name } = _virtual_field -> name
             end
 
-          field_bind_value_access = { Bind.bind_value_name(name), [], __MODULE__ }
-
-          { name, field_bind_value_access }
+          { name, Bind.bind_managed_value(name, __MODULE__) }
 
         end
       )
@@ -310,7 +250,7 @@ defmodule BinStruct.Macro.NewFunction do
 
           builder_callback = Keyword.fetch!(opts, :builder)
 
-          field_bind_value_access = { Bind.bind_value_name(name), [], __MODULE__ }
+          managed_value_access = Bind.bind_managed_value(name, __MODULE__)
 
           registered_callback =
             RegisteredCallbacksMap.get_registered_callback_by_callback(
@@ -321,17 +261,9 @@ defmodule BinStruct.Macro.NewFunction do
           registered_callback_function_call = RegisteredCallbackFunctionCall.registered_callback_function_call(registered_callback, __MODULE__)
 
           quote do
-            unquote(field_bind_value_access) = unquote(registered_callback_function_call)
+            unquote(managed_value_access) = unquote(registered_callback_function_call)
           end
 
-        end
-      )
-
-    virtual_fields_write_callbacks_calls =
-      Enum.map(
-        virtual_fields_with_defined_write_by_callback,
-        fn %VirtualField{} = virtual_field ->
-          call_virtual_field_write_by_callback(virtual_field, registered_callbacks_map)
         end
       )
 
@@ -351,9 +283,9 @@ defmodule BinStruct.Macro.NewFunction do
 
           %Field{ name: name } = field
 
-          field_bind_value_access = { Bind.bind_value_name(name), [], __MODULE__ }
+          managed_value_access = Bind.bind_managed_value(name, __MODULE__)
 
-          { name, field_bind_value_access }
+          { name, managed_value_access }
 
         end
       )
@@ -385,8 +317,6 @@ defmodule BinStruct.Macro.NewFunction do
         )
 
         unquote_splicing(builder_calls)
-
-        unquote_splicing(virtual_fields_write_callbacks_calls)
 
         unquote_splicing(encoder_calls)
 

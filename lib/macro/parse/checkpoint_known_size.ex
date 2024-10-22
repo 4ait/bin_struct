@@ -41,17 +41,16 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
               binary_access_bind = Bind.bind_binary_value(name, __MODULE__)
 
-              parsed_unmanaged_type = KnownSizeTypeBinaryToUnmanagedConverter.convert_known_size_type_binary_to_unmanaged(access_field, type, opts, __MODULE__)
+              parsed_unmanaged_type =
+                KnownSizeTypeBinaryToUnmanagedConverter
+                  .convert_known_size_type_binary_to_unmanaged(binary_access_bind, type, opts, __MODULE__)
 
-              case parsed_unmanaged_type do
-                nil -> nil
-                parsed_unmanaged_type -> { field, parsed_unmanaged_type }
-              end
+              { field, parsed_unmanaged_type }
 
           end
 
         end
-      ) |> Enum.reject(&is_nil/1)
+      )
 
     static_values_bindings =
       Enum.map(
@@ -66,10 +65,38 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
               %Field{ name: name } = field
 
-              access_field = { Bind.bind_value_name(name), [], __MODULE__ }
+              unmanaged_value_bind = Bind.bind_unmanaged_value(name, __MODULE__)
 
               quote do
-                unquote(access_field) = unquote(static_value_expr)
+                unquote(unmanaged_value_bind) = unquote(static_value_expr)
+              end
+
+            _ -> nil
+
+          end
+
+        end
+      ) |> Enum.reject(&is_nil/1)
+
+
+    simple_reassign_binary_value_to_unmanaged =
+      Enum.map(
+        fields_from_binary_to_unmanaged_conversion,
+        fn field_conversion ->
+
+          { field, conversion } = field_conversion
+
+          case conversion do
+
+            nil ->
+
+              %Field{ name: name } = field
+
+              binary_access_bind = Bind.bind_binary_value(name, __MODULE__)
+              unmanaged_value_bind = Bind.bind_unmanaged_value(name, __MODULE__)
+
+              quote do
+                unquote(unmanaged_value_bind) = unquote(binary_access_bind)
               end
 
             _ -> nil
@@ -190,6 +217,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
           unquote(DeconstructOptionsForField.deconstruct_options_for_fields(fields, interface_implementations, registered_callbacks_map, __MODULE__))
 
           unquote_splicing(static_values_bindings)
+          unquote_splicing(simple_reassign_binary_value_to_unmanaged)
 
           unquote(returning_clause)
 

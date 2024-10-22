@@ -37,8 +37,11 @@ defmodule BinStruct.Macro.Parse.Validation do
 
   end
 
-  defp is_valid_bind_name(value_bind_name) do
-    String.to_atom("#{value_bind_name}_is_valid")
+  defp is_valid_bind(name, context) do
+
+    { String.to_atom("is_valid_#{name}"), [], context }
+
+
   end
 
   def validate_fields_with_patterns_and_prelude(
@@ -54,9 +57,10 @@ defmodule BinStruct.Macro.Parse.Validation do
 
             %Field{ name: name, type: type, opts: opts } = field
 
-            access_field_bind_name = Bind.bind_value_name(name)
-            access_field = { access_field_bind_name, [], context }
-            is_valid_access_field = { is_valid_bind_name(access_field_bind_name), [], context }
+            binary_value_access = Bind.bind_binary_value(name, context)
+            unmanaged_value_access = Bind.bind_unmanaged_value(name, context)
+
+            is_valid_access_field = is_valid_bind(name, context)
 
             validate_by = opts[:validate_by]
 
@@ -67,7 +71,10 @@ defmodule BinStruct.Macro.Parse.Validation do
                 validate_by = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, validate_by)
 
                 validate_by_function_call =
-                  RegisteredCallbackFunctionCall.registered_callback_function_call(validate_by, context)
+                  RegisteredCallbackFunctionCall.registered_callback_function_call(
+                    validate_by,
+                    context
+                  )
 
                 prelude =
                   quote do
@@ -76,7 +83,7 @@ defmodule BinStruct.Macro.Parse.Validation do
 
                 pattern =
                   quote do
-                    :ok <- (if unquote(is_valid_access_field), do: :ok, else: { :wrong_data, unquote(access_field) })
+                    :ok <- (if unquote(is_valid_access_field), do: :ok, else: { :wrong_data, unquote(binary_value_access) })
                   end
 
                 { pattern, prelude }

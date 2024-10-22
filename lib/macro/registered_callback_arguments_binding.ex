@@ -13,6 +13,8 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
   alias BinStruct.Macro.Structs.TypeConversionUnspecified
   alias BinStruct.Macro.Structs.TypeConversionManaged
   alias BinStruct.Macro.Structs.TypeConversionUnmanaged
+  alias BinStruct.Macro.Structs.UnspecifiedAsManaged
+  alias BinStruct.Macro.Structs.UnspecifiedAsUnmanaged
 
   def registered_callback_arguments_bindings(
         %RegisteredCallback{ arguments: arguments },
@@ -62,8 +64,8 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
       %TypeConversionUnspecified{} ->
 
         case how_to_treat_unspecified do
-          :unspecified_as_managed -> Bind.bind_managed_value(name, context)
-          :unspecified_as_unmanaged -> Bind.bind_unmanaged_value(name, context)
+          %UnspecifiedAsManaged{} -> Bind.bind_managed_value(name, context)
+          %UnspecifiedAsUnmanaged{} -> Bind.bind_unmanaged_value(name, context)
         end
 
     end
@@ -85,8 +87,8 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
       %TypeConversionUnspecified{} ->
 
         case how_to_treat_unspecified do
-          :unspecified_as_managed -> Bind.bind_managed_value(name, context)
-          :unspecified_as_unmanaged -> Bind.bind_unmanaged_value(name, context)
+          %UnspecifiedAsManaged{} -> Bind.bind_managed_value(name, context)
+          %UnspecifiedAsUnmanaged{} -> Bind.bind_unmanaged_value(name, context)
         end
 
     end

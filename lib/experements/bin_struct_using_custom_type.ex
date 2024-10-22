@@ -1,9 +1,9 @@
 defmodule TestBinStructUsingCustomType do
 
-  use BinStruct
+  #use BinStruct
 
-  alias BinStruct.BuiltIn.TerminatedBinary
+  #alias BinStruct.BuiltIn.TerminatedBinary
 
-  field :custom, { TerminatedBinary, termination: <<0, 0>> }
+  #field :custom, { TerminatedBinary, termination: <<0, 0>> }
 
 end

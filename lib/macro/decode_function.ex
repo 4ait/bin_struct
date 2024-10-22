@@ -198,15 +198,16 @@ defmodule BinStruct.Macro.DecodeFunction do
 
     %Field{ name: name, type: type, opts: opts} = field
 
-    value_access = { Bind.bind_value_name(name), [], __MODULE__ }
+    unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
+
     deep_access = { :deep, [], __MODULE__ }
 
-    decode_type_expr = decode_type(type, opts, value_access, deep_access)
+    decode_type_expr = decode_type(type, opts, unmanaged_value_access, deep_access)
 
     is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
 
     if is_optional do
-      decode_expr_wrap_optional(decode_type_expr, value_access)
+      decode_expr_wrap_optional(decode_type_expr, unmanaged_value_access)
     else
       decode_type_expr
     end
@@ -221,7 +222,11 @@ defmodule BinStruct.Macro.DecodeFunction do
 
     read_by_registered_callback = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, read_by)
 
-    read_by_registered_callback_call = RegisteredCallbackFunctionCall.registered_callback_function_call(read_by_registered_callback, __MODULE__)
+    read_by_registered_callback_call =
+      RegisteredCallbackFunctionCall.registered_callback_function_call(
+        read_by_registered_callback,
+        __MODULE__
+      )
 
     value_access = { :value, [], __MODULE__ }
     deep_access = { :deep, [], __MODULE__ }
@@ -299,7 +304,7 @@ defmodule BinStruct.Macro.DecodeFunction do
                 {opts, name}
             end
 
-          managed_value_access = { Bind.bind_managed_value(name, __MODULE__) }
+          managed_value_access = Bind.bind_managed_value(name, __MODULE__)
 
           case field do
             %Field{} ->

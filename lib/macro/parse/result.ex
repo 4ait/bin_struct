@@ -16,7 +16,7 @@ defmodule BinStruct.Macro.Parse.Result do
 
           %Field{ name: name } = field
 
-          { Bind.bind_value_name(name), [], context }
+          Bind.bind_unmanaged_value(name, context)
 
         end
       )

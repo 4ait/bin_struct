@@ -52,7 +52,6 @@ defmodule BinStruct.Macro.ParseFunction do
         end
       )
 
-
     type_converter_checkpoint_input_output_by_index =
       TypeConverterCheckpointInputOutputByIndex.type_converter_checkpoint_input_output_by_index(produce_consume_info_list)
 
@@ -129,7 +128,7 @@ defmodule BinStruct.Macro.ParseFunction do
                               %VirtualField{ name: name } -> name
                             end
 
-                          to_unmanaged_bind = Bind.bind_unmanaged_value(name, __MODULE__)
+                          Bind.bind_unmanaged_value(name, __MODULE__)
 
                         %BinStruct.Macro.Structs.DependencyOnOption{} -> nil
 
@@ -171,8 +170,7 @@ defmodule BinStruct.Macro.ParseFunction do
                   ) |> Enum.reject(&is_nil/1)
 
                 quote do
-                  { unquote_splicing(output_binds) } <-
-                    unquote(type_conversion_checkpoint_function_name(index))(unquote_splicing(input_binds))
+                  { unquote_splicing(output_binds) } <- unquote(type_conversion_checkpoint_function_name(index))(unquote_splicing(input_binds))
                 end
 
             end
@@ -183,7 +181,7 @@ defmodule BinStruct.Macro.ParseFunction do
               fn field ->
                 CallbacksOnField.callbacks_used_while_parsing(field, registered_callbacks_map)
               end
-            )
+            ) |> List.flatten()
 
           receiving_dependencies_arguments_bindings =
             ReceivingDependenciesArgumentsBindings.receiving_dependencies_arguments_bindings(registered_callbacks, __MODULE__)
@@ -194,18 +192,13 @@ defmodule BinStruct.Macro.ParseFunction do
                 unquote(parse_checkpoint_function_name(index))(rest, unquote_splicing(receiving_dependencies_arguments_bindings), options)
             end
 
-
-          quote do
-
-            unquote_splicing(Enum.reject([
-              maybe_type_conversion_clause_before,
-              parse_checkpoint_with_clause
-            ], &is_nil/1))
-
-          end
+          Enum.reject([
+            maybe_type_conversion_clause_before,
+            parse_checkpoint_with_clause
+          ], &is_nil/1)
 
         end
-      )
+      ) |> List.flatten()
 
     returning_struct_key_values =
       Enum.map(
@@ -218,9 +211,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
                %Field{ name: name } = field
 
-               value = { Bind.bind_value_name(name), [], __MODULE__ }
-
-              { name, value }
+              { name, Bind.bind_unmanaged_value(name, __MODULE__) }
 
             end
           )
@@ -409,19 +400,19 @@ defmodule BinStruct.Macro.ParseFunction do
                     %VirtualField{ name: name, type: type } -> { name, type }
                   end
 
-                to_unmanaged_bind = Bind.bind_unmanaged_value(name, __MODULE__)
+                unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
 
                 case type_conversion do
 
                   %TypeConversionUnspecified{} ->
 
-                    BinStruct.Macro.TypeConverter.convert_unmanaged_value_to_managed(type, to_unmanaged_bind)
+                    BinStruct.Macro.TypeConverter.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
 
                   %TypeConversionManaged{} ->
 
-                    BinStruct.Macro.TypeConverter.convert_unmanaged_value_to_managed(type, to_unmanaged_bind)
+                    BinStruct.Macro.TypeConverter.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
 
-                  %TypeConversionUnmanaged{} -> to_unmanaged_bind
+                  %TypeConversionUnmanaged{} -> unmanaged_value_access
 
                 end
 
@@ -564,6 +555,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
   defp checkpoint_produce_consume_info(checkpoint, checkpoint_index, registered_callbacks_map) do
 
+
     registered_callbacks =
       Enum.map(
         checkpoint,
@@ -573,8 +565,6 @@ defmodule BinStruct.Macro.ParseFunction do
       )
       |> List.flatten()
 
-
-      IO.inspect(registered_callbacks)
 
     consume_dependencies = BinStruct.Macro.ReceivingDependenciesArguments.receiving_dependencies_arguments(registered_callbacks)
 

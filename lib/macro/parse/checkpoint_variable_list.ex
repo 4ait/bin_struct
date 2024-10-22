@@ -267,7 +267,6 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     take_while_by_function_call =
       RegisteredCallbackFunctionCall.registered_callback_function_call(
         take_while_by_registered_callback,
-        :unspecified_as_managed,
         __MODULE__
       )
 
@@ -393,7 +392,6 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     take_while_by_function_call =
       RegisteredCallbackFunctionCall.registered_callback_function_call(
         take_while_by_registered_callback,
-        :unspecified_as_managed,
         __MODULE__
       )
 

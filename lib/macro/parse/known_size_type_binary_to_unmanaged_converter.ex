@@ -1,13 +1,13 @@
 defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
 
-  def convert_known_size_type_binary_to_unmanaged(access_field, type, opts, context) do
+  def convert_known_size_type_binary_to_unmanaged(binary_access_bind, type, opts, context) do
 
     options_access = { :options, [], context }
 
     case type do
 
-      {:enum, %{type: enum_representation_type} } -> convert_known_size_type_binary_to_unmanaged(access_field, enum_representation_type, opts, context)
-      {:flags, %{type: flags_representation_type} } -> convert_known_size_type_binary_to_unmanaged(access_field, flags_representation_type, opts, context)
+      {:enum, %{type: enum_representation_type} } -> convert_known_size_type_binary_to_unmanaged(binary_access_bind, enum_representation_type, opts, context)
+      {:flags, %{type: flags_representation_type} } -> convert_known_size_type_binary_to_unmanaged(binary_access_bind, flags_representation_type, opts, context)
 
       {:module, module_info } ->
 
@@ -18,7 +18,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
             %{ module_type: :bin_struct, module: module } ->
 
               quote do
-                unquote(module).parse_exact_returning_options(unquote(access_field), unquote(options_access))
+                unquote(module).parse_exact_returning_options(unquote(binary_access_bind), unquote(options_access))
               end
 
             %{
@@ -27,7 +27,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
               custom_type_args: custom_type_args
             } ->
               quote do
-                unquote(module).parse_exact_returning_options(unquote(access_field), unquote(custom_type_args), unquote(options_access))
+                unquote(module).parse_exact_returning_options(unquote(binary_access_bind), unquote(custom_type_args), unquote(options_access))
               end
           end
 
@@ -48,7 +48,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
                   %{ module_type: :bin_struct, module: module } ->
 
                     quote do
-                      unquote(module).parse_exact_returning_options(unquote(access_field), unquote(options_access))
+                      unquote(module).parse_exact_returning_options(unquote(binary_access_bind), unquote(options_access))
                     end
 
                   %{
@@ -57,7 +57,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
                     custom_type_args: custom_type_args
                   } ->
                     quote do
-                      unquote(module).parse_exact_returning_options(unquote(access_field), unquote(custom_type_args), unquote(options_access))
+                      unquote(module).parse_exact_returning_options(unquote(binary_access_bind), unquote(custom_type_args), unquote(options_access))
                     end
                 end
 
@@ -80,7 +80,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
           quote do
 
               with unquote_splicing(with_patterns) do
-                { :wrong_data, unquote(access_field) }
+                { :wrong_data, unquote(binary_access_bind) }
               end
               
           end
@@ -104,7 +104,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
               item_size: _item_size,
             } = bounds
 
-            expr = convert_known_size_list_of_binary_to_unmanaged(bounds, access_field, item_type, opts, context)
+            expr = convert_known_size_list_of_binary_to_unmanaged(bounds, binary_access_bind, item_type, opts, context)
 
             { :items_parse_result, expr }
 
@@ -127,7 +127,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
   end
 
 
-  defp convert_known_size_list_of_binary_to_unmanaged(bounds, access_field, item_type, opts, context) do
+  defp convert_known_size_list_of_binary_to_unmanaged(bounds, binary_access_bind, item_type, opts, context) do
 
      %{
        length: _length,
@@ -149,7 +149,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
           { "", chunks } =
             Enum.reduce(
               1..unquote(count),
-              { unquote(access_field), [] },
+              { unquote(binary_access_bind), [] },
               fn _index, { bin, chunks } ->
 
                 <<chunk::unquote(item_size)-bytes, rest::binary>> = bin
@@ -193,7 +193,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
         quote do
 
           items =
-            for << unquote(bind_item)::bytes-(unquote(item_size)) <- unquote(access_field) >> do
+            for << unquote(bind_item)::bytes-(unquote(item_size)) <- unquote(binary_access_bind) >> do
 
               unquote(
                 convert_known_size_type_binary_to_unmanaged(bind_item, item_type, opts, context) || bind_item

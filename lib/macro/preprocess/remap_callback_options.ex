@@ -37,10 +37,6 @@ defmodule BinStruct.Macro.Preprocess.RemapCallbackOptions do
          :read_by,
          RemapCallback.remap_callback(opts[:read_by], env)
        )
-    |> Keyword.replace(
-         :write_by,
-         RemapCallback.remap_callback(opts[:write_by], env)
-       )
 
   end
 

@@ -23,7 +23,6 @@ defmodule BinStruct.Macro.CallbacksOnField do
 
     [
       opts[:builder],
-      opts[:write_by]
     ]
     |> Enum.reject(&is_nil/1)
     |> registered_version_of_callbacks(registered_callbacks_map)
