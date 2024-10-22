@@ -210,6 +210,8 @@ defmodule BinStruct.Macro.TypeConverters.FlagsTypeConverter do
 
   end
 
+  def from_unmanaged_to_binary_flags({ :flags, flags_info }, quoted), do: quoted
+
   defp flag_bind(index, context) do
     {  :"f_#{index}", [], context  }
   end

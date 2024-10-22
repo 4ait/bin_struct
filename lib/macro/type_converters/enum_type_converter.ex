@@ -1,7 +1,8 @@
 defmodule BinStruct.Macro.TypeConverters.EnumTypeConverter do
 
   alias BinStruct.Macro.Common
-  alias BinStruct.Macro.TypeConverter
+  alias BinStruct.Macro.TypeConverterToManaged
+  alias BinStruct.Macro.TypeConverterToUnmanaged
 
   def from_managed_to_unmanaged_enum({ :enum, enum_info }, quoted) do
 
@@ -40,7 +41,7 @@ defmodule BinStruct.Macro.TypeConverters.EnumTypeConverter do
         end
 
       unquote(
-        TypeConverter.convert_managed_value_to_unmanaged(enum_representation_type, matched_enum_name_access)
+        TypeConverterToUnmanaged.convert_managed_value_to_unmanaged(enum_representation_type, matched_enum_name_access)
       )
 
     end
@@ -54,7 +55,6 @@ defmodule BinStruct.Macro.TypeConverters.EnumTypeConverter do
       type: enum_representation_type,
       values: values
     } = enum_info
-
 
     case_patterns =
       Enum.map(
@@ -82,7 +82,7 @@ defmodule BinStruct.Macro.TypeConverters.EnumTypeConverter do
 
       enum_value =
         unquote(
-          TypeConverter.convert_unmanaged_value_to_managed(enum_representation_type, binary_value_access)
+          TypeConverterToManaged.convert_unmanaged_value_to_managed(enum_representation_type, binary_value_access)
         )
 
       case enum_value do
@@ -92,6 +92,9 @@ defmodule BinStruct.Macro.TypeConverters.EnumTypeConverter do
     end
 
   end
+
+
+  def from_unmanaged_to_binary_enum({ :enum, _enum_info }, quoted), do: quoted
 
 
 end

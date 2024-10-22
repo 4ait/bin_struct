@@ -42,4 +42,28 @@ defmodule BinStruct.Macro.TypeConverters.ModuleTypeConverter do
 
   end
 
+  def from_unmanaged_to_binary_list_of({ :module, module_info }, quoted) do
+
+    case module_info do
+
+      %{ module_type: :bin_struct, module: module } ->
+
+        quote do
+          unquote(module).dump_binary(unquote(quoted))
+        end
+
+      %{
+        module_type: :bin_struct_custom_type,
+        module: module,
+        custom_type_args: custom_type_args
+      } ->
+
+        quote do
+          unquote(module).dump_binary(unquote(quoted), custom_type_args)
+        end
+
+    end
+
+  end
+
 end

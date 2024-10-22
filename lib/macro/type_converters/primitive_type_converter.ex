@@ -113,6 +113,37 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
        value
      end
 
+
+     defp from_unmanaged_to_binary_bool(unmanaged_binary_value, _bit_size), do: unmanaged_binary_value
+
+     defp from_unmanaged_to_binary_uint8(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int8(unmanaged_binary_value), do: unmanaged_binary_value
+
+     defp from_unmanaged_to_binary_uint16_be(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_uint32_be(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_uint64_be(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int16_be(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int32_be(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int64_be(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_float32_be(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_float64_be(unmanaged_binary_value), do: unmanaged_binary_value
+
+     defp from_unmanaged_to_binary_uint16_le(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_uint32_le(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_uint64_le(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int16_le(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int32_le(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int64_le(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_float32_le(unmanaged_binary_value), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_float64_le(unmanaged_binary_value), do: unmanaged_binary_value
+
+     defp from_unmanaged_to_binary_uint_variable_bit_size_none(unmanaged_binary_value, _bit_size), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_uint_variable_bit_size_be(unmanaged_binary_value, _bit_size), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_uint_variable_bit_size_le(unmanaged_binary_value, _bit_size), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int_variable_bit_size_none(unmanaged_binary_value, _bit_size), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int_variable_bit_size_be(unmanaged_binary_value, _bit_size), do: unmanaged_binary_value
+     defp from_unmanaged_to_binary_int_variable_bit_size_le(unmanaged_binary_value, _bit_size), do: unmanaged_binary_value
+
    end
 
   end
