@@ -12,7 +12,7 @@ defmodule BinStruct.Macro.TypeConverters.VariantOfTypeConverter do
     quoted
   end
 
-  def from_unmanaged_to_managed_variant_of({ :variant_of, variants }, quoted) do
+  def from_unmanaged_to_binary_variant_of({ :variant_of, variants }, quoted) do
 
     patterns =
       Enum.map(

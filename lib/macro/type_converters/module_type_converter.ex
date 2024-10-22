@@ -1,6 +1,5 @@
 defmodule BinStruct.Macro.TypeConverters.ModuleTypeConverter do
 
-
   def from_managed_to_unmanaged_module( { :module, module_info }, quoted) do
 
     case module_info do
@@ -42,7 +41,7 @@ defmodule BinStruct.Macro.TypeConverters.ModuleTypeConverter do
 
   end
 
-  def from_unmanaged_to_binary_list_of({ :module, module_info }, quoted) do
+  def from_unmanaged_to_binary_module({ :module, module_info }, quoted) do
 
     case module_info do
 

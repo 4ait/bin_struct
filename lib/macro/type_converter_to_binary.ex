@@ -7,6 +7,8 @@ defmodule BinStruct.Macro.TypeConverterToBinary do
   alias BinStruct.Macro.TypeConverters.VariantOfTypeConverter
   alias BinStruct.Macro.TypeConverters.ModuleTypeConverter
 
+  #todo check everything here is right
+
   def convert_unmanaged_value_to_binary({:static_value, _value} = static_value_type, _quoted) do
     StaticValueTypeConverter.from_unmanaged_to_binary_static_value(static_value_type)
   end

@@ -6,6 +6,7 @@ defmodule BinStruct.Macro.TypeConverterToUnmanaged do
   alias BinStruct.Macro.TypeConverters.StaticValueTypeConverter
   alias BinStruct.Macro.TypeConverters.VariantOfTypeConverter
   alias BinStruct.Macro.TypeConverters.ModuleTypeConverter
+  alias BinStruct.Macro.TypeConverters.PrimitiveTypeConverter
 
   def convert_managed_value_to_unmanaged({:variant_of, _variants} = variant_of_type, quoted) do
     VariantOfTypeConverter.from_managed_to_unmanaged_variant_of(variant_of_type, quoted)
@@ -16,31 +17,20 @@ defmodule BinStruct.Macro.TypeConverterToUnmanaged do
   end
 
   def convert_managed_value_to_unmanaged({:bool, %{ bit_size: bit_size }}, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_bool(unquote(quoted), unquote(bit_size))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_bool(quoted, bit_size)
   end
 
   def convert_managed_value_to_unmanaged({:uint, %{ bit_size: bit_size, endianness: endianness} }, quoted) do
 
-
     case endianness do
       :big ->
-        quote do
-          from_managed_to_unmanaged_uint_variable_bit_size_be(unquote(quoted), unquote(bit_size))
-        end
+        PrimitiveTypeConverter.from_managed_to_unmanaged_uint_variable_bit_size_be(quoted, bit_size)
 
       :little ->
-        quote do
-          from_managed_to_unmanaged_uint_variable_bit_size_little(unquote(quoted), unquote(bit_size))
-        end
+        PrimitiveTypeConverter.from_managed_to_unmanaged_uint_variable_bit_size_le(quoted, bit_size)
 
       :none ->
-        quote do
-          from_managed_to_unmanaged_uint_variable_bit_size_none(unquote(quoted), unquote(bit_size))
-        end
+        PrimitiveTypeConverter.from_managed_to_unmanaged_uint_variable_bit_size_none(quoted, bit_size)
     end
 
 
@@ -51,6 +41,8 @@ defmodule BinStruct.Macro.TypeConverterToUnmanaged do
 
     case endianness do
       :big ->
+
+
         quote do
           from_managed_to_unmanaged_int_variable_bit_size_be(unquote(quoted), unquote(bit_size))
         end
