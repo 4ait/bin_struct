@@ -8,8 +8,6 @@ defmodule BinStruct.Macro.TypeConverterToUnmanaged do
   alias BinStruct.Macro.TypeConverters.ModuleTypeConverter
   alias BinStruct.Macro.TypeConverters.PrimitiveTypeConverter
 
-  #todo implement new primitive type conversion
-
   def convert_managed_value_to_unmanaged({:variant_of, _variants} = variant_of_type, quoted) do
     VariantOfTypeConverter.from_managed_to_unmanaged_variant_of(variant_of_type, quoted)
   end
@@ -40,182 +38,97 @@ defmodule BinStruct.Macro.TypeConverterToUnmanaged do
 
   def convert_managed_value_to_unmanaged({:int, %{ bit_size: bit_size, endianness: endianness} }, quoted) do
 
-
     case endianness do
       :big ->
-
-
-        quote do
-          from_managed_to_unmanaged_int_variable_bit_size_be(unquote(quoted), unquote(bit_size))
-        end
+        PrimitiveTypeConverter.from_managed_to_unmanaged_int_variable_bit_size_be(quoted, bit_size)
 
       :little ->
-        quote do
-          from_managed_to_unmanaged_int_variable_bit_size_little(unquote(quoted), unquote(bit_size))
-        end
+        PrimitiveTypeConverter.from_managed_to_unmanaged_int_variable_bit_size_little(quoted, bit_size)
 
       :none ->
-        quote do
-          from_managed_to_unmanaged_int_variable_bit_size_none(unquote(quoted), unquote(bit_size))
-        end
+        PrimitiveTypeConverter.from_managed_to_unmanaged_int_variable_bit_size_none(quoted, bit_size)
     end
 
   end
 
   def convert_managed_value_to_unmanaged(:uint8, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_uint8(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_uint8(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:int8, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_int8(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_int8(quoted)
   end
 
 
   def convert_managed_value_to_unmanaged(:uint16_be, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_uint16_be(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_uint16_be(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:uint32_be, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_uint32_be(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_uint32_be(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:uint64_be, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_uint64_be(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_uint64_be(quoted)
   end
 
 
   def convert_managed_value_to_unmanaged(:int8_be, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_int8_be(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_int8_be(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:int16_be, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_int16_be(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_int16_be(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:int32_be, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_int32_be(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_int32_be(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:int64_be, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_int64_be(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_int64_be(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:float32_be, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_float32_be(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_float32_be(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:float64_be, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_float64_be(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_float64_be(quoted)
   end
 
 
   def convert_managed_value_to_unmanaged(:uint16_le, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_uint16_le(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_uint16_le(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:uint32_le, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_uint32_le(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_uint32_le(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:uint64_le, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_uint64_le(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_uint64_le(quoted)
   end
 
 
   def convert_managed_value_to_unmanaged(:int16_le, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_int16_le(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_int16_le(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:int32_le, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_int32_le(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_int32_le(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:int64_le, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_int64_le(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_int64_le(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:float32_le, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_float32_le(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_float32_le(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:float64_le, quoted) do
-
-    quote do
-      from_managed_to_unmanaged_float64_le(unquote(quoted))
-    end
-
+    PrimitiveTypeConverter.from_managed_to_unmanaged_float64_le(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:binary, quoted), do: quoted
@@ -237,6 +150,5 @@ defmodule BinStruct.Macro.TypeConverterToUnmanaged do
   end
 
   def convert_managed_value_to_unmanaged(:unspecified, quoted), do: quoted
-
 
 end

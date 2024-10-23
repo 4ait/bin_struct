@@ -36,11 +36,17 @@ defmodule BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex do
         end)
       |> Enum.group_by(fn { index, _dep } -> index end)
 
+    Enum.map(output_by_index, fn { index , dependencies_with_index } ->
 
-    Enum.map(output_by_index, fn { index , dependencies} ->
 
-      output = dependencies
-      input = Enum.uniq_by(dependencies, &unique_by_input/1)
+      dependencies_without_index =
+        Enum.map(
+          dependencies_with_index,
+          fn { _dep_index, dep } -> dep end
+        )
+
+      output = dependencies_without_index
+      input = Enum.uniq_by(dependencies_without_index, &unique_by_input/1)
 
       { index, input, output }
 
