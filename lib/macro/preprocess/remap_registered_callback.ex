@@ -9,6 +9,11 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
   alias BinStruct.Macro.Structs.FieldsMap
   alias BinStruct.Macro.Structs.RegisteredOptionsMap
 
+  alias BinStruct.TypeConversion.TypeConversionManaged
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionBinary
+  alias BinStruct.TypeConversion.TypeConversionUnspecified
+
   def remap_raw_registered_callback(
         raw_registered_callback,
         %FieldsMap{} = fields_map,
@@ -155,11 +160,14 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
     type_conversion = argument_type_map[:type_conversion]
 
     case type_conversion do
-      :managed -> %BinStruct.Macro.Structs.TypeConversionManaged{}
-      :unmanaged -> %BinStruct.Macro.Structs.TypeConversionUnmanaged{}
-      nil -> %BinStruct.Macro.Structs.TypeConversionUnspecified{}
+      TypeConversionManaged -> TypeConversionManaged
+      TypeConversionUnmanaged -> TypeConversionUnmanaged
+      TypeConversionBinary -> TypeConversionBinary
+      TypeConversionUnspecified -> TypeConversionUnspecified
 
-      _ -> raise "Type conversion argument support values :managed and :unmanaged, given: #{inspect(type_conversion)}"
+      nil -> TypeConversionUnspecified
+
+      _ -> raise "Type conversion argument support values from BinStruct.TypeConversion, given: #{inspect(type_conversion)}"
 
     end
     

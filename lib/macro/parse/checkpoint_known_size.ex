@@ -8,26 +8,16 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
-  alias BinStruct.Macro.Parse.ExternalFieldDependencies
   alias BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter
+  
+  alias BinStruct.Macro.Dependencies.ParseDependencies
+  alias BinStruct.Macro.Dependencies.BindingsToDependencies
 
   def checkpoint_known_size(fields = _checkpoint, function_name, interface_implementations, registered_callbacks_map, _env) do
 
-    external_field_dependencies = ExternalFieldDependencies.external_field_dependencies(fields, interface_implementations, registered_callbacks_map)
-
-    value_arguments_binds =
-      Enum.map(
-        external_field_dependencies,
-        fn argument ->
-
-          case argument do
-            %RegisteredCallbackFieldArgument{ field: %Field{ name: name } } ->
-              { Bind.bind_value_name(name), [], __MODULE__ }
-
-          end
-
-        end
-      )
+    dependencies_bindings =
+      ParseDependencies.parse_dependencies(fields, registered_callbacks_map)
+      |> BindingsToDependencies.bindings(__MODULE__)
 
     fields_from_binary_to_unmanaged_conversion =
       Enum.map(
@@ -185,7 +175,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
         defp unquote(function_name)(
                bin,
-               unquote_splicing(value_arguments_binds),
+               unquote_splicing(dependencies_bindings),
                _options
              ) when is_binary(bin) and byte_size(bin) < unquote(size) do
           :not_enough_bytes
@@ -198,7 +188,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
         defp unquote(function_name)(
                bin,
-               unquote_splicing(value_arguments_binds),
+               unquote_splicing(dependencies_bindings),
                _options
              ) do
           { :wrong_data, bin }
@@ -210,7 +200,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
       quote do
         defp unquote(function_name)(
                <<unquote_splicing(binary_match_patterns)>>,
-               unquote_splicing(value_arguments_binds),
+               unquote_splicing(dependencies_bindings),
                options
              ) do
 

@@ -14,6 +14,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
   alias BinStruct.Macro.Parse.ExternalFieldDependencies
   alias BinStruct.Macro.Parse.CheckpointRuntimeBoundedList
 
+  alias BinStruct.Macro.Dependencies.ParseDependencies
+  alias BinStruct.Macro.Dependencies.BindingsToDependencies
+
   alias BinStruct.Macro.Structs.Field
 
   def checkpoint_unknown_size([ field ] = _checkpoint, function_name, interface_implementations, registered_callbacks_map, env) do
@@ -23,24 +26,12 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
     length_by = opts[:length_by]
     optional_by = opts[:optional_by]
 
-    external_field_dependencies = ExternalFieldDependencies.external_field_dependencies([field], interface_implementations, registered_callbacks_map)
-
     binary_value_access_bind = Bind.bind_binary_value(name, __MODULE__)
     unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
 
-    value_arguments_binds =
-      Enum.map(
-        external_field_dependencies,
-        fn argument ->
-
-          case argument do
-            %RegisteredCallbackFieldArgument{ field: %Field{ name: name } } ->
-              { Bind.bind_value_name(name), [], __MODULE__ }
-
-          end
-
-        end
-      )
+    dependencies_bindings =
+      ParseDependencies.parse_dependencies([ field ], registered_callbacks_map)
+      |> BindingsToDependencies.bindings(__MODULE__)
 
     case type do
 
@@ -54,7 +45,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
               list_of_info,
               field,
               function_name,
-              value_arguments_binds,
+              give_binds(dependencies_bindings, CheckpointRuntimeBoundedList),
               interface_implementations,
               registered_callbacks_map,
               env
@@ -70,7 +61,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                list_of_info,
                field,
                function_name,
-               give_binds(value_arguments_binds, CheckpointVariableList),
+               give_binds(dependencies_bindings, CheckpointVariableList),
                interface_implementations,
                registered_callbacks_map,
                env
@@ -86,7 +77,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                list_of_info,
                field,
                function_name,
-               give_binds(value_arguments_binds, CheckpointVariableList),
+               give_binds(dependencies_bindings, CheckpointVariableList),
                interface_implementations,
                registered_callbacks_map,
                env
@@ -102,7 +93,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                list_of_info,
                field,
                function_name,
-               give_binds(value_arguments_binds, CheckpointVariableList),
+               give_binds(dependencies_bindings, CheckpointVariableList),
                interface_implementations,
                registered_callbacks_map,
                env
@@ -118,7 +109,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                list_of_info,
                field,
                function_name,
-               give_binds(value_arguments_binds, CheckpointVariableList),
+               give_binds(dependencies_bindings, CheckpointVariableList),
                interface_implementations,
                registered_callbacks_map,
                env
@@ -134,7 +125,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                list_of_info,
                field,
                function_name,
-               give_binds(value_arguments_binds, CheckpointVariableList),
+               give_binds(dependencies_bindings, CheckpointVariableList),
                interface_implementations,
                registered_callbacks_map,
                env
@@ -150,7 +141,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                list_of_info,
                field,
                function_name,
-               give_binds(value_arguments_binds, CheckpointVariableList),
+               give_binds(dependencies_bindings, CheckpointVariableList),
                interface_implementations,
                registered_callbacks_map,
                env
@@ -244,7 +235,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
               defp unquote(function_name)(
                      unquote(binary_value_access_bind),
-                     unquote_splicing(value_arguments_binds),
+                     unquote_splicing(dependencies_bindings),
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
@@ -348,7 +339,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
               defp unquote(function_name)(
                      unquote(binary_value_access_bind),
-                     unquote_splicing(value_arguments_binds),
+                     unquote_splicing(dependencies_bindings),
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
@@ -412,7 +403,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
               defp unquote(function_name)(
                      unquote(binary_value_access_bind),
-                     unquote_splicing(value_arguments_binds),
+                     unquote_splicing(dependencies_bindings),
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
@@ -472,7 +463,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
               defp unquote(function_name)(
                      unquote(binary_value_access_bind),
-                     unquote_splicing(value_arguments_binds),
+                     unquote_splicing(dependencies_bindings),
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
@@ -536,7 +527,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
               defp unquote(function_name)(
                      unquote(binary_value_access_bind),
-                     unquote_splicing(value_arguments_binds),
+                     unquote_splicing(dependencies_bindings),
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
@@ -569,7 +560,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
               defp unquote(function_name)(
                      unquote(unmanaged_value_access),
-                     unquote_splicing(value_arguments_binds),
+                     unquote_splicing(dependencies_bindings),
                      options
                    ) when is_binary(unquote(unmanaged_value_access)) do
 
@@ -598,7 +589,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
               defp unquote(function_name)(
                      unquote(unmanaged_value_access),
-                     unquote_splicing(value_arguments_binds),
+                     unquote_splicing(dependencies_bindings),
                      options
                    ) when is_binary(unquote(unmanaged_value_access)) do
 

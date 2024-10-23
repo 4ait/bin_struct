@@ -12,7 +12,7 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
          %{ type: :runtime_bounded } = list_of_info,
          %Field{} = field,
          function_name,
-         value_arguments_binds,
+         dependencies_bindings,
          interface_implementations,
          registered_callbacks_map,
          _env
@@ -92,7 +92,7 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
 
       defp unquote(function_name)(
              unquote(initial_binary_access),
-             unquote_splicing(value_arguments_binds),
+             unquote_splicing(dependencies_bindings),
              options
            ) when is_binary(unquote(initial_binary_access)) do
 

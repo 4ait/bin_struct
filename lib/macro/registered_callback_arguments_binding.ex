@@ -10,15 +10,13 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
   alias BinStruct.Macro.IsOptionalField
   alias BinStruct.Macro.Bind
 
-  alias BinStruct.Macro.Structs.TypeConversionUnspecified
-  alias BinStruct.Macro.Structs.TypeConversionManaged
-  alias BinStruct.Macro.Structs.TypeConversionUnmanaged
-  alias BinStruct.Macro.Structs.UnspecifiedAsManaged
-  alias BinStruct.Macro.Structs.UnspecifiedAsUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionManaged
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionBinary
+  alias BinStruct.TypeConversion.TypeConversionUnspecified
 
   def registered_callback_arguments_bindings(
         %RegisteredCallback{ arguments: arguments },
-        how_to_treat_unspecified,
         context
       ) do
 
@@ -29,10 +27,10 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
         case argument do
 
           %RegisteredCallbackFieldArgument{ field: %Field{} } = argument ->
-            arguments_bindings_for_field_argument(argument, how_to_treat_unspecified, context)
+            arguments_bindings_for_field_argument(argument, context)
 
           %RegisteredCallbackFieldArgument{ field: %VirtualField{} } = argument ->
-            arguments_bindings_for_virtual_field_argument(argument, how_to_treat_unspecified, context)
+            arguments_bindings_for_virtual_field_argument(argument, context)
 
           %RegisteredCallbackOptionArgument{
             registered_option: %RegisteredOption {
@@ -49,7 +47,7 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
   end
 
-  defp arguments_bindings_for_field_argument(argument, how_to_treat_unspecified, context) do
+  defp arguments_bindings_for_field_argument(argument, context) do
 
     %RegisteredCallbackFieldArgument{ field: field, type_conversion: type_conversion } = argument
 
@@ -57,22 +55,16 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
     case type_conversion do
 
-      %TypeConversionUnmanaged{} -> Bind.bind_unmanaged_value(name, context)
-
-      %TypeConversionManaged{} -> Bind.bind_managed_value(name, context)
-
-      %TypeConversionUnspecified{} ->
-
-        case how_to_treat_unspecified do
-          %UnspecifiedAsManaged{} -> Bind.bind_managed_value(name, context)
-          %UnspecifiedAsUnmanaged{} -> Bind.bind_unmanaged_value(name, context)
-        end
+      TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, context)
+      TypeConversionManaged -> Bind.bind_managed_value(name, context)
+      TypeConversionBinary -> Bind.bind_binary_value(name, context)
+      TypeConversionUnspecified -> Bind.bind_managed_value(name, context)
 
     end
 
   end
 
-  defp arguments_bindings_for_virtual_field_argument(argument, how_to_treat_unspecified, context) do
+  defp arguments_bindings_for_virtual_field_argument(argument, context) do
 
     %RegisteredCallbackFieldArgument{ field: virtual_field, type_conversion: type_conversion } = argument
 
@@ -80,16 +72,10 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
     case type_conversion do
 
-      %TypeConversionUnmanaged{} -> Bind.bind_unmanaged_value(name, context)
-
-      %TypeConversionManaged{} -> Bind.bind_managed_value(name, context)
-
-      %TypeConversionUnspecified{} ->
-
-        case how_to_treat_unspecified do
-          %UnspecifiedAsManaged{} -> Bind.bind_managed_value(name, context)
-          %UnspecifiedAsUnmanaged{} -> Bind.bind_unmanaged_value(name, context)
-        end
+      TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, context)
+      TypeConversionManaged -> Bind.bind_managed_value(name, context)
+      TypeConversionBinary -> Bind.bind_binary_value(name, context)
+      TypeConversionUnspecified -> Bind.bind_managed_value(name, context)
 
     end
 

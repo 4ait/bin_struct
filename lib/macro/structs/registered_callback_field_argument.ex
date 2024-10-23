@@ -3,16 +3,19 @@ defmodule BinStruct.Macro.Structs.RegisteredCallbackFieldArgument do
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
-  alias BinStruct.Macro.Structs.TypeConversionManaged
-  alias BinStruct.Macro.Structs.TypeConversionUnmanaged
-  alias BinStruct.Macro.Structs.TypeConversionUnspecified
+
+  alias BinStruct.TypeConversion.TypeConversionManaged
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionBinary
+  alias BinStruct.TypeConversion.TypeConversionUnspecified
 
   @type t :: %RegisteredCallbackFieldArgument{
                 field: Field.t() | VirtualField.t(),
                 type_conversion:
-                  TypeConversionManaged.t() |
-                  TypeConversionUnmanaged.t() |
-                  TypeConversionUnspecified.t()
+                  TypeConversionManaged |
+                  TypeConversionUnmanaged |
+                  TypeConversionBinary |
+                  TypeConversionUnspecified
              }
 
 

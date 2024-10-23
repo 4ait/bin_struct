@@ -1,15 +1,16 @@
 defmodule BinStruct.Macro.ReceivingDependenciesArgumentsBindings do
 
 
-  alias BinStruct.Macro.CallbacksDependencies
+  alias BinStruct.Macro.Dependencies.CallbacksDependencies
   alias BinStruct.Macro.Structs.DependencyOnField
   alias BinStruct.Macro.Structs.DependencyOnOption
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.Bind
-  alias BinStruct.Macro.Structs.TypeConversionManaged
-  alias BinStruct.Macro.Structs.TypeConversionUnmanaged
-  alias BinStruct.Macro.Structs.TypeConversionUnspecified
+  alias BinStruct.TypeConversion.TypeConversionManaged
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionBinary
+  alias BinStruct.TypeConversion.TypeConversionUnspecified
 
   def receiving_dependencies_arguments_bindings(registered_callbacks, context) do
 
@@ -31,9 +32,10 @@ defmodule BinStruct.Macro.ReceivingDependenciesArgumentsBindings do
                 end
 
               case type_conversion do
-                %TypeConversionManaged{} -> Bind.bind_managed_value(name, context)
-                %TypeConversionUnmanaged{} -> Bind.bind_unmanaged_value(name, context)
-                %TypeConversionUnspecified{} -> Bind.bind_managed_value(name, context)
+                TypeConversionManaged -> Bind.bind_managed_value(name, context)
+                TypeConversionBinary -> Bind.bind_binary_value(name, context)
+                TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, context)
+                TypeConversionUnspecified -> Bind.bind_managed_value(name, context)
               end
 
             %DependencyOnOption{} -> nil

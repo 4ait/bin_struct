@@ -15,7 +15,6 @@ defmodule BinStruct.Macro.RegisteredCallbackFunctionCall do
     arguments_binding =
       RegisteredCallbackArgumentsBinding.registered_callback_arguments_bindings(
         registered_callbacks,
-        %UnspecifiedAsManaged{},
         context
       )
 

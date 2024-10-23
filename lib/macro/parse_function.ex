@@ -9,13 +9,13 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Parse.MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
-  alias BinStruct.Macro.Parse.ExternalFieldDependencies
   alias BinStruct.Macro.CallbacksOnField
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.Structs.VirtualField
-  alias BinStruct.Macro.Structs.TypeConversionManaged
-  alias BinStruct.Macro.Structs.TypeConversionUnmanaged
-  alias BinStruct.Macro.Structs.TypeConversionUnspecified
+  alias BinStruct.TypeConversion.TypeConversionManaged
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionUnspecified
+  alias BinStruct.TypeConversion.TypeConversionBinary
   alias BinStruct.Macro.ReceivingDependenciesArgumentsBindings
   alias BinStruct.Macro.Structs.ParseCheckpointProduceConsumeInfo
   alias BinStruct.Macro.CallbacksDependencies
@@ -26,6 +26,12 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Dependencies.UniqueDeps
   alias BinStruct.Macro.Dependencies.IsFieldDependentOn
   alias BinStruct.Macro.Dependencies.ExcludeDependenciesOnField
+  alias BinStruct.Macro.TypeConverterToManaged
+  alias BinStruct.Macro.TypeConverterToUnmanaged
+  alias BinStruct.Macro.TypeConverterToBinary
+  
+  alias BinStruct.Macro.Dependencies.BindingsToDependencies
+  alias BinStruct.Macro.Dependencies.ParseDependencies
 
   #todo working on common type conversion system
   #three type of values:
@@ -52,8 +58,9 @@ defmodule BinStruct.Macro.ParseFunction do
 
     dependencies_per_checkpoint =
       Enum.map(
+        parse_checkpoints,
         fn checkpoint ->
-          checkpoint_dependencies(checkpoint, registered_callbacks_map)
+          ParseDependencies.parse_dependencies(checkpoint, registered_callbacks_map)
         end
       )
 
@@ -91,7 +98,7 @@ defmodule BinStruct.Macro.ParseFunction do
         Enum.with_index(parse_checkpoints, 1),
         fn { fields, index } ->
 
-          type_converter_checkpoint =
+          maybe_type_converter_checkpoint =
             Enum.find(
               type_converter_checkpoint_input_output_by_index,
               fn { type_converter_checkpoint_index, _input, output } -> type_converter_checkpoint_index == index end
@@ -111,7 +118,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
           maybe_type_conversion_clause_before =
 
-            case type_converter_checkpoint do
+            case maybe_type_converter_checkpoint do
               nil -> nil
               { _index, input_dependencies, output_dependencies } ->
 
@@ -163,9 +170,10 @@ defmodule BinStruct.Macro.ParseFunction do
                             end
 
                           case type_conversion do
-                            %TypeConversionUnspecified{} -> Bind.bind_managed_value(name, __MODULE__)
-                            %TypeConversionManaged{} -> Bind.bind_managed_value(name, __MODULE__)
-                            %TypeConversionUnmanaged{} -> Bind.bind_unmanaged_value(name, __MODULE__)
+                            TypeConversionUnspecified -> Bind.bind_managed_value(name, __MODULE__)
+                            TypeConversionManaged -> Bind.bind_managed_value(name, __MODULE__)
+                            TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, __MODULE__)
+                            TypeConversionBinary-> Bind.bind_binary_value(name, __MODULE__)
                           end
 
                         %BinStruct.Macro.Structs.DependencyOnOption{} -> nil
@@ -389,6 +397,7 @@ defmodule BinStruct.Macro.ParseFunction do
     output_values =
       Enum.map(
         output_dependencies,
+
         fn output_dependency ->
 
           case output_dependency do
@@ -409,19 +418,24 @@ defmodule BinStruct.Macro.ParseFunction do
 
                 case type_conversion do
 
-                  %TypeConversionUnspecified{} ->
+                  TypeConversionUnspecified ->
 
-                    BinStruct.Macro.TypeConverter.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
+                    TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
 
-                  %TypeConversionManaged{} ->
+                  TypeConversionManaged ->
 
-                    BinStruct.Macro.TypeConverter.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
+                    TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access).convert_unmanaged_value_to_managed(type, unmanaged_value_access)
 
-                  %TypeConversionUnmanaged{} -> unmanaged_value_access
+                  TypeConversionUnmanaged -> unmanaged_value_access
+
+                  TypeConversionBinary ->
+
+                    TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_access)
 
                 end
 
             %BinStruct.Macro.Structs.DependencyOnOption{} -> nil
+
           end
 
         end
@@ -476,28 +490,16 @@ defmodule BinStruct.Macro.ParseFunction do
   end
 
   defp optional_not_present_parse_checkpoint_function(fields, function_name, interface_implementations, registered_callbacks_map) do
-
-    external_field_dependencies = ExternalFieldDependencies.external_field_dependencies(fields, interface_implementations, registered_callbacks_map)
-
-    value_arguments_binds =
-      Enum.map(
-        external_field_dependencies,
-        fn argument ->
-
-          case argument do
-            %RegisteredCallbackFieldArgument{ field: %Field{ name: name } } ->
-              { Bind.bind_value_name(name), [], __MODULE__ }
-
-          end
-
-        end
-      )
+    
+    dependencies_bindings =
+      ParseDependencies.parse_dependencies(fields,registered_callbacks_map)
+      |> BindingsToDependencies.bindings(__MODULE__)
 
       quote do
 
         defp unquote(function_name)(
                "" = _bin,
-               unquote_splicing(value_arguments_binds),
+               unquote_splicing(dependencies_bindings),
                options
              ) do
 
@@ -567,7 +569,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
   defp has_for_cross_checkpoint_dependency(checkpoint, registered_callbacks_map) do
 
-    dependencies = checkpoint_dependencies(checkpoint, registered_callbacks_map)
+    dependencies = ParseDependencies.parse_dependencies(checkpoint, registered_callbacks_map)
 
     Enum.any?(
       checkpoint,
@@ -585,28 +587,6 @@ defmodule BinStruct.Macro.ParseFunction do
   defp type_conversion_checkpoint_function_name(checkpoint_index) do
     String.to_atom("type_conversion_checkpoint_#{checkpoint_index}")
   end
-
-  defp checkpoint_dependencies(checkpoint, registered_callbacks_map) do
-
-    self_excluded_dependencies =
-      Enum.map(
-        checkpoint,
-        fn field ->
-
-          callbacks = CallbacksOnField.callbacks_used_while_parsing(field, registered_callbacks_map)
-
-          dependencies = CallbacksDependencies.dependencies(callbacks)
-
-          ExcludeDependenciesOnField.exclude_dependencies_on_field(dependencies, field)
-
-        end
-      )
-      |> List.flatten()
-
-    UniqueDeps.unique_dependencies(self_excluded_dependencies)
-
-  end
-
 
 
 end
