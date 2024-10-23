@@ -6,7 +6,7 @@ defmodule BinStruct.Macro.Dependencies.ParseDependencies do
   alias BinStruct.Macro.Dependencies.ExcludeDependenciesOnField
   alias BinStruct.Macro.Dependencies.UniqueDeps
 
-  def parse_dependencies(fields, registered_callbacks_map) do
+  def parse_dependencies_excluded_self(fields, registered_callbacks_map) do
 
     self_excluded_dependencies =
       Enum.map(

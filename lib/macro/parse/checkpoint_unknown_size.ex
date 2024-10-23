@@ -25,7 +25,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
     binary_value_access_bind = Bind.bind_binary_value(name, __MODULE__)
     unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
 
-    dependencies = ParseDependencies.parse_dependencies([field], registered_callbacks_map)
+    dependencies = ParseDependencies.parse_dependencies_excluded_self([field], registered_callbacks_map)
     dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     case type do

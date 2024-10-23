@@ -15,7 +15,7 @@ defmodule BinStruct.Macro.Parse.CheckpointOptionalByOfKnownSize do
 
     optional_by = opts[:optional_by]
 
-    dependencies = ParseDependencies.parse_dependencies([field], registered_callbacks_map)
+    dependencies = ParseDependencies.parse_dependencies_excluded_self([field], registered_callbacks_map)
     dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     parse_checkpoint_known_size_function_name = :"#{function_name}_inner"

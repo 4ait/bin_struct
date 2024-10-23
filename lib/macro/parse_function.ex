@@ -51,7 +51,7 @@ defmodule BinStruct.Macro.ParseFunction do
       Enum.map(
         parse_checkpoints,
         fn checkpoint ->
-          ParseDependencies.parse_dependencies(checkpoint, registered_callbacks_map)
+          ParseDependencies.parse_dependencies_excluded_self(checkpoint, registered_callbacks_map)
         end
       )
 
@@ -482,7 +482,7 @@ defmodule BinStruct.Macro.ParseFunction do
   defp optional_not_present_parse_checkpoint_function(fields, function_name, registered_callbacks_map) do
     
     dependencies_bindings =
-      ParseDependencies.parse_dependencies(fields,registered_callbacks_map)
+      ParseDependencies.parse_dependencies_excluded_self(fields,registered_callbacks_map)
       |> BindingsToOnFieldDependencies.bindings(__MODULE__)
 
       quote do
@@ -559,7 +559,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
   defp has_for_cross_checkpoint_dependency(checkpoint, registered_callbacks_map) do
 
-    dependencies = ParseDependencies.parse_dependencies(checkpoint, registered_callbacks_map)
+    dependencies = ParseDependencies.parse_dependencies_excluded_self(checkpoint, registered_callbacks_map)
 
     Enum.any?(
       checkpoint,

@@ -14,7 +14,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
   def checkpoint_known_size(fields = _checkpoint, function_name, registered_callbacks_map, _env) do
 
-    dependencies = ParseDependencies.parse_dependencies(fields, registered_callbacks_map)
+    dependencies = ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map)
     dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     fields_from_binary_to_unmanaged_conversion =
