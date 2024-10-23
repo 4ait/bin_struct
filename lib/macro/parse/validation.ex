@@ -11,6 +11,7 @@ defmodule BinStruct.Macro.Parse.Validation do
 
   #todo parsers returning only self is flexible and should be keept, custom type would broke
   #todo future implementation would be way to hard, should stick to encoding checkpoints pattern
+  #todo only self reference field callbacks can implement this optimization if they want, coz they are scoped enough
 
   def validate_and_return(validate_fields_with_patterns_and_prelude, return_ok_clause, _context) do
 
