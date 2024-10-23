@@ -7,6 +7,8 @@ defmodule BinStruct.Macro.TypeConverterToManaged do
   alias BinStruct.Macro.TypeConverters.VariantOfTypeConverter
   alias BinStruct.Macro.TypeConverters.ModuleTypeConverter
 
+  #todo implement new primitive type conversion
+
   def convert_unmanaged_value_to_managed({:static_value, _value} = static_value_type, _quoted) do
     StaticValueTypeConverter.from_unmanaged_to_managed_static_value(static_value_type)
   end

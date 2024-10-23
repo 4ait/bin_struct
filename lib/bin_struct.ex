@@ -16,10 +16,6 @@ defmodule BinStruct do
       import BinStruct
       require Logger
 
-      unquote(
-        BinStruct.Macro.TypeConverters.PrimitiveTypeConverter.primitive_type_converters()
-      )
-
       @before_compile BinStruct
 
     end
@@ -272,7 +268,7 @@ defmodule BinStruct do
 
 
      #if env.module == TestBinStructUsingCustomType do
-      BinStruct.MacroDebug.puts_code(result_quote)
+      #BinStruct.MacroDebug.puts_code(result_quote)
 
      #end
 

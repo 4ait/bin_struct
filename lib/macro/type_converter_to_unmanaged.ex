@@ -8,6 +8,8 @@ defmodule BinStruct.Macro.TypeConverterToUnmanaged do
   alias BinStruct.Macro.TypeConverters.ModuleTypeConverter
   alias BinStruct.Macro.TypeConverters.PrimitiveTypeConverter
 
+  #todo implement new primitive type conversion
+
   def convert_managed_value_to_unmanaged({:variant_of, _variants} = variant_of_type, quoted) do
     VariantOfTypeConverter.from_managed_to_unmanaged_variant_of(variant_of_type, quoted)
   end
