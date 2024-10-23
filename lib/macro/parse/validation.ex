@@ -14,6 +14,8 @@ defmodule BinStruct.Macro.Parse.Validation do
   #so basically best goal is always have unmanaged value and binary value available at parsing operation
   #so we never require conversion actually to those types
 
+  #maybe add exceptions to any type of callback other then validate_by and take_while by trying to access self
+
   def validate_and_return(validate_fields_with_patterns_and_prelude, return_ok_clause, _context) do
 
       case validate_fields_with_patterns_and_prelude do
