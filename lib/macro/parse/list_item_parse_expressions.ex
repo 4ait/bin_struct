@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
 
+  alias BinStruct.Macro.IsPrimitiveType
 
   def parse_expression(item_type, item_binary_bind, options_bind) do
 
@@ -21,7 +22,7 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
       } ->
 
         quote do
-          unquote(module).parse(unquote(item_binary_bind), custom_type_args, unquote(options_bind))
+          unquote(module).parse(unquote(item_binary_bind), unquote(custom_type_args), unquote(options_bind))
         end
 
     end
@@ -32,32 +33,33 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
 
     is_item_of_primitive_type = IsPrimitiveType.is_primitive_type(item_type)
 
-    quote do
+    case item_type do
 
-      case item_type do
+      _item_type when is_item_of_primitive_type ->
 
-        _item_type when is_item_of_primitive_type -> { :ok, unquote(item_binary_bind)  }
+        quote do
+          { :ok, unquote(item_binary_bind) }
+        end
 
-        { :module, %{ module_type: :bin_struct, module: module } } ->
+      { :module, %{ module_type: :bin_struct, module: module } } ->
 
-          quote do
-            unquote(module).parse_exact(unquote(item_binary_bind), unquote(options_bind))
-          end
+        quote do
+          unquote(module).parse_exact(unquote(item_binary_bind), unquote(options_bind))
+        end
 
-        {
-          :module,
-          %{
-            module_type: :bin_struct_custom_type,
-            module: module,
-            custom_type_args: custom_type_args
-          }
-        } ->
+      {
+        :module,
+        %{
+          module_type: :bin_struct_custom_type,
+          module: module,
+          custom_type_args: custom_type_args
+        }
+      } ->
 
-          quote do
-            unquote(module).parse_exact(unquote(item_binary_bind), custom_type_args, unquote(options_bind))
-          end
+        quote do
+          unquote(module).parse_exact(unquote(item_binary_bind), unquote(custom_type_args), unquote(options_bind))
+        end
 
-      end
 
     end
 

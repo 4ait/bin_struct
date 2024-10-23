@@ -6,7 +6,6 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
   alias BinStruct.Macro.Parse.Result
   alias BinStruct.Macro.Parse.BinaryMatchPatternKnownSize
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
   alias BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter
   

@@ -1,6 +1,10 @@
 defmodule BinStruct.Macro.Dependencies.ParseDependencies do
 
-  alias BinStruct.Macro.Bind
+
+  alias BinStruct.Macro.CallbacksOnField
+  alias BinStruct.Macro.Dependencies.CallbacksDependencies
+  alias BinStruct.Macro.Dependencies.ExcludeDependenciesOnField
+  alias BinStruct.Macro.Dependencies.UniqueDeps
 
   def parse_dependencies(fields, registered_callbacks_map) do
 

@@ -53,6 +53,9 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
 
     %Field { name: name } = field
 
+    is_optional = IsOptionalField.is_optional_field(field)
+
+
     case type_conversion do
 
       TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, context)
@@ -80,20 +83,5 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
     end
 
   end
-
-  defp wrap_with_nil_check(bind, if_not_nil_quote) do
-
-    quote do
-
-      case unquote(bind) do
-        nil -> nil
-        unquote(bind) -> unquote(if_not_nil_quote)
-      end
-
-    end
-
-  end
-
-
 
 end

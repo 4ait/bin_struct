@@ -6,7 +6,6 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
   alias BinStruct.Macro.Parse.Validation
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
   alias BinStruct.Macro.Bind
-  alias BinStruct.Macro.IsPrimitiveType
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
   alias BinStruct.Macro.Structs.DependencyOnField
@@ -31,7 +30,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
        ) do
 
 
-    %Field{ name: name, opts: opts } = field
+    %Field{ opts: opts } = field
 
     optional_by = opts[:optional_by]
 
@@ -138,7 +137,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
          _env
        ) do
 
-    %Field{ name: name, opts: opts } = field
+    %Field{ opts: opts } = field
 
     optional_by = opts[:optional_by]
 
@@ -250,7 +249,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     %{
       has_dependency_on_managed: has_dependency_on_managed,
       has_dependency_on_unspecified: has_dependency_on_unspecified,
-      has_dependency_on_unmanaged: has_dependency_on_unmanaged,
+      has_dependency_on_unmanaged: _has_dependency_on_unmanaged,
       has_dependency_on_binary: has_dependency_on_binary
     } = take_while_be_dependency_on_self_info(name, take_while_by_registered_callback)
 
@@ -269,6 +268,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
     unmanaged_new_item_bind = { :unmanaged_new_item, [], __MODULE__ }
+
     parse_expr = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     recursive_parse_functions =
@@ -286,7 +286,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
           { unmanaged_items_acc, managed_items_acc, binary_items_acc } = items_with_different_type_conversions_acc
 
-          case quote(parse_expr) do
+          case unquote(parse_expr) do
 
             {:ok, unquote(unmanaged_new_item_bind) } ->
 
@@ -420,9 +420,11 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     %{
       has_dependency_on_managed: has_dependency_on_managed,
       has_dependency_on_unspecified: has_dependency_on_unspecified,
-      has_dependency_on_unmanaged: has_dependency_on_unmanaged,
+      has_dependency_on_unmanaged: _has_dependency_on_unmanaged,
       has_dependency_on_binary: has_dependency_on_binary
     } = take_while_be_dependency_on_self_info(name, take_while_by_registered_callback)
+
+    has_dependency_on_managed = has_dependency_on_managed || has_dependency_on_unspecified
 
     take_while_by_function_call =
       RegisteredCallbackFunctionCall.registered_callback_function_call(
@@ -556,7 +558,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
       ) do
 
 
-    %Field{ name: name, opts: opts } = field
+    %Field{ opts: opts } = field
 
     optional_by = opts[:optional_by]
 
@@ -652,7 +654,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
       ) do
 
 
-    %Field{ name: name, opts: opts } = field
+    %Field{ opts: opts } = field
 
     optional_by = opts[:optional_by]
 

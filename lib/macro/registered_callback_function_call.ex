@@ -5,7 +5,6 @@ defmodule BinStruct.Macro.RegisteredCallbackFunctionCall do
   alias BinStruct.Macro.Structs.RegisteredCallback
 
   alias BinStruct.Macro.RegisteredCallbackArgumentsBinding
-  alias BinStruct.Macro.Structs.UnspecifiedAsManaged
 
   def registered_callback_function_call(
         %RegisteredCallback{ function: callback_function } = registered_callbacks,

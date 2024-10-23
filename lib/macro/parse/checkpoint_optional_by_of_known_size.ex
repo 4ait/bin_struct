@@ -17,24 +17,11 @@ defmodule BinStruct.Macro.Parse.CheckpointOptionalByOfKnownSize do
 
     optional_by = opts[:optional_by]
 
-    field_name_access = { Bind.bind_value_name(name), [], __MODULE__ }
-
     dependencies_bindings =
       ParseDependencies.parse_dependencies([field], registered_callbacks_map)
       |> BindingsToDependencies.bindings(__MODULE__)
 
     parse_checkpoint_known_size_function_name = :"#{function_name}_inner"
-
-    call_main_inner_function =
-      quote do
-
-        unquote(parse_checkpoint_known_size_function_name)(
-          unquote(field_name_access),
-          unquote_splicing(dependencies_bindings),
-          options
-        )
-
-      end
 
     parse_checkpoint_known_size_function =
       CheckpointKnownSize.checkpoint_known_size(
@@ -45,16 +32,29 @@ defmodule BinStruct.Macro.Parse.CheckpointOptionalByOfKnownSize do
         env
       )
 
+    initial_binary_access = { :bin, [], __MODULE__ }
+
+    call_main_inner_function =
+      quote do
+
+        unquote(parse_checkpoint_known_size_function_name)(
+          unquote(initial_binary_access),
+          unquote_splicing(dependencies_bindings),
+          options
+        )
+
+      end
+
 
     check_is_opt_enabled_clause =
 
       quote do
 
         defp unquote(function_name)(
-               unquote(field_name_access) = _bin,
+               unquote(initial_binary_access),
                unquote_splicing(dependencies_bindings),
                options
-             ) when is_binary(unquote(field_name_access)) do
+             ) when is_binary(unquote(initial_binary_access)) do
 
           unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
@@ -62,7 +62,7 @@ defmodule BinStruct.Macro.Parse.CheckpointOptionalByOfKnownSize do
             WrapWithOptionalBy.wrap_with_optional_by(
               call_main_inner_function,
               optional_by,
-              field_name_access,
+              initial_binary_access,
               registered_callbacks_map,
               __MODULE__
             )
@@ -76,10 +76,10 @@ defmodule BinStruct.Macro.Parse.CheckpointOptionalByOfKnownSize do
       quote do
 
         defp unquote(function_name)(
-               unquote(field_name_access) = _bin,
+               unquote(initial_binary_access),
                unquote_splicing(dependencies_bindings),
                options
-             ) when is_binary(unquote(field_name_access)) do
+             ) when is_binary(unquote(initial_binary_access)) do
 
           unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
           unquote(call_main_inner_function)

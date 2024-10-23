@@ -16,34 +16,33 @@ defmodule BinStruct.Macro.ReceivingDependenciesArgumentsBindings do
 
     checkpoint_depends_on = CallbacksDependencies.dependencies(registered_callbacks)
 
-    checkpoint_receiving_arguments_binds =
-      Enum.map(
-        checkpoint_depends_on,
-        fn dependency ->
+    Enum.map(
+      checkpoint_depends_on,
+      fn dependency ->
 
-          case dependency do
+        case dependency do
 
-            %DependencyOnField{ field: field, type_conversion: type_conversion } ->
+          %DependencyOnField{ field: field, type_conversion: type_conversion } ->
 
-              name =
-                case field do
-                  %Field{ name: name } -> name
-                  %VirtualField{ name: name } -> name
-                end
-
-              case type_conversion do
-                TypeConversionManaged -> Bind.bind_managed_value(name, context)
-                TypeConversionBinary -> Bind.bind_binary_value(name, context)
-                TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, context)
-                TypeConversionUnspecified -> Bind.bind_managed_value(name, context)
+            name =
+              case field do
+                %Field{ name: name } -> name
+                %VirtualField{ name: name } -> name
               end
 
-            %DependencyOnOption{} -> nil
+            case type_conversion do
+              TypeConversionManaged -> Bind.bind_managed_value(name, context)
+              TypeConversionBinary -> Bind.bind_binary_value(name, context)
+              TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, context)
+              TypeConversionUnspecified -> Bind.bind_managed_value(name, context)
+            end
 
-          end
+          %DependencyOnOption{} -> nil
 
         end
-      ) |> Enum.reject(&is_nil/1)
+
+      end
+    ) |> Enum.reject(&is_nil/1)
 
   end
 

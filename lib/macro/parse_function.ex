@@ -6,28 +6,19 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Parse.CheckpointKnownSize
   alias BinStruct.Macro.Parse.CheckpointOptionalByOfKnownSize
   alias BinStruct.Macro.Parse.CheckpointUnknownSize
-  alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Parse.MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
   alias BinStruct.Macro.CallbacksOnField
-  alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.TypeConversion.TypeConversionManaged
   alias BinStruct.TypeConversion.TypeConversionUnmanaged
   alias BinStruct.TypeConversion.TypeConversionUnspecified
   alias BinStruct.TypeConversion.TypeConversionBinary
   alias BinStruct.Macro.ReceivingDependenciesArgumentsBindings
-  alias BinStruct.Macro.Structs.ParseCheckpointProduceConsumeInfo
-  alias BinStruct.Macro.CallbacksDependencies
   alias BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex
-  alias BinStruct.Macro.CallbacksDependenciesFieldExcluded
 
-  alias BinStruct.Macro.Dependencies.CallbacksDependencies
-  alias BinStruct.Macro.Dependencies.UniqueDeps
   alias BinStruct.Macro.Dependencies.IsFieldDependentOn
-  alias BinStruct.Macro.Dependencies.ExcludeDependenciesOnField
   alias BinStruct.Macro.TypeConverterToManaged
-  alias BinStruct.Macro.TypeConverterToUnmanaged
   alias BinStruct.Macro.TypeConverterToBinary
   
   alias BinStruct.Macro.Dependencies.BindingsToDependencies
@@ -101,7 +92,7 @@ defmodule BinStruct.Macro.ParseFunction do
           maybe_type_converter_checkpoint =
             Enum.find(
               type_converter_checkpoint_input_output_by_index,
-              fn { type_converter_checkpoint_index, _input, output } -> type_converter_checkpoint_index == index end
+              fn { type_converter_checkpoint_index, _input, _output } -> type_converter_checkpoint_index == index end
             )
 
           returning_from_checkpoint_values_binds =
@@ -385,7 +376,7 @@ defmodule BinStruct.Macro.ParseFunction do
                   %VirtualField{ name: name } -> name
                 end
 
-              to_unmanaged_bind = Bind.bind_unmanaged_value(name, __MODULE__)
+              Bind.bind_unmanaged_value(name, __MODULE__)
 
             %BinStruct.Macro.Structs.DependencyOnOption{} -> nil
 
@@ -489,7 +480,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
   end
 
-  defp optional_not_present_parse_checkpoint_function(fields, function_name, interface_implementations, registered_callbacks_map) do
+  defp optional_not_present_parse_checkpoint_function(fields, function_name, _interface_implementations, registered_callbacks_map) do
     
     dependencies_bindings =
       ParseDependencies.parse_dependencies(fields,registered_callbacks_map)
