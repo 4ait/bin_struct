@@ -14,6 +14,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
   alias BinStruct.Types.TypeConversionUnmanaged
   alias BinStruct.Types.TypeConversionBinary
   alias BinStruct.Types.TypeConversionUnspecified
+  alias BinStruct.Macro.Parse.ListItemParseExpressions
 
   def variable_terminated_until_length_by_parse_checkpoint(
          %{
@@ -36,6 +37,10 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     field_name_access = { Bind.bind_value_name(name), [], __MODULE__ }
     parse_until_length_by_parse_function_name = String.to_atom("#{function_name}_until_length_by_parse")
 
+    options_bind = { :options, [], __MODULE__ }
+    item_binary_bind = { :item, [], __MODULE__ }
+    parse_expr = ListItemParseExpressions.parse_expression(item_type, item_binary_bind, options_bind)
+
     recursive_parse_functions =
 
       quote do
@@ -44,8 +49,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
           :lists.reverse(acc)
         end
 
-        def unquote(parse_until_length_by_parse_function_name)(binary, options, acc) when is_binary(binary) and is_list(acc) do
-
+        def unquote(parse_until_length_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc) when is_binary(unquote(item_binary_bind))  do
 
           case unquote(parse_expr) do
 
@@ -53,7 +57,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
               new_acc = [ unmanaged_new_item | acc ]
 
-              unquote(parse_until_length_by_parse_function_name)(rest, options, new_acc)
+              unquote(parse_until_length_by_parse_function_name)(rest, unquote(options_bind), new_acc)
 
             :not_enough_bytes -> :not_enough_bytes
 
@@ -136,12 +140,12 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     %Field{ name: name, opts: opts } = field
 
     optional_by = opts[:optional_by]
-    field_name_access = { Bind.bind_value_name(name), [], __MODULE__ }
 
     parse_until_count_by_parse_function_name = String.to_atom("#{function_name}_until_count_by_parse")
 
+    options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
-    parse_expr = parse_expression(item_type, item_binary_bind)
+    parse_expr = ListItemParseExpressions.parse_expression(item_type, item_binary_bind, options_bind)
 
     recursive_parse_functions =
 
@@ -151,7 +155,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
           { :lists.reverse(acc), rest }
         end
 
-        def unquote(parse_until_count_by_parse_function_name)(unquote(item_binary_bind), options, remain, acc) when is_binary(binary) and is_list(acc) do
+        def unquote(parse_until_count_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), remain, acc) when is_binary(unquote(item_binary_bind)) do
 
           case unquote(parse_expr) do
 
@@ -159,7 +163,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
               new_acc = [ unmanaged_new_item | acc ]
 
-              unquote(parse_until_count_by_parse_function_name)(rest, options, remain - 1, new_acc)
+              unquote(parse_until_count_by_parse_function_name)(rest, unquote(options_bind), remain - 1, new_acc)
 
             :not_enough_bytes -> :not_enough_bytes
 
@@ -171,6 +175,8 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
       end
 
+
+    initial_binary_access = { :bin, [], __MODULE__  }
 
     body =
       quote do
@@ -184,7 +190,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
             )
           )
 
-        { structs, rest } = unquote(parse_until_count_by_parse_function_name)(unquote(field_name_access), options, count, [])
+        { structs, rest } = unquote(parse_until_count_by_parse_function_name)(unquote(initial_binary_access), options, count, [])
 
         { :ok, structs, rest, options }
 
@@ -194,19 +200,20 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, body, __MODULE__)
 
+
     checkpoint_function =
       quote do
 
         defp unquote(function_name)(
-               unquote(field_name_access) = _bin,
+               unquote(initial_binary_access),
                unquote_splicing(value_arguments_binds),
                options
-             ) when is_binary(unquote(field_name_access)) do
+             ) when is_binary(unquote(initial_binary_access)) do
 
           unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
           unquote(
-            WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, field_name_access, registered_callbacks_map, __MODULE__)
+            WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, unquote(initial_binary_access), registered_callbacks_map, __MODULE__)
           )
 
         end
@@ -258,8 +265,9 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
         __MODULE__
       )
 
+    options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
-    parse_expr = parse_exact_expression(item_type, item_binary_bind)
+    parse_expr = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     recursive_parse_functions =
 
@@ -270,7 +278,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
           :not_enough_bytes
         end
 
-        def unquote(parse_take_while_by_callback_by_item_size_function_name)(binary, options, item_size, items_with_different_type_conversions_acc) when is_binary(binary) do
+        def unquote(parse_take_while_by_callback_by_item_size_function_name)(binary, unquote(options_bind), item_size, items_with_different_type_conversions_acc) when is_binary(binary) do
 
           <<unquote(item_binary_bind)::size(item_size)-bytes, rest::binary>> = binary
 
@@ -311,7 +319,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
                     unquote(binary_value_bind)
                   }
 
-                  unquote(parse_take_while_by_callback_by_item_size_function_name)(rest, options, item_size, new_acc)
+                  unquote(parse_take_while_by_callback_by_item_size_function_name)(rest, unquote(options_bind), item_size, new_acc)
 
                 :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
 
@@ -416,14 +424,15 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
         __MODULE__
       )
 
+    options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
-    parse_expr = parse_expression(item_type, item_binary_bind)
+    parse_expr = ListItemParseExpressions.parse_expression(item_type, item_binary_bind, options_bind)
 
     recursive_parse_functions =
 
       quote do
 
-        def unquote(parse_take_while_by_callback_by_parse_function_name)(unquote(item_binary_bind), options, items_with_different_type_conversions_acc) when is_binary(binary) and is_list(acc) do
+        def unquote(parse_take_while_by_callback_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), items_with_different_type_conversions_acc) when is_binary(binary) and is_list(acc) do
 
           { unmanaged_items_acc, managed_items_acc, binary_items_acc } = items_with_different_type_conversions_acc
 
@@ -441,7 +450,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
               binary_new_item =
                 unquote(
                   if has_dependency_on_binary do
-                    <<item_binary_part::binary-size(byte_size(binary) - byte_size(rest)), _rest>> = binary
+                    <<item_binary_part::binary-size(unquote(item_binary_bind) - byte_size(rest)), _rest>> = binary
                     item_binary_part
                   end
                 )
@@ -462,7 +471,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
                     unquote(binary_value_bind)
                   }
 
-                  unquote(parse_take_while_by_callback_by_parse_function_name)(rest, options, new_acc)
+                  unquote(parse_take_while_by_callback_by_parse_function_name)(rest, unquote(options_bind), new_acc)
 
                 :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
 
@@ -489,6 +498,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
         case parse_function_call_result do
           { :ok, items, rest } -> { :ok, items, rest, options }
+          bad_result -> bad_result
         end
 
       end
@@ -539,12 +549,10 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     optional_by = opts[:optional_by]
 
-    item_binary_bind = { :item, [], __MODULE__ }
 
-    is_item_of_primitive_type = IsPrimitiveType.is_primitive_type(item_type)
-
+    options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
-    parse_expr = parse_exact_expression(item_type, item_binary_bind)
+    parse_expr = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     initial_binary_access = { :bin, [], __MODULE__  }
 
@@ -586,7 +594,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
 
         case result do
-          { :ok, items } ->  { :ok, Enum.reverse(items), "", options }
+          { :ok, items } ->  { :ok, Enum.reverse(items), "", unquote(options_bind) }
           bad_result -> bad_result
         end
 
@@ -605,6 +613,8 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
            ) when is_binary(unquote(initial_binary_access)) do
 
         unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+
+        unquote(options_bind) = options
 
         unquote(
           WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, initial_binary_access, registered_callbacks_map, __MODULE__)
@@ -637,8 +647,10 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     parse_until_end_by_parse_function_name = String.to_atom("#{function_name}_until_end_by_parse")
 
+    options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
-    parse_expr = parse_expression(item_type, item_binary_bind)
+    parse_expr = ListItemParseExpressions.parse_expression(item_type, item_binary_bind, options_bind)
+
 
     recursive_parse_functions =
       quote do
@@ -647,7 +659,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
             { :ok, :lists.reverse(acc) }
           end
 
-          def unquote(parse_until_end_by_parse_function_name)(unquote(item_binary_bind), options, acc) when is_binary(binary) do
+          def unquote(parse_until_end_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc) when is_binary(binary) do
 
             case unquote(parse_expr) do
 
@@ -655,7 +667,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
                 new_acc = [ unmanaged_new_item | acc ]
 
-                unquote(parse_until_end_by_parse_function_name)(rest, options, new_acc)
+                unquote(parse_until_end_by_parse_function_name)(rest, unquote(options_bind), new_acc)
 
               :not_enough_bytes -> :not_enough_bytes
 
@@ -708,70 +720,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
   end
 
-  defp parse_expression(item_type, item_binary_bind) do
-
-    case item_type do
-
-      { :module, %{ module_type: :bin_struct, module: module } } ->
-
-        quote do
-          unquote(module).parse(unquote(item_binary_bind), options)
-        end
-
-      {
-        :module, %{
-        module_type: :bin_struct_custom_type,
-        module: module,
-        custom_type_args: custom_type_args
-      }
-      } ->
-
-        quote do
-          unquote(module).parse(unquote(item_binary_bind), custom_type_args, options)
-        end
-
-    end
-
-  end
-
-  defp parse_exact_expression(item_type, item_binary_bind) do
-
-    is_item_of_primitive_type = IsPrimitiveType.is_primitive_type(item_type)
-
-    quote do
-
-      case item_type do
-
-        _item_type when is_item_of_primitive_type -> { :ok, unquote(item_binary_bind)  }
-
-        { :module, %{ module_type: :bin_struct, module: module } } ->
-
-          quote do
-            unquote(module).parse_exact(unquote(item_binary_bind), options)
-          end
-
-        {
-          :module, %{
-          module_type: :bin_struct_custom_type,
-          module: module,
-          custom_type_args: custom_type_args
-        }
-        } ->
-
-          quote do
-            unquote(module).parse_exact(unquote(item_binary_bind), custom_type_args, options)
-          end
-
-      end
-
-    end
-
-  end
-
-
   defp take_while_be_dependency_on_self_info(current_field_name, take_while_by_registered_callback) do
-
-
 
     take_while_by_dependencies = BinStruct.Macro.CallbacksDependencies.dependencies([take_while_by_registered_callback])
 

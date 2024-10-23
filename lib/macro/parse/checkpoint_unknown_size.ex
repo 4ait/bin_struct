@@ -12,6 +12,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
   alias BinStruct.Macro.Parse.CheckpointVariableList
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
   alias BinStruct.Macro.Parse.ExternalFieldDependencies
+  alias BinStruct.Macro.Parse.CheckpointRuntimeBoundedList
 
   alias BinStruct.Macro.Structs.Field
 
@@ -26,7 +27,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
     binary_value_access_bind = Bind.bind_binary_value(name, __MODULE__)
     unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
-
 
     value_arguments_binds =
       Enum.map(
@@ -49,7 +49,8 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
         case list_of_info do
 
           %{ type: :runtime_bounded } = list_of_info ->
-            runtime_bounded_list_checkpoint(
+
+            CheckpointRuntimeBoundedList.runtime_bounded_list_checkpoint(
               list_of_info,
               field,
               function_name,
@@ -63,39 +64,41 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             type: :variable,
             termination: :terminated,
             take: :until_length_by_parse
-          } = list_of_info
-            -> CheckpointVariableList.variable_terminated_until_length_by_parse_checkpoint(
-                 list_of_info,
-                 field,
-                 function_name,
-                 give_binds(value_arguments_binds, CheckpointVariableList),
-                 interface_implementations,
-                 registered_callbacks_map,
-                 env
-               )
+          } = list_of_info ->
+
+            CheckpointVariableList.variable_terminated_until_length_by_parse_checkpoint(
+               list_of_info,
+               field,
+               function_name,
+               give_binds(value_arguments_binds, CheckpointVariableList),
+               interface_implementations,
+               registered_callbacks_map,
+               env
+            )
 
           %{
             type: :variable,
             termination: :terminated,
             take: :until_count_by_parse
-          } = list_of_info
-            -> CheckpointVariableList.variable_terminated_until_count_by_parse_checkpoint(
-                 list_of_info,
-                 field,
-                 function_name,
-                 give_binds(value_arguments_binds, CheckpointVariableList),
-                 interface_implementations,
-                 registered_callbacks_map,
-                 env
-               )
+          } = list_of_info ->
 
+            CheckpointVariableList.variable_terminated_until_count_by_parse_checkpoint(
+               list_of_info,
+               field,
+               function_name,
+               give_binds(value_arguments_binds, CheckpointVariableList),
+               interface_implementations,
+               registered_callbacks_map,
+               env
+            )
 
           %{
             type: :variable,
             termination: :terminated,
             take: :take_while_by_callback_by_item_size
-          } = list_of_info
-          -> CheckpointVariableList.variable_terminated_take_while_by_callback_by_item_size_checkpoint(
+          } = list_of_info ->
+
+            CheckpointVariableList.variable_terminated_take_while_by_callback_by_item_size_checkpoint(
                list_of_info,
                field,
                function_name,
@@ -109,8 +112,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             type: :variable,
             termination: :terminated,
             take: :take_while_by_callback_by_parse
-          } = list_of_info
-          -> CheckpointVariableList.variable_terminated_take_while_by_callback_by_parse_checkpoint(
+          } = list_of_info ->
+
+            CheckpointVariableList.variable_terminated_take_while_by_callback_by_parse_checkpoint(
                list_of_info,
                field,
                function_name,
@@ -124,8 +128,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             type: :variable,
             termination: :not_terminated,
             take: :until_end_by_item_size
-          } = list_of_info
-          -> CheckpointVariableList.variable_not_terminated_until_end_by_item_size_checkpoint(
+          } = list_of_info ->
+
+            CheckpointVariableList.variable_not_terminated_until_end_by_item_size_checkpoint(
                list_of_info,
                field,
                function_name,
@@ -139,8 +144,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             type: :variable,
             termination: :not_terminated,
             take: :until_end_by_parse
-          } = list_of_info
-          -> CheckpointVariableList.variable_not_terminated_until_end_by_parse_checkpoint(
+          } = list_of_info ->
+
+            CheckpointVariableList.variable_not_terminated_until_end_by_parse_checkpoint(
                list_of_info,
                field,
                function_name,
@@ -164,7 +170,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 fn variant ->
 
                   {:module, module_info } = variant
-
 
                   parse_exact_expr =
                     case module_info do
@@ -607,120 +612,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             end
 
         end
-
-    end
-
-  end
-
-
-  defp runtime_bounded_list_checkpoint(
-        %{ type: :runtime_bounded } = list_of_info,
-         %Field{} = field,
-         function_name,
-         value_arguments_binds,
-         interface_implementations,
-         registered_callbacks_map,
-         _env
-       ) do
-
-    %{
-      bounds: bounds,
-      item_type: item_type
-    } = list_of_info
-
-    %Field{name: name, opts: opts} = field
-
-    binary_value_access_bind = Bind.bind_binary_value(name, __MODULE__)
-
-    rest_bind = { :rest, [], __MODULE__ }
-
-    item_binary_bind = { :item_binary, [], __MODULE__ }
-
-    optional_by = opts[:optional_by]
-
-    runtime_bounds_expr = ListOfRuntimeBounds.get_runtime_bounds(bounds, registered_callbacks_map, __MODULE__)
-
-    is_item_of_primitive_type = IsPrimitiveType.is_primitive_type(item_type)
-
-    parse_expr =
-
-      case item_type do
-
-        _item_type when is_item_of_primitive_type -> item_binary_bind
-
-        {:module, module_info} ->
-
-          module_parse_expr =
-
-            case module_info do
-
-              %{ module_type: :bin_struct, module: module } ->
-
-                quote do
-                  unquote(module).parse_returning_options(unquote(item_binary_bind), options)
-                end
-
-              %{
-                module_type: :bin_struct_custom_type,
-                module: module,
-                custom_type_args: custom_type_args
-              } ->
-                quote do
-                  unquote(module).parse_returning_options(unquote(item_binary_bind), unquote(custom_type_args), options)
-                end
-            end
-
-          quote do
-            { :ok, struct, _options } = unquote(module_parse_expr)
-            struct
-          end
-
-      end
-
-    body =
-      quote do
-
-        %{
-          length: length,
-          count: _count,
-          item_size: item_size,
-        } = unquote(runtime_bounds_expr)
-
-        if byte_size(unquote(binary_value_access_bind)) >= length do
-
-          <<target_binary::size(length)-bytes, unquote(rest_bind)::binary>> = unquote(binary_value_access_bind)
-
-          items =
-            for << unquote(item_binary_bind)::binary-size(item_size) <- target_binary >> do
-              unquote(parse_expr)
-            end
-
-          { :ok, items, unquote(rest_bind), options }
-
-        else
-          :not_enough_bytes
-        end
-
-      end
-
-    validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
-
-    validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, body, __MODULE__)
-
-    quote do
-
-      defp unquote(function_name)(
-             unquote(binary_value_access_bind),
-             unquote_splicing(value_arguments_binds),
-             options
-        ) when is_binary(unquote(binary_value_access_bind)) do
-
-        unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
-
-        unquote(
-          WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
-        )
-      end
 
     end
 
