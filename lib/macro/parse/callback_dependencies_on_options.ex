@@ -11,9 +11,13 @@ defmodule BinStruct.Macro.Parse.CallbackDependenciesOnOptions do
   alias BinStruct.Macro.Parse.CallbacksOnField
 
 
+  alias BinStruct.Macro.CallbacksOnField
+
   def option_dependencies_of_interface_implementation(%InterfaceImplementation{} = interface_implementation, registered_callbacks_map) do
 
     %InterfaceImplementation{ callback: callback } = interface_implementation
+
+
 
     option_dependencies([callback], registered_callbacks_map)
 
@@ -21,20 +25,17 @@ defmodule BinStruct.Macro.Parse.CallbackDependenciesOnOptions do
 
   def option_dependencies_of_callbacks_on_fields(%Field{} = field, registered_callbacks_map) do
 
-    callbacks_on_field = CallbacksOnField.callbacks(field)
+    registered_callbacks = CallbacksOnField.callbacks_used_while_parsing(field, registered_callbacks_map)
 
-    option_dependencies(callbacks_on_field, registered_callbacks_map)
+    option_dependencies(registered_callbacks)
 
   end
 
-  def option_dependencies(callbacks, registered_callbacks_map) do
-
+  def option_dependencies(registered_callbacks) do
 
     Enum.map(
-      callbacks,
-      fn %Callback{} = callback ->
-
-        registered_callback = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, callback)
+      registered_callbacks,
+      fn registered_callback ->
 
         %RegisteredCallback{ arguments: arguments } = registered_callback
 
@@ -59,6 +60,17 @@ defmodule BinStruct.Macro.Parse.CallbackDependenciesOnOptions do
            name
          end
        )
+
+  end
+
+  defp registered_version_of_callbacks(callbacks, registered_callbacks_map) do
+
+    Enum.map(
+      callbacks,
+      fn callback ->
+        RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, callback)
+      end
+    )
 
   end
 

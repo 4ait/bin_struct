@@ -4,6 +4,8 @@ defmodule BinStruct.Macro.Parse.DeconstructOptionsForField do
   alias BinStruct.Macro.Parse.CallbacksDependenciesAll
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
   alias BinStruct.Macro.Structs.RegisteredOption
+  alias BinStruct.Macro.CallbacksOnField
+  alias BinStruct.Macro.Structs.RegisteredCallbacksMap
 
   def deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, context) do
 
@@ -15,6 +17,9 @@ defmodule BinStruct.Macro.Parse.DeconstructOptionsForField do
 
 
     options_bind_access = { :options, [], context }
+
+    callbacks = CallbacksOnField.callbacks_used_while_parsing(fields, registered_callbacks_map)
+
 
     option_dependencies_all = CallbacksDependenciesAll.option_dependencies_all(fields, interface_implementations, registered_callbacks_map)
 
@@ -48,9 +53,7 @@ defmodule BinStruct.Macro.Parse.DeconstructOptionsForField do
                   registered_option: %RegisteredOption{ interface: interface, name: name }
                 } = option_argument
 
-                option_value_bind = { Bind.bind_option_name(interface, name), [], context }
-
-                { _key = name, _access = option_value_bind }
+                { name, Bind.bind_option(interface, name, context) }
 
               end
             )
@@ -70,6 +73,17 @@ defmodule BinStruct.Macro.Parse.DeconstructOptionsForField do
         unquote_splicing(interfaces_deconstructing_key_values)
       } = unquote(options_bind_access)
     end
+
+  end
+
+  defp registered_version_of_callbacks(callbacks, registered_callbacks_map) do
+
+    Enum.map(
+      callbacks,
+      fn callback ->
+        RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, callback)
+      end
+    )
 
   end
 

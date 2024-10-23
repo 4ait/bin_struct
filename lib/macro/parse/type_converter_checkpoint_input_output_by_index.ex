@@ -1,6 +1,5 @@
 defmodule BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex do
 
-  alias BinStruct.Macro.Structs.ParseCheckpointProduceConsumeInfo
   alias BinStruct.Macro.Structs.DependencyOnOption
   alias BinStruct.Macro.Structs.DependencyOnField
   alias BinStruct.Macro.Structs.Field
@@ -64,10 +63,9 @@ defmodule BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex do
 
       %DependencyOnField{} = on_field_dependency ->
 
-        %DependencyOnField{ field: field, type_conversion: type_conversion } = on_field_dependency
+        %DependencyOnField{ field: field } = on_field_dependency
 
         field_name =
-
           case field do
             %Field{ name: name } -> name
             %VirtualField{ name: name } -> name

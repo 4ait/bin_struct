@@ -144,7 +144,9 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
     return_ok_clause = Result.return_ok_tuple(fields, __MODULE__)
 
-    validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude(fields, registered_callbacks_map, __MODULE__)
+    wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
+
+    validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude(fields, registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
     validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, return_ok_clause, __MODULE__)
 
@@ -198,7 +200,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
     main_clause =
       quote do
         defp unquote(function_name)(
-               <<unquote_splicing(binary_match_patterns)>>,
+               <<unquote_splicing(binary_match_patterns)>> = bin,
                unquote_splicing(dependencies_bindings),
                options
              ) do
@@ -208,9 +210,12 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
           unquote_splicing(static_values_bindings)
           unquote_splicing(simple_reassign_binary_value_to_unmanaged)
 
+          unquote(wrong_data_binary_bind) = bin
+
           unquote(returning_clause)
 
         end
+
       end
 
     [

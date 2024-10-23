@@ -4,10 +4,8 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
   alias BinStruct.Macro.Structs.RegisteredOption
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
-  alias BinStruct.Macro.TypeConverter
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
-  alias BinStruct.Macro.IsOptionalField
   alias BinStruct.Macro.Bind
 
   alias BinStruct.TypeConversion.TypeConversionManaged
@@ -52,9 +50,6 @@ defmodule BinStruct.Macro.RegisteredCallbackArgumentsBinding do
     %RegisteredCallbackFieldArgument{ field: field, type_conversion: type_conversion } = argument
 
     %Field { name: name } = field
-
-    is_optional = IsOptionalField.is_optional_field(field)
-
 
     case type_conversion do
 

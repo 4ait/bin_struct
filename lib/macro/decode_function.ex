@@ -7,7 +7,8 @@ defmodule BinStruct.Macro.DecodeFunction do
   alias BinStruct.Macro.NonVirtualFields
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
-  alias BinStruct.Macro.TypeConverter
+  alias BinStruct.Macro.TypeConverterToManaged
+  alias BinStruct.Macro.IsOptionalField
 
   #assuming we have managed type, such type to work people expect most comfortable to work this
   #and unmanaged type we expect it to be close to stream of binary for easy parse/dump binaries
@@ -180,13 +181,13 @@ defmodule BinStruct.Macro.DecodeFunction do
             Enum.map(
               unquote(value_access),
               fn unquote(value_access) ->
-                unquote(TypeConverter.convert_unmanaged_value_to_managed(item_type, value_access))
+                unquote(TypeConverterToManaged.convert_unmanaged_value_to_managed(item_type, value_access))
               end
             )
 
           end
 
-        type -> TypeConverter.convert_unmanaged_value_to_managed(type, value_access)
+        type -> TypeConverterToManaged.convert_unmanaged_value_to_managed(type, value_access)
 
       end
 
@@ -204,7 +205,7 @@ defmodule BinStruct.Macro.DecodeFunction do
 
     decode_type_expr = decode_type(type, opts, unmanaged_value_access, deep_access)
 
-    is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
+    is_optional = IsOptionalField.is_optional_field(field)
 
     if is_optional do
       decode_expr_wrap_optional(decode_type_expr, unmanaged_value_access)
@@ -294,7 +295,7 @@ defmodule BinStruct.Macro.DecodeFunction do
         fields_to_decode,
         fn field ->
 
-          { opts, name } =
+          { _opts, name } =
 
             case field do
               %Field{opts: opts, name: name} ->

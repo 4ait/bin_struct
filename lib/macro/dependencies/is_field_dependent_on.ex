@@ -1,7 +1,6 @@
 defmodule BinStruct.Macro.Dependencies.IsFieldDependentOn do
 
   alias BinStruct.Macro.Structs.DependencyOnOption
-  alias BinStruct.Macro.Structs.RegisteredOption
   alias BinStruct.Macro.Structs.DependencyOnField
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField

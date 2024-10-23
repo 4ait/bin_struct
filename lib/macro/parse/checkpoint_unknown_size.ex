@@ -6,7 +6,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
   alias BinStruct.Macro.Parse.WrapWithLengthBy
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
   alias BinStruct.Macro.Termination
-  alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Parse.ListOfRuntimeBounds
   alias BinStruct.Macro.IsPrimitiveType
   alias BinStruct.Macro.Parse.CheckpointVariableList
@@ -203,7 +202,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             ok_clause = Result.return_ok_tuple([field], __MODULE__)
 
-            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
+            wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
+
+            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
             validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
 
@@ -240,6 +241,8 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+
+                unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
 
                 unquote(
                   WrapWithLengthBy.wrap_with_length_by(body, length_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
@@ -308,7 +311,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             ok_clause = Result.return_ok_tuple([field], __MODULE__)
 
-            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
+            wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
+
+            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
             validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
 
@@ -344,6 +349,8 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+
+                unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
 
                 unquote(
                   WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
@@ -395,7 +402,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
               end
 
-            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
+            wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
+
+            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
             validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
 
@@ -408,6 +417,8 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+
+                unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
 
                 unquote(
                   WrapWithLengthBy.wrap_with_length_by(validate_and_return_clause, length_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
@@ -455,7 +466,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
               end
 
-            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
+            wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
+
+            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
             validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
 
@@ -468,6 +481,8 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+
+                unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
 
                 unquote(
                   WrapWithOptionalBy.maybe_wrap_with_optional_by(
@@ -487,7 +502,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             ok_clause = Result.return_ok_tuple([field], __MODULE__)
 
-            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
+            wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
+
+            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
             validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
 
@@ -533,6 +550,8 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
+                unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
+
                 unquote(
                   WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
                 )
@@ -552,7 +571,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             ok_clause = Result.return_ok_tuple([field], __MODULE__)
 
-            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
+            wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
+
+            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
             body = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
 
@@ -565,6 +586,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                    ) when is_binary(unquote(unmanaged_value_access)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+
+
+                unquote(validate_patterns_and_prelude) = unquote(unmanaged_value_access)
 
                 unquote(
                   WrapWithLengthBy.wrap_with_length_by(body, length_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
@@ -581,7 +605,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 { :ok, unquote(unmanaged_value_access), "", options }
               end
 
-            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
+            wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
+
+            validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
             body = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
 
@@ -594,6 +620,8 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                    ) when is_binary(unquote(unmanaged_value_access)) do
 
                 unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+
+                unquote(wrong_data_binary_bind) = unquote(unmanaged_value_access)
 
                 unquote(
                   WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)

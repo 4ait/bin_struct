@@ -84,7 +84,10 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
 
       end
 
-    validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, __MODULE__)
+
+    wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
+
+    validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
     validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, body, __MODULE__)
 
@@ -97,6 +100,8 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
            ) when is_binary(unquote(initial_binary_access)) do
 
         unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+
+        unquote(wrong_data_binary_bind) = unquote(initial_binary_access)
 
         unquote(
           WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, initial_binary_access, registered_callbacks_map, __MODULE__)

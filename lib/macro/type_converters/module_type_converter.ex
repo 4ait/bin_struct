@@ -58,7 +58,7 @@ defmodule BinStruct.Macro.TypeConverters.ModuleTypeConverter do
       } ->
 
         quote do
-          unquote(module).dump_binary(unquote(quoted), custom_type_args)
+          unquote(module).dump_binary(unquote(quoted), unquote(custom_type_args))
         end
 
     end

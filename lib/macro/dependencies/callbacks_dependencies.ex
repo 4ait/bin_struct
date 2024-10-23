@@ -1,8 +1,6 @@
 defmodule BinStruct.Macro.Dependencies.CallbacksDependencies do
 
-  alias BinStruct.Macro.Parse.CallbacksDependenciesAll
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
-  alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
   alias BinStruct.Macro.Structs.DependencyOnField
