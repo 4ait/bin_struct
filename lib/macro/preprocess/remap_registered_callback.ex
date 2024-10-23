@@ -138,7 +138,7 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
 
       case argument_type_map do
 
-        %{ type: :field } = type_map ->
+        %{ type: :field } ->
 
           %RegisteredCallbackFieldArgument{
             field: FieldsMap.get_field_by_name(fields_map, name),

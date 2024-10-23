@@ -3,20 +3,22 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
   alias BinStruct.Macro.Parse.ListItemParseExpressions
   alias BinStruct.Macro.Parse.ListOfRuntimeBounds
   alias BinStruct.Macro.Parse.Validation
-  alias BinStruct.Macro.Parse.DeconstructOptionsForField
+  alias BinStruct.Macro.Dependencies.DeconstructionOfOnOptionDependencies
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
   alias BinStruct.Macro.Structs.Field
+  alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
 
 
   def runtime_bounded_list_checkpoint(
          %{ type: :runtime_bounded } = list_of_info,
          %Field{} = field,
          function_name,
-         dependencies_bindings,
-         interface_implementations,
+         dependencies,
          registered_callbacks_map,
          _env
        ) do
+
+    dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     %{
       bounds: bounds,
@@ -99,7 +101,9 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
              options
            ) when is_binary(unquote(initial_binary_access)) do
 
-        unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+        unquote(
+          DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+        )
 
         unquote(wrong_data_binary_bind) = unquote(initial_binary_access)
 

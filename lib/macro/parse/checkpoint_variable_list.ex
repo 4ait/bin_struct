@@ -7,7 +7,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
-  alias BinStruct.Macro.Parse.DeconstructOptionsForField
+  alias BinStruct.Macro.Dependencies.DeconstructionOfOnOptionDependencies
   alias BinStruct.Macro.Structs.DependencyOnField
   alias BinStruct.TypeConversion.TypeConversionManaged
   alias BinStruct.TypeConversion.TypeConversionUnmanaged
@@ -15,22 +15,24 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
   alias BinStruct.TypeConversion.TypeConversionUnspecified
   alias BinStruct.Macro.Parse.ListItemParseExpressions
   alias BinStruct.Macro.Dependencies.CallbacksDependencies
+  alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
 
   def variable_terminated_until_length_by_parse_checkpoint(
-         %{
-           item_type: item_type,
-           any_length: any_length
-         } = _list_of_info,
-         %Field{} = field,
-         function_name,
-         dependencies_bindings,
-         interface_implementations,
-         registered_callbacks_map,
-         _env
-       ) do
+        %{
+          item_type: item_type,
+          any_length: any_length
+        } = _list_of_info,
+        %Field{} = field,
+        function_name,
+        dependencies,
+        registered_callbacks_map,
+        _env
+      ) do
 
 
     %Field{ opts: opts } = field
+
+    dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     optional_by = opts[:optional_by]
 
@@ -112,7 +114,9 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
                options
              ) when is_binary(unquote(initial_binary_access)) do
 
-          unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+          unquote(
+            DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+          )
 
           unquote(wrong_data_binary_bind) = unquote(initial_binary_access)
 
@@ -129,17 +133,18 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
   end
 
   def variable_terminated_until_count_by_parse_checkpoint(
-         %{
-           item_type: item_type,
-           any_count: any_count
-         }  = _list_of_info,
-         %Field{} = field,
-         function_name,
-         dependencies_bindings,
-         interface_implementations,
-         registered_callbacks_map,
-         _env
-       ) do
+        %{
+          item_type: item_type,
+          any_count: any_count
+        }  = _list_of_info,
+        %Field{} = field,
+        function_name,
+        dependencies,
+        registered_callbacks_map,
+        _env
+      ) do
+
+    dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     %Field{ opts: opts } = field
 
@@ -216,7 +221,9 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
                options
              ) when is_binary(unquote(initial_binary_access)) do
 
-          unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+          unquote(
+            DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+          )
 
           unquote(wrong_data_binary_bind) = unquote(initial_binary_access)
 
@@ -240,11 +247,12 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
         }  = _list_of_info,
         %Field{} = field,
         function_name,
-        dependencies_bindings,
-        interface_implementations,
+        dependencies,
         registered_callbacks_map,
         _env
       ) do
+
+    dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     %Field{ name: name, opts: opts } = field
 
@@ -361,14 +369,14 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
             )
           )
 
-         items_with_different_type_conversions_acc = {  _unmanaged = [], _managed = [], _binary = [] }
+        items_with_different_type_conversions_acc = {  _unmanaged = [], _managed = [], _binary = [] }
 
-         parse_function_call_result = unquote(parse_take_while_by_callback_by_item_size_function_name)(unquote(initial_binary_access), options, item_size,  items_with_different_type_conversions_acc)
+        parse_function_call_result = unquote(parse_take_while_by_callback_by_item_size_function_name)(unquote(initial_binary_access), options, item_size,  items_with_different_type_conversions_acc)
 
-          case parse_function_call_result do
-            { :ok, items, rest } -> { :ok, items, rest, options }
-            :not_enough_bytes -> :not_enough_bytes
-          end
+        case parse_function_call_result do
+          { :ok, items, rest } -> { :ok, items, rest, options }
+          :not_enough_bytes -> :not_enough_bytes
+        end
 
       end
 
@@ -387,7 +395,9 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
                options
              ) when is_binary(unquote(initial_binary_access)) do
 
-          unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+          unquote(
+            DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+          )
 
           unquote(wrong_data_binary_bind) = unquote(initial_binary_access)
 
@@ -411,11 +421,12 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
         }  = _list_of_info,
         %Field{} = field,
         function_name,
-        dependencies_bindings,
-        interface_implementations,
+        dependencies,
         registered_callbacks_map,
         _env
       ) do
+
+    dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     %Field{ name: name, opts: opts } = field
 
@@ -543,7 +554,9 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
                options
              ) when is_binary(unquote(initial_binary_access)) do
 
-          unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+          unquote(
+            DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+          )
 
           unquote(wrong_data_binary_bind) = unquote(initial_binary_access)
 
@@ -567,17 +580,16 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
         } = _list_of_info,
         %Field{} = field,
         function_name,
-        dependencies_bindings,
-        interface_implementations,
+        dependencies,
         registered_callbacks_map,
         _env
       ) do
 
+    dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     %Field{ opts: opts } = field
 
     optional_by = opts[:optional_by]
-
 
     options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
@@ -643,7 +655,9 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
              options
            ) when is_binary(unquote(initial_binary_access)) do
 
-        unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+        unquote(
+          DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+        )
 
         unquote(options_bind) = options
         unquote(wrong_data_binary_bind) = unquote(initial_binary_access)
@@ -666,12 +680,12 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
         } = _list_of_info,
         %Field{} = field,
         function_name,
-        dependencies_bindings,
-        interface_implementations,
+        dependencies,
         registered_callbacks_map,
         _env
       ) do
 
+    dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     %Field{ opts: opts } = field
 
@@ -686,27 +700,27 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     recursive_parse_functions =
       quote do
 
-          def unquote(parse_until_end_by_parse_function_name)(<<>>, _options, acc) do
-            { :ok, :lists.reverse(acc) }
-          end
+        def unquote(parse_until_end_by_parse_function_name)(<<>>, _options, acc) do
+          { :ok, :lists.reverse(acc) }
+        end
 
-          def unquote(parse_until_end_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc) when is_binary(binary) do
+        def unquote(parse_until_end_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc) when is_binary(binary) do
 
-            case unquote(parse_expr) do
+          case unquote(parse_expr) do
 
-              {:ok, unmanaged_new_item, rest } ->
+            {:ok, unmanaged_new_item, rest } ->
 
-                new_acc = [ unmanaged_new_item | acc ]
+              new_acc = [ unmanaged_new_item | acc ]
 
-                unquote(parse_until_end_by_parse_function_name)(rest, unquote(options_bind), new_acc)
+              unquote(parse_until_end_by_parse_function_name)(rest, unquote(options_bind), new_acc)
 
-              :not_enough_bytes -> :not_enough_bytes
+            :not_enough_bytes -> :not_enough_bytes
 
-              { :wrong_data, _wrong_data } = wrong_data -> wrong_data
-
-            end
+            { :wrong_data, _wrong_data } = wrong_data -> wrong_data
 
           end
+
+        end
 
       end
 
@@ -715,12 +729,12 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     body =
       quote do
 
-          result = unquote(parse_until_end_by_parse_function_name)(unquote(initial_binary_access), options, [])
+        result = unquote(parse_until_end_by_parse_function_name)(unquote(initial_binary_access), options, [])
 
-          case result do
-            { :ok, structs } ->  { :ok, structs, "", options }
-            bad_result -> bad_result
-          end
+        case result do
+          { :ok, structs } ->  { :ok, structs, "", options }
+          bad_result -> bad_result
+        end
 
       end
 
@@ -739,7 +753,9 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
                options
              ) when is_binary(unquote(initial_binary_access)) do
 
-          unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+          unquote(
+            DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+          )
 
           unquote(wrong_data_binary_bind) = unquote(initial_binary_access)
 

@@ -6,17 +6,16 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
   alias BinStruct.Macro.Parse.Result
   alias BinStruct.Macro.Parse.BinaryMatchPatternKnownSize
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Parse.DeconstructOptionsForField
+  alias BinStruct.Macro.Dependencies.DeconstructionOfOnOptionDependencies
   alias BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter
   
   alias BinStruct.Macro.Dependencies.ParseDependencies
-  alias BinStruct.Macro.Dependencies.BindingsToDependencies
+  alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
 
-  def checkpoint_known_size(fields = _checkpoint, function_name, interface_implementations, registered_callbacks_map, _env) do
+  def checkpoint_known_size(fields = _checkpoint, function_name, registered_callbacks_map, _env) do
 
-    dependencies_bindings =
-      ParseDependencies.parse_dependencies(fields, registered_callbacks_map)
-      |> BindingsToDependencies.bindings(__MODULE__)
+    dependencies = ParseDependencies.parse_dependencies(fields, registered_callbacks_map)
+    dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     fields_from_binary_to_unmanaged_conversion =
       Enum.map(
@@ -205,7 +204,9 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
                options
              ) do
 
-          unquote(DeconstructOptionsForField.deconstruct_options_for_fields(fields, interface_implementations, registered_callbacks_map, __MODULE__))
+          unquote(
+            DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+          )
 
           unquote_splicing(static_values_bindings)
           unquote_splicing(simple_reassign_binary_value_to_unmanaged)

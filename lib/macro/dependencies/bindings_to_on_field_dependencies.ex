@@ -1,4 +1,5 @@
-defmodule BinStruct.Macro.Dependencies.BindingsToDependencies do
+defmodule BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies do
+
 
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.DependencyOnOption
@@ -11,7 +12,6 @@ defmodule BinStruct.Macro.Dependencies.BindingsToDependencies do
 
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
-
 
   def bindings(dependencies, context) do
 

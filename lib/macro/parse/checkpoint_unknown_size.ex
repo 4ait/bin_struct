@@ -6,19 +6,16 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
   alias BinStruct.Macro.Parse.WrapWithLengthBy
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
   alias BinStruct.Macro.Termination
-  alias BinStruct.Macro.Parse.ListOfRuntimeBounds
-  alias BinStruct.Macro.IsPrimitiveType
   alias BinStruct.Macro.Parse.CheckpointVariableList
-  alias BinStruct.Macro.Parse.DeconstructOptionsForField
-  alias BinStruct.Macro.Parse.ExternalFieldDependencies
+  alias BinStruct.Macro.Dependencies.DeconstructionOfOnOptionDependencies
   alias BinStruct.Macro.Parse.CheckpointRuntimeBoundedList
 
   alias BinStruct.Macro.Dependencies.ParseDependencies
-  alias BinStruct.Macro.Dependencies.BindingsToDependencies
+  alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
 
   alias BinStruct.Macro.Structs.Field
 
-  def checkpoint_unknown_size([ field ] = _checkpoint, function_name, interface_implementations, registered_callbacks_map, env) do
+  def checkpoint_unknown_size([ field ] = _checkpoint, function_name, registered_callbacks_map, env) do
 
     %Field{ name: name, type: type, opts: opts } = field
 
@@ -28,9 +25,8 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
     binary_value_access_bind = Bind.bind_binary_value(name, __MODULE__)
     unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
 
-    dependencies_bindings =
-      ParseDependencies.parse_dependencies([ field ], registered_callbacks_map)
-      |> BindingsToDependencies.bindings(__MODULE__)
+    dependencies = ParseDependencies.parse_dependencies([field], registered_callbacks_map)
+    dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
     case type do
 
@@ -44,8 +40,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
               list_of_info,
               field,
               function_name,
-              give_binds(dependencies_bindings, CheckpointRuntimeBoundedList),
-              interface_implementations,
+              dependencies,
               registered_callbacks_map,
               env
             )
@@ -60,8 +55,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                list_of_info,
                field,
                function_name,
-               give_binds(dependencies_bindings, CheckpointVariableList),
-               interface_implementations,
+               dependencies,
                registered_callbacks_map,
                env
             )
@@ -73,13 +67,12 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
           } = list_of_info ->
 
             CheckpointVariableList.variable_terminated_until_count_by_parse_checkpoint(
-               list_of_info,
-               field,
-               function_name,
-               give_binds(dependencies_bindings, CheckpointVariableList),
-               interface_implementations,
-               registered_callbacks_map,
-               env
+              list_of_info,
+              field,
+              function_name,
+              dependencies,
+              registered_callbacks_map,
+              env
             )
 
           %{
@@ -89,14 +82,13 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
           } = list_of_info ->
 
             CheckpointVariableList.variable_terminated_take_while_by_callback_by_item_size_checkpoint(
-               list_of_info,
-               field,
-               function_name,
-               give_binds(dependencies_bindings, CheckpointVariableList),
-               interface_implementations,
-               registered_callbacks_map,
-               env
-             )
+              list_of_info,
+              field,
+              function_name,
+              dependencies,
+              registered_callbacks_map,
+              env
+            )
 
           %{
             type: :variable,
@@ -105,14 +97,13 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
           } = list_of_info ->
 
             CheckpointVariableList.variable_terminated_take_while_by_callback_by_parse_checkpoint(
-               list_of_info,
-               field,
-               function_name,
-               give_binds(dependencies_bindings, CheckpointVariableList),
-               interface_implementations,
-               registered_callbacks_map,
-               env
-             )
+              list_of_info,
+              field,
+              function_name,
+              dependencies,
+              registered_callbacks_map,
+              env
+            )
 
           %{
             type: :variable,
@@ -121,14 +112,13 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
           } = list_of_info ->
 
             CheckpointVariableList.variable_not_terminated_until_end_by_item_size_checkpoint(
-               list_of_info,
-               field,
-               function_name,
-               give_binds(dependencies_bindings, CheckpointVariableList),
-               interface_implementations,
-               registered_callbacks_map,
-               env
-             )
+              list_of_info,
+              field,
+              function_name,
+              dependencies,
+              registered_callbacks_map,
+              env
+            )
 
           %{
             type: :variable,
@@ -137,14 +127,13 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
           } = list_of_info ->
 
             CheckpointVariableList.variable_not_terminated_until_end_by_parse_checkpoint(
-               list_of_info,
-               field,
-               function_name,
-               give_binds(dependencies_bindings, CheckpointVariableList),
-               interface_implementations,
-               registered_callbacks_map,
-               env
-             )
+              list_of_info,
+              field,
+              function_name,
+              dependencies,
+              registered_callbacks_map,
+              env
+            )
 
         end
 
@@ -240,7 +229,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
-                unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+                unquote(
+                  DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+                )
 
                 unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
 
@@ -348,7 +339,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
-                unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+                unquote(
+                  DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+                )
 
                 unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
 
@@ -416,7 +409,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
-                unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+                unquote(
+                  DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+                )
 
                 unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
 
@@ -480,7 +475,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
-                unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+                unquote(
+                  DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+                )
 
                 unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
 
@@ -548,7 +545,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
-                unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+                unquote(
+                  DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+                )
 
                 unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
 
@@ -585,8 +584,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                      options
                    ) when is_binary(unquote(unmanaged_value_access)) do
 
-                unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
-
+                unquote(
+                  DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+                )
 
                 unquote(validate_patterns_and_prelude) = unquote(unmanaged_value_access)
 
@@ -619,7 +619,9 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                      options
                    ) when is_binary(unquote(unmanaged_value_access)) do
 
-                unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
+                unquote(
+                  DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+                )
 
                 unquote(wrong_data_binary_bind) = unquote(unmanaged_value_access)
 
@@ -633,16 +635,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
         end
 
     end
-
-  end
-
-
-  defp give_binds(binds, context) do
-
-    Enum.map(
-      binds,
-      fn { name, [], _context } ->  { name, [], context }  end
-    )
 
   end
 

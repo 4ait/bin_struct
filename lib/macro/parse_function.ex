@@ -21,7 +21,7 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.TypeConverterToManaged
   alias BinStruct.Macro.TypeConverterToBinary
   
-  alias BinStruct.Macro.Dependencies.BindingsToDependencies
+  alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.Dependencies.ParseDependencies
 
   #todo working on common type conversion system
@@ -65,7 +65,6 @@ defmodule BinStruct.Macro.ParseFunction do
              parse_checkpoint_function(
                checkpoint,
                index,
-               interface_implementations,
                registered_callbacks_map,
                env
              )
@@ -443,7 +442,7 @@ defmodule BinStruct.Macro.ParseFunction do
   end
 
 
-  defp parse_checkpoint_function(fields = _checkpoint, checkpoint_index, interface_implementations, registered_callbacks_map, env) do
+  defp parse_checkpoint_function(fields = _checkpoint, checkpoint_index, registered_callbacks_map, env) do
 
     function_name = parse_checkpoint_function_name(checkpoint_index)
 
@@ -458,21 +457,21 @@ defmodule BinStruct.Macro.ParseFunction do
 
         optional_not_present_clause =
           if optional do
-            optional_not_present_parse_checkpoint_function([field], function_name, interface_implementations, registered_callbacks_map)
+            optional_not_present_parse_checkpoint_function([field], function_name, registered_callbacks_map)
           else
             []
           end
 
         main_clause =
           case size_bits do
-            :unknown -> CheckpointUnknownSize.checkpoint_unknown_size([field], function_name, interface_implementations, registered_callbacks_map, env)
-            _size when not is_nil(optional_by) -> CheckpointOptionalByOfKnownSize.checkpoint_optional_by_of_known_size([field], function_name, interface_implementations, registered_callbacks_map, env)
-            _known_size_not_optional_field -> CheckpointKnownSize.checkpoint_known_size([field], function_name, interface_implementations, registered_callbacks_map, env)
+            :unknown -> CheckpointUnknownSize.checkpoint_unknown_size([field], function_name, registered_callbacks_map, env)
+            _size when not is_nil(optional_by) -> CheckpointOptionalByOfKnownSize.checkpoint_optional_by_of_known_size([field], function_name, registered_callbacks_map, env)
+            _known_size_not_optional_field -> CheckpointKnownSize.checkpoint_known_size([field], function_name, registered_callbacks_map, env)
           end
 
         [ optional_not_present_clause, main_clause ]
 
-      fields -> CheckpointKnownSize.checkpoint_known_size(fields, function_name, interface_implementations, registered_callbacks_map, env)
+      fields -> CheckpointKnownSize.checkpoint_known_size(fields, function_name, registered_callbacks_map, env)
 
   end
 
@@ -480,11 +479,11 @@ defmodule BinStruct.Macro.ParseFunction do
 
   end
 
-  defp optional_not_present_parse_checkpoint_function(fields, function_name, _interface_implementations, registered_callbacks_map) do
+  defp optional_not_present_parse_checkpoint_function(fields, function_name, registered_callbacks_map) do
     
     dependencies_bindings =
       ParseDependencies.parse_dependencies(fields,registered_callbacks_map)
-      |> BindingsToDependencies.bindings(__MODULE__)
+      |> BindingsToOnFieldDependencies.bindings(__MODULE__)
 
       quote do
 
