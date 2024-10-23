@@ -8,8 +8,8 @@ defmodule BinStructTest.VirtualFieldSystem.WriteTest do
     use BinStruct
 
     register_callback &mac_builder/2,
-                      mac_algo: :argument,
-                      payload: :argument
+                      mac_algo: :field,
+                      payload: :field
 
     register_callback &mac_length_builder/1,
                       mac: :field

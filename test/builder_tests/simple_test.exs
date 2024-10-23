@@ -7,7 +7,7 @@ defmodule BinStructTest.BuilderTests.SimpleTest do
     use BinStruct
 
     register_callback &length_builder/1,
-                      dynamic_sized_content: :argument
+                      dynamic_sized_content: :field
 
     field :computed_length, :uint16_be, builder: &length_builder/1
 

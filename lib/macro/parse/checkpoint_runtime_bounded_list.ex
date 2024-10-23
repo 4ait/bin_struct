@@ -35,7 +35,7 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
     item_binary_bind = { :item, [], __MODULE__ }
     initial_binary_access = { :bin, [], __MODULE__ }
 
-    parse_expr = ListItemParseExpressions.parse_expression(item_type, item_binary_bind, options_bind)
+    parse_expr = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     body =
       quote do

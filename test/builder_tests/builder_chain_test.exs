@@ -9,11 +9,11 @@ defmodule BinStructTest.BuilderTests.BuilderChainTest do
     register_callback &computed_value_1_builder/0
 
     register_callback &computed_value_2_builder/1,
-                      computed_value_1: :argument
+                      computed_value_1: :field
 
     register_callback &computed_value_breaking_order/2,
-                      computed_value_1: :argument,
-                      computed_value_2: :argument
+                      computed_value_1: :field,
+                      computed_value_2: :field
 
     field :computed_value_breaking_order, :uint16_be, builder: &computed_value_breaking_order/2
     field :computed_value_1, :uint16_be, builder: &computed_value_1_builder/0
