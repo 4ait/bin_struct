@@ -28,27 +28,21 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
     case asn1_module.decode(asn1_type, bin) do
 
-      { :ok, decoded_asn1, "" = _rest } ->
+      { :ok, decoded_asn1, "" } ->
 
         unmanaged_format_with_binary = { decoded_asn1, bin }
 
         { :ok, unmanaged_format_with_binary, "", opts}
 
-      { :ok, decoded_asn1, bits_remainder } when is_bitstring(bits_remainder) and bit_size(bits_remainder) < 8 ->
+      { :ok, decoded_asn1, rest_with_maybe_leading_bits_remainder } ->
 
-        bytes_size_without_bit_tail = byte_size(bin) - 1
+        remainder_bits = Integer.mod(bit_size(rest_with_maybe_leading_bits_remainder), 8)
 
-        <<bytes_without_bit_tail::bytes-size(bytes_size_without_bit_tail), _rest::bitstring>> = bin
-
-        unmanaged_format_with_binary = { decoded_asn1, bytes_without_bit_tail }
-
-        {:ok, unmanaged_format_with_binary, "", opts }
-
-      { :ok, decoded_asn1, rest } ->
+        <<_skip::bitstring-size(remainder_bits), rest::binary>> = rest_with_maybe_leading_bits_remainder
 
         parsed_bytes_count = byte_size(bin) - byte_size(rest)
 
-        << bytes_parsed::size(parsed_bytes_count)-bytes, _rest::binary>> = bin
+        << bytes_parsed::size(parsed_bytes_count)-bytes, _rest::binary >> = bin
 
         unmanaged_format_with_binary = { decoded_asn1, bytes_parsed  }
 

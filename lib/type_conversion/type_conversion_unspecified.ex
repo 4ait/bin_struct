@@ -1,0 +1,3 @@
+defmodule BinStruct.TypeConversion.TypeConversionUnspecified do
+
+end

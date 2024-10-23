@@ -10,10 +10,10 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
   alias BinStruct.Macro.Structs.DependencyOnField
-  alias BinStruct.Types.TypeConversionManaged
-  alias BinStruct.Types.TypeConversionUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionManaged
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
   alias BinStruct.Types.TypeConversionBinary
-  alias BinStruct.Types.TypeConversionUnspecified
+  alias BinStruct.TypeConversion.TypeConversionUnspecified
   alias BinStruct.Macro.Parse.ListItemParseExpressions
 
   def variable_terminated_until_length_by_parse_checkpoint(
