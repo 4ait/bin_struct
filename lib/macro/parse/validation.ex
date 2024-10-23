@@ -8,16 +8,9 @@ defmodule BinStruct.Macro.Parse.Validation do
   #type conversion for validate call if case it accessing self, something like take_while_by
 
   #todo also i dont really understand where binary name comes from, need to check that too
-  #todo we have problem what everyone has binary value somehow but no one is returned it, maybe would be
-  #cool if parsers (checkpoints) would return for us binary value to common scope and there is no need to
-  #TypeConvertors ever in that case
-  #so basically best goal is always have unmanaged value and binary value available at parsing operation
-  #so we never require conversion actually to those types
 
-  #maybe add exceptions to any type of callback other then validate_by and take_while by trying to access self
-  #maybe even generic returning conversion, coz its easier to parser return something required
-  #and code will become way more simple, we just request something and it will return
-
+  #todo parsers returning only self is flexible and should be keept, custom type would broke
+  #todo future implementation would be way to hard, should stick to encoding checkpoints pattern
 
   def validate_and_return(validate_fields_with_patterns_and_prelude, return_ok_clause, _context) do
 
