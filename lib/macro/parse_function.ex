@@ -18,8 +18,14 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Structs.TypeConversionUnspecified
   alias BinStruct.Macro.ReceivingDependenciesArgumentsBindings
   alias BinStruct.Macro.Structs.ParseCheckpointProduceConsumeInfo
-  alias BinStruct.Macro.ReceivingDependenciesArguments
+  alias BinStruct.Macro.CallbacksDependencies
   alias BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex
+  alias BinStruct.Macro.CallbacksDependenciesFieldExcluded
+
+  alias BinStruct.Macro.Dependencies.CallbacksDependencies
+  alias BinStruct.Macro.Dependencies.UniqueDeps
+  alias BinStruct.Macro.Dependencies.IsFieldDependentOn
+  alias BinStruct.Macro.Dependencies.ExcludeDependenciesOnField
 
   #todo working on common type conversion system
   #three type of values:
@@ -42,18 +48,17 @@ defmodule BinStruct.Macro.ParseFunction do
 
   def parse_function(fields, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
 
-    parse_checkpoints = hydrate_parse_checkpoints([], fields)
+    parse_checkpoints = hydrate_parse_checkpoints([], fields, registered_callbacks_map)
 
-    produce_consume_info_list =
+    dependencies_per_checkpoint =
       Enum.map(
-        Enum.with_index(parse_checkpoints, 1),
-        fn { checkpoint, index } ->
-          checkpoint_produce_consume_info(checkpoint, index, registered_callbacks_map)
+        fn checkpoint ->
+          checkpoint_dependencies(checkpoint, registered_callbacks_map)
         end
       )
 
     type_converter_checkpoint_input_output_by_index =
-      TypeConverterCheckpointInputOutputByIndex.type_converter_checkpoint_input_output_by_index(produce_consume_info_list)
+      TypeConverterCheckpointInputOutputByIndex.type_converter_checkpoint_input_output_by_index(dependencies_per_checkpoint)
 
     parse_checkpoints_functions =
       Enum.map(
@@ -505,22 +510,22 @@ defmodule BinStruct.Macro.ParseFunction do
 
   end
 
-  defp hydrate_parse_checkpoints(checkpoints, []), do: Enum.reverse(checkpoints)
+  defp hydrate_parse_checkpoints(checkpoints, [], _registered_callbacks_map), do: Enum.reverse(checkpoints)
 
-  defp hydrate_parse_checkpoints(checkpoints, remain) do
+  defp hydrate_parse_checkpoints(checkpoints, remain, registered_callbacks_map) do
 
-    {checkpoint, remain} = hydrate_parse_checkpoint_fields([], remain)
+    { checkpoint, remain } = hydrate_parse_checkpoint_fields([], remain, registered_callbacks_map)
 
     new_checkpoints = [ checkpoint | checkpoints]
 
-    hydrate_parse_checkpoints(new_checkpoints, remain)
+    hydrate_parse_checkpoints(new_checkpoints, remain, registered_callbacks_map)
 
   end
 
 
-  defp hydrate_parse_checkpoint_fields(checkpoint, []), do: { Enum.reverse(checkpoint), []}
+  defp hydrate_parse_checkpoint_fields(checkpoint, [], _registered_callbacks_map), do: { Enum.reverse(checkpoint), []}
 
-  defp hydrate_parse_checkpoint_fields(checkpoint, [ field | rest ]) do
+  defp hydrate_parse_checkpoint_fields(checkpoint, [ field | rest ], registered_callbacks_map) do
 
     size = FieldSize.field_size_bits(field)
 
@@ -531,16 +536,45 @@ defmodule BinStruct.Macro.ParseFunction do
       size when is_integer(size) and not is_optional ->
 
         new_checkpoint = [ field | checkpoint ]
-        hydrate_parse_checkpoint_fields(new_checkpoint, rest)
 
-      _ ->
+        has_for_cross_checkpoint_dependency_requirements =
+          has_for_cross_checkpoint_dependency(
+            Enum.reverse(new_checkpoint),
+            registered_callbacks_map
+          )
 
-        case checkpoint do
-          [] -> { [field], rest }
-          checkpoint -> { Enum.reverse(checkpoint), [ field | rest ] }
+        if !has_for_cross_checkpoint_dependency_requirements do
+          hydrate_parse_checkpoint_fields(new_checkpoint, rest, registered_callbacks_map)
+        else
+          produce_checkpoint(checkpoint, field, rest)
         end
 
+
+      _ -> produce_checkpoint(checkpoint, field, rest)
+
     end
+
+  end
+
+  defp produce_checkpoint(checkpoint, field, rest) do
+
+    case checkpoint do
+      [] -> { [field], rest }
+      checkpoint -> { Enum.reverse(checkpoint), [ field | rest ] }
+    end
+
+  end
+
+  defp has_for_cross_checkpoint_dependency(checkpoint, registered_callbacks_map) do
+
+    dependencies = checkpoint_dependencies(checkpoint, registered_callbacks_map)
+
+    Enum.any?(
+      checkpoint,
+      fn field ->
+        IsFieldDependentOn.is_field_dependent_on(dependencies, field)
+      end
+    )
 
   end
 
@@ -552,28 +586,24 @@ defmodule BinStruct.Macro.ParseFunction do
     String.to_atom("type_conversion_checkpoint_#{checkpoint_index}")
   end
 
+  defp checkpoint_dependencies(checkpoint, registered_callbacks_map) do
 
-  defp checkpoint_produce_consume_info(checkpoint, checkpoint_index, registered_callbacks_map) do
-
-
-    registered_callbacks =
+    self_excluded_dependencies =
       Enum.map(
         checkpoint,
         fn field ->
-          CallbacksOnField.callbacks_used_while_parsing(field, registered_callbacks_map)
+
+          callbacks = CallbacksOnField.callbacks_used_while_parsing(field, registered_callbacks_map)
+
+          dependencies = CallbacksDependencies.dependencies(callbacks)
+
+          ExcludeDependenciesOnField.exclude_dependencies_on_field(dependencies, field)
+
         end
       )
       |> List.flatten()
 
-
-    consume_dependencies = BinStruct.Macro.ReceivingDependenciesArguments.receiving_dependencies_arguments(registered_callbacks)
-
-
-    %ParseCheckpointProduceConsumeInfo{
-      checkpoint_index: checkpoint_index,
-      produce_fields: checkpoint,
-      consume_dependencies: consume_dependencies
-    }
+    UniqueDeps.unique_dependencies(self_excluded_dependencies)
 
   end
 

@@ -7,21 +7,16 @@ defmodule BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex do
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.Structs.RegisteredOption
 
-  def type_converter_checkpoint_input_output_by_index(produce_consume_infos) do
+  def type_converter_checkpoint_input_output_by_index(consumed_dependencies_per_checkpoint) do
 
-    consume_dependency_by_checkpoint_index =
+    consumed_dependencies_with_index =
       Enum.map(
-        produce_consume_infos,
-        fn produce_consume_info ->
-
-          %ParseCheckpointProduceConsumeInfo{
-            checkpoint_index: checkpoint_index,
-            consume_dependencies: consume_dependencies
-          } = produce_consume_info
+        Enum.with_index(consumed_dependencies_per_checkpoint, 1),
+        fn { dependencies, checkpoint_index } ->
 
           Enum.map(
-            consume_dependencies,
-            fn consume_dependency -> { checkpoint_index, consume_dependency } end
+            dependencies,
+            fn dependency -> { checkpoint_index, dependency } end
           )
 
         end
@@ -29,7 +24,7 @@ defmodule BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex do
 
     unique_by_output_dependencies_by_index =
       Enum.group_by(
-        consume_dependency_by_checkpoint_index,
+        consumed_dependencies_with_index,
         fn { _checkpoint_index, consume_dependency } ->
           unique_by_output(consume_dependency)
         end

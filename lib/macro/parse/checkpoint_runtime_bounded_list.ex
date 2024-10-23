@@ -8,7 +8,7 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
   alias BinStruct.Macro.Structs.Field
 
 
-  defp runtime_bounded_list_checkpoint(
+  def runtime_bounded_list_checkpoint(
          %{ type: :runtime_bounded } = list_of_info,
          %Field{} = field,
          function_name,
@@ -23,10 +23,9 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
       item_type: item_type
     } = list_of_info
 
-    %Field{name: name, opts: opts} = field
+    %Field{ opts: opts } = field
 
     optional_by = opts[:optional_by]
-
 
     runtime_bounds_expr = ListOfRuntimeBounds.get_runtime_bounds(bounds, registered_callbacks_map, __MODULE__)
 

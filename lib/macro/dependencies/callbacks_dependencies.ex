@@ -1,4 +1,4 @@
-defmodule BinStruct.Macro.CallbacksDependencies do
+defmodule BinStruct.Macro.Dependencies.CallbacksDependencies do
 
   alias BinStruct.Macro.Parse.CallbacksDependenciesAll
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
@@ -13,7 +13,6 @@ defmodule BinStruct.Macro.CallbacksDependencies do
 
   def dependencies(registered_callbacks) do
 
-   dependencies =
      Enum.map(
        registered_callbacks,
        fn registered_callback ->
@@ -54,44 +53,6 @@ defmodule BinStruct.Macro.CallbacksDependencies do
 
        end
     ) |> List.flatten()
-
-    keep_only_unique_dependencies(dependencies)
-
-  end
-
-  defp keep_only_unique_dependencies(dependencies) do
-
-
-    Enum.uniq_by(
-      dependencies,
-      fn dependency ->
-
-        case dependency do
-
-          %DependencyOnOption{} = on_option_dependency ->
-
-            %DependencyOnOption{ option: option } = on_option_dependency
-
-            %RegisteredOption{ name: name, interface: interface } = option
-
-            { :option, { name, interface }  }
-
-          %DependencyOnField{} = on_field_dependency ->
-
-            %DependencyOnField{ field: field, type_conversion: type_conversion } = on_field_dependency
-
-            field_name =
-              case field do
-                %Field{ name: name } -> name
-                %VirtualField{ name: name } -> name
-              end
-
-            { :field, { field_name, type_conversion }  }
-
-        end
-
-      end
-    )
 
   end
 
