@@ -38,7 +38,6 @@ defmodule BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex do
 
     Enum.map(output_by_index, fn { index , dependencies_with_index } ->
 
-
       dependencies_without_index =
         Enum.map(
           dependencies_with_index,

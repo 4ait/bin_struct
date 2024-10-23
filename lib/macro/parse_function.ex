@@ -8,13 +8,11 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Parse.CheckpointUnknownSize
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Parse.MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
-  alias BinStruct.Macro.CallbacksOnField
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.TypeConversion.TypeConversionManaged
   alias BinStruct.TypeConversion.TypeConversionUnmanaged
   alias BinStruct.TypeConversion.TypeConversionUnspecified
   alias BinStruct.TypeConversion.TypeConversionBinary
-  alias BinStruct.Macro.ReceivingDependenciesArgumentsBindings
   alias BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex
 
   alias BinStruct.Macro.Dependencies.IsFieldDependentOn
@@ -57,6 +55,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
     type_converter_checkpoint_input_output_by_index =
       TypeConverterCheckpointInputOutputByIndex.type_converter_checkpoint_input_output_by_index(dependencies_per_checkpoint)
+
 
     parse_checkpoints_functions =
       Enum.map(
@@ -178,21 +177,15 @@ defmodule BinStruct.Macro.ParseFunction do
 
             end
 
-          registered_callbacks =
-            Enum.map(
-              fields,
-              fn field ->
-                CallbacksOnField.callbacks_used_while_parsing(field, registered_callbacks_map)
-              end
-            ) |> List.flatten()
-
-          receiving_dependencies_arguments_bindings =
-            ReceivingDependenciesArgumentsBindings.receiving_dependencies_arguments_bindings(registered_callbacks, __MODULE__)
+          binding_to_received_by_checkpoint_arguments =
+            BindingsToOnFieldDependencies.bindings(
+              ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map), __MODULE__
+            )
 
           parse_checkpoint_with_clause =
             quote do
               { :ok, unquote_splicing(returning_from_checkpoint_values_binds), rest, options } <-
-                unquote(parse_checkpoint_function_name(index))(rest, unquote_splicing(receiving_dependencies_arguments_bindings), options)
+                unquote(parse_checkpoint_function_name(index))(rest, unquote_splicing(binding_to_received_by_checkpoint_arguments), options)
             end
 
           Enum.reject([

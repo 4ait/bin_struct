@@ -28,6 +28,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
     dependencies = ParseDependencies.parse_dependencies_excluded_self([field], registered_callbacks_map)
     dependencies_bindings = BindingsToOnFieldDependencies.bindings(dependencies, __MODULE__)
 
+
     case type do
 
       { :list_of, list_of_info } ->

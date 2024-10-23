@@ -4,6 +4,9 @@ defmodule BinStruct.Macro.Parse.Validation do
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
 
+  #todo validation is tricky one case coz it can access field itself, we need some how provide required
+  #type conversion for validate call if case it accessing self, something like take_while_by
+
   def validate_and_return(validate_fields_with_patterns_and_prelude, return_ok_clause, _context) do
 
       case validate_fields_with_patterns_and_prelude do
