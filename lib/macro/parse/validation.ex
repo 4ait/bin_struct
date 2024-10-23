@@ -4,8 +4,15 @@ defmodule BinStruct.Macro.Parse.Validation do
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
 
-  #todo validation is tricky one case coz it can access field itself, we need some how provide required
+  #todo validation is tricky one case coz it can access field itself, we need somehow provide required
   #type conversion for validate call if case it accessing self, something like take_while_by
+
+  #todo also i dont really understand where binary name comes from, need to check that too
+  #todo we have problem what everyone has binary value somehow but no one is returned it, maybe would be
+  #cool if parsers (checkpoints) would return for us binary value to common scope and there is no need to
+  #TypeConvertors ever in that case
+  #so basically best goal is always have unmanaged value and binary value available at parsing operation
+  #so we never require conversion actually to those types
 
   def validate_and_return(validate_fields_with_patterns_and_prelude, return_ok_clause, _context) do
 
