@@ -254,50 +254,181 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    end
 
 
-   def from_unmanaged_to_managed_int16_be(<<value::16-big-signed>>), do: value
-   def from_unmanaged_to_managed_int32_be(<<value::32-big-signed>>), do: value
-   def from_unmanaged_to_managed_int64_be(<<value::64-big-signed>>), do: value
-   def from_unmanaged_to_managed_float32_be(<<value::32-big-float>>), do: value
-   def from_unmanaged_to_managed_float64_be(<<value::64-big-float>>), do: value
+   def from_unmanaged_to_managed_int16_be(quoted_unmanaged_value) do
 
-   def from_unmanaged_to_managed_uint16_le(<<value::16-little-unsigned>>), do: value
-   def from_unmanaged_to_managed_uint32_le(<<value::32-little-unsigned>>), do: value
-   def from_unmanaged_to_managed_uint64_le(<<value::64-little-unsigned>>), do: value
-   def from_unmanaged_to_managed_int16_le(<<value::16-little-signed>>), do: value
-   def from_unmanaged_to_managed_int32_le(<<value::32-little-signed>>), do: value
-   def from_unmanaged_to_managed_int64_le(<<value::64-little-signed>>), do: value
-   def from_unmanaged_to_managed_float32_le(<<value::32-little-float>>), do: value
-   def from_unmanaged_to_managed_float64_le(<<value::64-little-float>>), do: value
+     quote do
+       <<value::16-big-signed>> = unquote(quoted_unmanaged_value)
+       value
+     end
 
-
-   def from_unmanaged_to_managed_uint_variable_bit_size_none(bin, bit_size) when is_integer(bit_size) do
-     <<value::size(bit_size)-unsigned>> = bin
-     value
    end
 
-   def from_unmanaged_to_managed_uint_variable_bit_size_be(bin, bit_size) when is_integer(bit_size) do
-     <<value::size(bit_size)-big-unsigned>> = bin
-     value
+   def from_unmanaged_to_managed_int32_be(quoted_unmanaged_value) do
+
+     quote do
+       <<value::32-big-signed>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
    end
 
-   def from_unmanaged_to_managed_uint_variable_bit_size_le(bin, bit_size) when is_integer(bit_size)do
-     <<value::size(bit_size)-little-unsigned>> = bin
-     value
+   def from_unmanaged_to_managed_int64_be(quoted_unmanaged_value) do
+
+     quote do
+       <<value::64-big-signed>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
    end
 
-   def from_unmanaged_to_managed_int_variable_bit_size_none(bin, bit_size) when is_integer(bit_size) do
-     <<value::size(bit_size)-signed>> = bin
-     value
+   def from_unmanaged_to_managed_float32_be(quoted_unmanaged_value) do
+
+     quote do
+       <<value::32-big-float>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
    end
 
-   def from_unmanaged_to_managed_int_variable_bit_size_be(bin, bit_size) when is_integer(bit_size) do
-     <<value::size(bit_size)-big-signed>> = bin
-     value
+
+   def from_unmanaged_to_managed_float64_be(quoted_unmanaged_value) do
+
+     quote do
+       <<value::64-big-float>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
    end
 
-   def from_unmanaged_to_managed_int_variable_bit_size_le(bin, bit_size) when is_integer(bit_size) do
-     <<value::size(bit_size)-little-signed>> = bin
-     value
+   def from_unmanaged_to_managed_uint16_le(quoted_unmanaged_value) do
+
+     quote do
+       <<value::16-little-unsigned>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+   def from_unmanaged_to_managed_uint32_le(quoted_unmanaged_value) do
+
+     quote do
+       <<value::32-little-unsigned>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+
+   def from_unmanaged_to_managed_uint64_le(quoted_unmanaged_value) do
+
+     quote do
+       <<value::64-little-unsigned>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+
+   def from_unmanaged_to_managed_int16_le(quoted_unmanaged_value) do
+
+     quote do
+       <<value::16-little-signed>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+
+   def from_unmanaged_to_managed_int32_le(quoted_unmanaged_value) do
+
+     quote do
+       <<value::32-little-signed>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+   def from_unmanaged_to_managed_int64_le(quoted_unmanaged_value) do
+
+     quote do
+       <<value::64-little-signed>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+
+   def from_unmanaged_to_managed_float32_le(quoted_unmanaged_value) do
+
+     quote do
+       <<value::32-little-float>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+   def from_unmanaged_to_managed_float64_le(quoted_unmanaged_value) do
+
+     quote do
+       <<value::64-little-float>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+
+   def from_unmanaged_to_managed_uint_variable_bit_size_none(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
+
+     quote do
+       <<value::size(unquote(bit_size))-unsigned>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+   def from_unmanaged_to_managed_uint_variable_bit_size_be(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
+
+     quote do
+       <<value::size(bit_size)-big-unsigned>>  = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+   def from_unmanaged_to_managed_uint_variable_bit_size_le(quoted_unmanaged_value, bit_size) when is_integer(bit_size)do
+
+     quote do
+       <<value::size(bit_size)-little-unsigned>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+   def from_unmanaged_to_managed_int_variable_bit_size_none(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
+
+     quote do
+       <<value::size(bit_size)>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+   def from_unmanaged_to_managed_int_variable_bit_size_be(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
+
+     quote do
+       <<value::size(bit_size)-big-signed>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
+   end
+
+   def from_unmanaged_to_managed_int_variable_bit_size_le(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
+
+     quote do
+       <<value::size(bit_size)-little-signed>> = unquote(quoted_unmanaged_value)
+       value
+     end
+
    end
 
 
