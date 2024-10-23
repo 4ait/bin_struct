@@ -6,7 +6,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
 
     use BinStruct
 
-    alias BinStruct.Macro.Structs.TypeConversionManaged
+    alias BinStruct.TypeConversion.TypeConversionManaged
 
     register_callback &take_while_by/1, items: %{ type: :field, type_conversion: TypeConversionManaged }
 

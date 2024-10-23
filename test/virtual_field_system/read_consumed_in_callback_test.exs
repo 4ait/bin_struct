@@ -6,7 +6,7 @@ defmodule BinStructTest.VirtualFieldSystem.ReadConsumedInCallbackTest do
 
     use BinStruct
 
-    alias BinStruct.Macro.Structs.TypeConversionUnmanaged
+    alias BinStruct.TypeConversion.TypeConversionUnmanaged
 
     register_callback &read_open_or_close_enum/1,
                       number: %{ type: :field, type_conversion: TypeConversionUnmanaged }
