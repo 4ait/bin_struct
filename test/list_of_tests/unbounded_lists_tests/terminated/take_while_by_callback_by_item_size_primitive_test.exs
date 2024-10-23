@@ -6,7 +6,9 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
 
     use BinStruct
 
-    register_callback &take_while_by/1, items: :field
+    alias BinStruct.Macro.Structs.TypeConversionManaged
+
+    register_callback &take_while_by/1, items: %{ type: :field, type_conversion: TypeConversionManaged }
 
     field :items, { :list_of, :uint16_be }, take_while_by: &take_while_by/1
 
@@ -14,10 +16,8 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
 
       [ recent | _previous ] = items
 
-      expected_value_to_stop = BinStructStaticValue.uint16_be(3)
-
       case recent do
-        ^expected_value_to_stop -> :halt
+        3 -> :halt
         _ -> :cont
       end
 

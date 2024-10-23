@@ -19,7 +19,11 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.TakeWhileByCa
 
       [ recent | _previous ] = items
 
-      case recent.binary do
+      %{
+        binary: binary
+      } = Item.decode(recent)
+
+      case binary do
         <<3>> -> :halt
         _ -> :cont
       end

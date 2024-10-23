@@ -132,7 +132,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
      %{
        length: _length,
        item_size: item_size,
-       count: count
+       count: _count
      } = bounds
 
     bind_item = { :item, [], __MODULE__ }
@@ -146,20 +146,10 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
 
         quote do
 
-          { "", chunks } =
-            Enum.reduce(
-              1..unquote(count),
-              { unquote(binary_access_bind), [] },
-              fn _index, { bin, chunks } ->
-
-                <<chunk::unquote(item_size)-bytes, rest::binary>> = bin
-
-                { rest, [ chunk | chunks ] }
-
-              end
-            )
-
-          chunks = Enum.reverse(chunks)
+          chunks =
+            for << chunk::binary-size(item_size) <- unquote(binary_access_bind) >> do
+              chunk
+            end
 
           result =
             Enum.reduce_while(chunks, { :ok, [], unquote(options_access) }, fn item, { :ok, curr_items, curr_options } ->

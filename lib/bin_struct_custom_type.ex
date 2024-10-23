@@ -9,6 +9,30 @@ defmodule BinStructCustomType do
 
   end
 
+  defp maybe_auto_implementation_of_parse(is_custom_type_terminated) do
+
+    impl =
+      if is_custom_type_terminated do
+
+        quote do
+          def parse(bin, options \\ nil) do
+            case parse_returning_options(bin, options) do
+              { :wrong_data, _wrong_data } = wrong_data -> wrong_data
+              :not_enough_bytes ->  :not_enough_bytes
+              { :ok, struct, rest, _options } -> { :ok, struct, rest }
+            end
+          end
+        end
+
+      end
+
+    case impl do
+      nil -> []
+      impl -> [impl]
+    end
+
+  end
+
   defp maybe_auto_implementation_of_parse_exact_returning_options(is_custom_type_terminated) do
 
     impl =
@@ -59,6 +83,10 @@ defmodule BinStructCustomType do
 
       unquote_splicing(
         maybe_auto_implementation_of_parse_exact_returning_options(is_custom_type_terminated)
+      )
+
+      unquote_splicing(
+        maybe_auto_implementation_of_parse(is_custom_type_terminated)
       )
 
       unquote(
