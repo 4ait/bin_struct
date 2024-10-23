@@ -43,7 +43,7 @@ defmodule BinStruct.Macro.TypeConverterToUnmanaged do
         PrimitiveTypeConverter.from_managed_to_unmanaged_int_variable_bit_size_be(quoted, bit_size)
 
       :little ->
-        PrimitiveTypeConverter.from_managed_to_unmanaged_int_variable_bit_size_little(quoted, bit_size)
+        PrimitiveTypeConverter.from_managed_to_unmanaged_int_variable_bit_size_le(quoted, bit_size)
 
       :none ->
         PrimitiveTypeConverter.from_managed_to_unmanaged_int_variable_bit_size_none(quoted, bit_size)
@@ -74,7 +74,7 @@ defmodule BinStruct.Macro.TypeConverterToUnmanaged do
 
 
   def convert_managed_value_to_unmanaged(:int8_be, quoted) do
-    PrimitiveTypeConverter.from_managed_to_unmanaged_int8_be(quoted)
+    PrimitiveTypeConverter.from_managed_to_unmanaged_int8(quoted)
   end
 
   def convert_managed_value_to_unmanaged(:int16_be, quoted) do
