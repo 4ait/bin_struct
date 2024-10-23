@@ -15,6 +15,9 @@ defmodule BinStruct.Macro.Parse.Validation do
   #so we never require conversion actually to those types
 
   #maybe add exceptions to any type of callback other then validate_by and take_while by trying to access self
+  #maybe even generic returning conversion, coz its easier to parser return something required
+  #and code will become way more simple, we just request something and it will return
+
 
   def validate_and_return(validate_fields_with_patterns_and_prelude, return_ok_clause, _context) do
 
