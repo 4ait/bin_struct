@@ -45,7 +45,7 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
                 unquote(encoded)::binary
               end
 
-            bit_size ->
+            size_bits ->
 
               is_bit_size = size_bits < 8 || Integer.mod(size_bits, 8) > 0
 

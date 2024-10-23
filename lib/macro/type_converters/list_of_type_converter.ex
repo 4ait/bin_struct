@@ -25,7 +25,7 @@ defmodule BinStruct.Macro.TypeConverters.ListOfTypeConverter do
     quoted
   end
 
-  def from_unmanaged_to_binary_list_of({ :list_of, _list_of_info }, quoted) do
+  def from_unmanaged_to_binary_list_of({ :list_of, list_of_info }, quoted) do
 
     %{ item_type: item_type } = list_of_info
 

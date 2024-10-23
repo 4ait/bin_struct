@@ -213,7 +213,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
           unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
           unquote(
-            WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, unquote(initial_binary_access), registered_callbacks_map, __MODULE__)
+            WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, initial_binary_access, registered_callbacks_map, __MODULE__)
           )
 
         end
@@ -267,6 +267,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
+    unmanaged_new_item_bind = { :unmanaged_new_item, [], __MODULE__ }
     parse_expr = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     recursive_parse_functions =
@@ -286,24 +287,28 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
           case quote(parse_expr) do
 
-            {:ok, unmanaged_new_item } ->
+            {:ok, unquote(unmanaged_new_item_bind) } ->
 
               managed_new_item =
                 unquote(
                   if has_dependency_on_managed do
-                    BinStruct.Macro.TypeConverterToManaged.convert_unmanaged_value_to_managed(item_type, unquote(unmanaged_new_item))
+                    BinStruct.Macro.TypeConverterToManaged.convert_unmanaged_value_to_managed(item_type, unmanaged_new_item_bind)
                   end
                 )
 
               binary_new_item =
                 unquote(
                   if has_dependency_on_binary do
-                    <<item_binary_part::binary-size(byte_size(binary) - byte_size(rest)), _rest>> = binary
-                    item_binary_part
+
+                    quote do
+                      <<item_binary_part::binary-size(byte_size(binary) - byte_size(rest)), _rest>> = binary
+                      item_binary_part
+                    end
+
                   end
                 )
 
-              unquote(unmanaged_value_bind) = [ unmanaged_new_item | unmanaged_items_acc ]
+              unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
               unquote(managed_value_bind) = [ managed_new_item | managed_items_acc ]
               unquote(binary_value_bind) = [ binary_new_item | binary_items_acc ]
 
@@ -426,6 +431,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
+    unmanaged_new_item_bind = { :unmanaged_new_item, [], __MODULE__ }
     parse_expr = ListItemParseExpressions.parse_expression(item_type, item_binary_bind, options_bind)
 
     recursive_parse_functions =
@@ -438,24 +444,28 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
           case unquote(parse_expr) do
 
-            {:ok, unmanaged_new_item, rest } ->
+            {:ok, unquote(unmanaged_new_item_bind), rest } ->
 
               managed_new_item =
                 unquote(
                   if has_dependency_on_managed do
-                    BinStruct.Macro.TypeConverterToManaged.convert_unmanaged_value_to_managed(item_type, unquote(unmanaged_new_item))
+                    BinStruct.Macro.TypeConverterToManaged.convert_unmanaged_value_to_managed(item_type, unmanaged_new_item_bind)
                   end
                 )
 
               binary_new_item =
                 unquote(
                   if has_dependency_on_binary do
-                    <<item_binary_part::binary-size(unquote(item_binary_bind) - byte_size(rest)), _rest>> = binary
-                    item_binary_part
+
+                    quote do
+                      <<item_binary_part::binary-size(unquote(item_binary_bind) - byte_size(rest)), _rest>> = unquote(item_binary_bind)
+                      item_binary_part
+                    end
+
                   end
                 )
 
-              unquote(unmanaged_value_bind) = [ unmanaged_new_item | unmanaged_items_acc ]
+              unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
               unquote(managed_value_bind) = [ managed_new_item | managed_items_acc ]
               unquote(binary_value_bind) = [ binary_new_item | binary_items_acc ]
 
@@ -519,7 +529,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
           unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
           unquote(
-            WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, unquote(initial_binary_access), registered_callbacks_map, __MODULE__)
+            WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, initial_binary_access, registered_callbacks_map, __MODULE__)
           )
 
         end
@@ -709,7 +719,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
           unquote(DeconstructOptionsForField.deconstruct_options_for_field(field, interface_implementations, registered_callbacks_map, __MODULE__))
 
           unquote(
-            WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, unquote(initial_binary_access), registered_callbacks_map, __MODULE__)
+            WrapWithOptionalBy.maybe_wrap_with_optional_by(validate_and_return_clause, optional_by, initial_binary_access, registered_callbacks_map, __MODULE__)
           )
 
         end

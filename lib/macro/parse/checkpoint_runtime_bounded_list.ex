@@ -5,6 +5,8 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
   alias BinStruct.Macro.Parse.Validation
   alias BinStruct.Macro.Parse.DeconstructOptionsForField
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
+  alias BinStruct.Macro.Structs.Field
+
 
   defp runtime_bounded_list_checkpoint(
          %{ type: :runtime_bounded } = list_of_info,
