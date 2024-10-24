@@ -77,7 +77,7 @@ defmodule BinStruct.BuiltIn.Asn1 do
   end
 
 
-  def to_managed(unmanaged, _custom_type_args) do
+  def from_unmanaged_to_managed(unmanaged, _custom_type_args) do
 
     { elixir_term, _encoded_binary } = unmanaged
 
@@ -85,7 +85,7 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
   end
 
-  def to_unmanaged(managed, custom_type_args) do
+  def managed_to_unmanaged(managed, custom_type_args) do
 
 
     %{

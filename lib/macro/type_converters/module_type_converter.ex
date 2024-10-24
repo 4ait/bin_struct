@@ -13,7 +13,7 @@ defmodule BinStruct.Macro.TypeConverters.ModuleTypeConverter do
       } ->
 
       quote do
-        unquote(module).to_unmanaged(unquote(quoted), unquote(custom_type_args))
+        unquote(module).from_managed_to_unmanaged(unquote(quoted), unquote(custom_type_args))
       end
 
     end
@@ -34,7 +34,7 @@ defmodule BinStruct.Macro.TypeConverters.ModuleTypeConverter do
       } ->
 
         quote do
-          unquote(module).to_managed(unquote(quoted), unquote(custom_type_args))
+          unquote(module).from_unmanaged_to_managed(unquote(quoted), unquote(custom_type_args))
         end
 
     end

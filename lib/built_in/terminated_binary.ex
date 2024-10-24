@@ -54,8 +54,8 @@ defmodule BinStruct.BuiltIn.TerminatedBinary do
     :unknown
   end
 
-  def to_managed(unmanaged, _custom_type_args), do: unmanaged
-  def to_unmanaged(managed, _custom_type_args), do: managed
+  def from_unmanaged_to_managed(unmanaged, _custom_type_args), do: unmanaged
+  def from_managed_to_unmanaged(managed, _custom_type_args), do: managed
 
   defp parse_dynamic_terminated(bin, termination, acc \\ <<>>)
 

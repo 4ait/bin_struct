@@ -119,7 +119,7 @@ defmodule BinStruct.Macro.DecodeFunction do
             } ->
 
               quote do
-                unquote(module).to_managed(unquote(value_access), unquote(custom_type_args))
+                unquote(module).from_unmanaged_to_managed(unquote(value_access), unquote(custom_type_args))
               end
 
           end

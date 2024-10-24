@@ -108,26 +108,46 @@ defmodule BinStruct.Macro.Parse.Validation do
                     context
                   )
 
-                prelude =
-                  quote do
-                    unquote(is_valid_access_field) =
+                  maybe_bind_to_managed_self =
 
-                      unquote(managed_value_bind) =
+                    if has_dependency_on_managed do
 
-                        unquote(
-                          if has_dependency_on_managed do
+                      quote do
+
+                        unquote(managed_value_bind) =
+                          unquote(
                             BinStruct.Macro.TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_bind)
-                          end
+                          )
+
+                      end
+
+                    end
+
+                maybe_bind_to_binary_self =
+
+                  if has_dependency_on_binary do
+
+                    quote do
+
+                      unquote(binary_value_bind) =
+                        unquote(
+                          BinStruct.Macro.TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_bind)
                         )
 
-                    unquote(binary_value_bind) =
-                      unquote(
-                        if has_dependency_on_binary do
-                          BinStruct.Macro.TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_bind)
-                        end
-                      )
+                    end
 
-                     unquote(validate_by_function_call)
+                  end
+
+                type_conversion_binds =
+                  [ maybe_bind_to_managed_self, maybe_bind_to_binary_self ]
+                  |> Enum.reject(&is_nil/1)
+
+                prelude =
+                  quote do
+
+                    unquote_splicing(type_conversion_binds)
+
+                    unquote(is_valid_access_field) = unquote(validate_by_function_call)
 
                   end
 

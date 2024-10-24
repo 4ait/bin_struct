@@ -41,6 +41,10 @@ defmodule BinStruct.Macro.Preprocess.RemapModule do
       raise "Custom type required to define either parse_returning_options/3 or parse_exact_returning_options/3"
     end
 
+    if parse_returning_options && parse_exact_returning_options  do
+      raise "Custom type required to define either parse_returning_options/3 or parse_exact_returning_options/3, not both"
+    end
+
     if !Kernel.function_exported?(module_full_name, :dump_binary, 2) do
       raise "Custom type required to define dump_binary/2"
     end
@@ -49,12 +53,12 @@ defmodule BinStruct.Macro.Preprocess.RemapModule do
       raise "Custom type required to define size/2"
     end
 
-    if !Kernel.function_exported?(module_full_name, :to_managed, 2) do
-      raise "Custom type required to define to_managed/2"
+    if !Kernel.function_exported?(module_full_name, :from_unmanaged_to_managed, 2) do
+      raise "Custom type required to define from_unmanaged_to_managed/2"
     end
 
-    if !Kernel.function_exported?(module_full_name, :to_unmanaged, 2) do
-      raise "Custom type required to define to_unmanaged/2"
+    if !Kernel.function_exported?(module_full_name, :from_managed_to_unmanaged, 2) do
+      raise "Custom type required to define from_managed_to_unmanaged/2"
     end
 
     if !Kernel.function_exported?(module_full_name, :known_total_size_bytes, 1) do
