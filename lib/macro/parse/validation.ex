@@ -3,6 +3,13 @@ defmodule BinStruct.Macro.Parse.Validation do
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
+  alias BinStruct.Macro.Dependencies.CallbacksDependencies
+  alias BinStruct.Macro.Bind
+  alias BinStruct.Macro.Structs.DependencyOnField
+  alias BinStruct.TypeConversion.TypeConversionManaged
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionUnspecified
+  alias BinStruct.TypeConversion.TypeConversionBinary
 
   #todo validation is tricky one case coz it can access field itself, we need somehow provide required
   #type conversion for validate call if case it accessing self, something like take_while_by
@@ -56,6 +63,9 @@ defmodule BinStruct.Macro.Parse.Validation do
         context
       ) do
 
+    BinStruct.Macro.Dependencies.ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map)
+
+
     validate_by_patterns_and_preludes =
         Enum.map(
           fields,
@@ -73,6 +83,25 @@ defmodule BinStruct.Macro.Parse.Validation do
 
                 validate_by = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, validate_by)
 
+                %{
+                  has_dependency_on_managed: has_dependency_on_managed,
+                  has_dependency_on_unspecified: has_dependency_on_unspecified,
+                  has_dependency_on_unmanaged: _has_dependency_on_unmanaged,
+                  has_dependency_on_binary: has_dependency_on_binary
+                } = validate_by_dependency_on_self_info(name, validate_by)
+
+                has_dependency_on_managed = has_dependency_on_managed || has_dependency_on_unspecified
+
+                managed_value_bind = Bind.bind_managed_value(name, context)
+                unmanaged_value_bind = Bind.bind_unmanaged_value(name, context)
+                binary_value_bind = Bind.bind_binary_value(name, context)
+
+                #unmanaged value should be available always
+
+                #validate by callback should be provided with required args
+                #all external fields will be provided by checkpoint itself
+                #in case callback needs self we need supply it with appropriate type conversion
+
                 validate_by_function_call =
                   RegisteredCallbackFunctionCall.registered_callback_function_call(
                     validate_by,
@@ -81,7 +110,25 @@ defmodule BinStruct.Macro.Parse.Validation do
 
                 prelude =
                   quote do
-                    unquote(is_valid_access_field) = unquote(validate_by_function_call)
+                    unquote(is_valid_access_field) =
+
+                      unquote(managed_value_bind) =
+
+                        unquote(
+                          if has_dependency_on_managed do
+                            BinStruct.Macro.TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_bind)
+                          end
+                        )
+
+                    unquote(binary_value_bind) =
+                      unquote(
+                        if has_dependency_on_binary do
+                          BinStruct.Macro.TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_bind)
+                        end
+                      )
+
+                     unquote(validate_by_function_call)
+
                   end
 
                 pattern =
@@ -130,6 +177,65 @@ defmodule BinStruct.Macro.Parse.Validation do
 
 
       { patterns, prelude }
+
+  end
+
+  defp validate_by_dependency_on_self_info(current_field_name, validate_by_registered_callback) do
+
+    validate_by_dependencies = CallbacksDependencies.dependencies([validate_by_registered_callback])
+
+    dependency_on_self_for_type_conversions =
+      Enum.reduce(
+        validate_by_dependencies,
+        [],
+        fn take_while_by_dependency, acc ->
+
+          case take_while_by_dependency do
+            %DependencyOnField{ field: field, type_conversion: type_conversion } ->
+
+              case field do
+                %Field{ name: ^current_field_name } -> [ type_conversion | acc ]
+                _ -> acc
+              end
+
+            _ -> acc
+
+          end
+
+        end
+      )
+
+    has_dependency_on_managed =
+      Enum.any?(
+        dependency_on_self_for_type_conversions,
+        fn type_conversion -> type_conversion == TypeConversionManaged end
+      )
+
+    has_dependency_on_unspecified =
+      Enum.any?(
+        dependency_on_self_for_type_conversions,
+        fn type_conversion -> type_conversion == TypeConversionUnspecified end
+      )
+
+
+    has_dependency_on_unmanaged =
+      Enum.any?(
+        dependency_on_self_for_type_conversions,
+        fn type_conversion -> type_conversion == TypeConversionUnmanaged end
+      )
+
+    has_dependency_on_binary =
+      Enum.any?(
+        dependency_on_self_for_type_conversions,
+        fn type_conversion -> type_conversion == TypeConversionBinary end
+      )
+
+    %{
+      has_dependency_on_managed: has_dependency_on_managed,
+      has_dependency_on_unspecified: has_dependency_on_unspecified,
+      has_dependency_on_unmanaged: has_dependency_on_unmanaged,
+      has_dependency_on_binary: has_dependency_on_binary
+    }
 
   end
 
