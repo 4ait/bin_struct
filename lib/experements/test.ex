@@ -17,7 +17,6 @@ defmodule StructWithVirtualFields do
   register_callback &data_for_actual_impl/1, nested_binary: :field
 
   register_callback &nested_binary_builder/1, actual_implementation: %{ type: :field, type_conversion: TypeConversionBinary }
-  register_callback &nested_binary_builder2/1, actual_implementation: %{ type: :field, type_conversion: TypeConversionBinary }
 
   virtual :actual_implementation, TrueImpl,
           read_by: &data_for_actual_impl/1
@@ -26,17 +25,12 @@ defmodule StructWithVirtualFields do
         length: 1,
         builder: &nested_binary_builder/1
 
-  field :nested_binary2, :binary,
-        length: 1,
-        builder: &nested_binary_builder2/1
-
   defp data_for_actual_impl(nested_binary) do
     { :ok, true_impl } = TrueImpl.parse_exact(nested_binary)
     true_impl
   end
 
  defp nested_binary_builder(true_impl_bin), do: true_impl_bin
- defp nested_binary_builder2(true_impl_bin), do: true_impl_bin
 
 end
 

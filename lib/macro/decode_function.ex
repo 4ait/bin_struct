@@ -5,10 +5,11 @@ defmodule BinStruct.Macro.DecodeFunction do
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.NonVirtualFields
-  alias BinStruct.Macro.Structs.RegisteredCallbacksMap
-  alias BinStruct.Macro.RegisteredCallbackFunctionCall
-  alias BinStruct.Macro.TypeConverterToManaged
   alias BinStruct.Macro.IsOptionalField
+
+  alias BinStruct.Macro.TypeConverterToManaged
+
+  alias BinStruct.Macro.DecodeFunctionReadByCalls
 
   #assuming we have managed type, such type to work people expect most comfortable to work this
   #and unmanaged type we expect it to be close to stream of binary for easy parse/dump binaries
@@ -215,66 +216,9 @@ defmodule BinStruct.Macro.DecodeFunction do
 
   end
 
-  defp decode_virtual_field(%VirtualField{} = virtual_field, registered_callbacks_map, _env) do
-
-    %VirtualField{ type: type, opts: opts } = virtual_field
-
-    read_by = opts[:read_by]
-
-    read_by_registered_callback = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, read_by)
-
-    read_by_registered_callback_call =
-      RegisteredCallbackFunctionCall.registered_callback_function_call(
-        read_by_registered_callback,
-        __MODULE__
-      )
-
-    value_access = { :value, [], __MODULE__ }
-    deep_access = { :deep, [], __MODULE__ }
-
-    decode_type_expr = decode_type(type, opts, value_access, deep_access)
-
-    is_optional =
-      case opts[:optional] do
-        optional when is_boolean(optional) -> optional
-        _ -> false
-      end
-
-    decode_type_expr_with_maybe_empty_binary_check =
-      if is_optional do
-        decode_expr_wrap_empty_binary(decode_type_expr, value_access)
-      else
-        decode_type_expr
-      end
-
-    quote do
-      unquote(value_access) = unquote(read_by_registered_callback_call)
-      unquote(decode_type_expr_with_maybe_empty_binary_check)
-    end
-
-
-  end
-
   def decode_function(fields, registered_callbacks_map, env) do
 
     non_virtual_fields = NonVirtualFields.skip_virtual_fields(fields)
-
-    virtual_fields = fields -- non_virtual_fields
-    
-    virtual_fields_with_defined_read_by_callback =
-      Enum.filter(
-        virtual_fields,
-        fn %VirtualField{} = virtual_field ->
-
-          %VirtualField{ opts: opts } = virtual_field
-
-          case opts[:read_by] do
-            read_by when not is_nil(read_by) -> true
-            nil -> false
-          end
-
-        end
-      )
 
     struct_fields =
       Enum.map(
@@ -288,61 +232,44 @@ defmodule BinStruct.Macro.DecodeFunction do
         end
       )
 
-    fields_to_decode =  non_virtual_fields ++ virtual_fields_with_defined_read_by_callback
-
     managed_values_bindings =
       Enum.map(
-        fields_to_decode,
+        non_virtual_fields,
         fn field ->
 
-          { _opts, name } =
-
-            case field do
-              %Field{opts: opts, name: name} ->
-                {opts, name}
-
-              %VirtualField{opts: opts, name: name} ->
-                {opts, name}
-            end
+          %Field{ name: name } = field
 
           managed_value_access = Bind.bind_managed_value(name, __MODULE__)
 
-          case field do
-            %Field{} ->
-              quote do
-                unquote(managed_value_access) = unquote(decode_field(field, env))
-              end
-
-            %VirtualField{} ->
-              quote do
-                unquote(managed_value_access) = unquote(decode_virtual_field(field, registered_callbacks_map, env))
-              end
+          quote do
+            unquote(managed_value_access) = unquote(decode_field(field, env))
           end
 
         end
       )
 
+    read_by_calls =
+      DecodeFunctionReadByCalls.read_by_calls(
+        fields,
+        registered_callbacks_map,
+        __MODULE__
+      )
+
     decoded_map_fields_with_values =
       Enum.map(
-        fields_to_decode,
+        fields,
         fn field ->
 
-          { opts, name } =
-
+          name =
             case field do
-              %Field{opts: opts, name: name} ->
-                {opts, name}
-
-              %VirtualField{opts: opts, name: name} ->
-                {opts, name}
+              %Field{ name: name } -> name
+              %VirtualField{ name: name} -> name
             end
 
           managed_value_access = Bind.bind_managed_value(name, __MODULE__)
 
-          case opts[:show_on_decode] do
-            false -> nil
-            _ -> { name, managed_value_access }
-          end
+          { name, managed_value_access }
+
       end)
       |> Enum.reject(&is_nil/1)
 
@@ -360,6 +287,8 @@ defmodule BinStruct.Macro.DecodeFunction do
           end
 
           unquote_splicing(managed_values_bindings)
+
+          unquote_splicing(read_by_calls)
 
         %{
           unquote_splicing(decoded_map_fields_with_values)

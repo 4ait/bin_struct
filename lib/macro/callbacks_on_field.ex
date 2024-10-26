@@ -13,7 +13,6 @@ defmodule BinStruct.Macro.CallbacksOnField do
       opts[:take_while_by],
       opts[:validate_by],
       opts[:read_by],
-      opts[:read_from_binary_by]
     ]
     |> Enum.reject(&is_nil/1)
     |> registered_version_of_callbacks(registered_callbacks_map)
