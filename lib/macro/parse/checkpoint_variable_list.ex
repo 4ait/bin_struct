@@ -701,13 +701,15 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     parse_expr = ListItemParseExpressions.parse_expression(item_type, item_binary_bind, options_bind)
 
     recursive_parse_functions =
+
       quote do
 
         def unquote(parse_until_end_by_parse_function_name)(<<>>, _options, acc) do
           { :ok, :lists.reverse(acc) }
         end
 
-        def unquote(parse_until_end_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc) when is_binary(binary) do
+        def unquote(parse_until_end_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc)
+            when is_binary( unquote(item_binary_bind) ) do
 
           case unquote(parse_expr) do
 
@@ -770,7 +772,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
       end
 
-    [ checkpoint_function ] ++ recursive_parse_functions
+    List.flatten([ checkpoint_function, recursive_parse_functions ])
 
   end
 

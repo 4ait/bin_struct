@@ -1,15 +1,14 @@
-defmodule ItemStruct do
-
+defmodule Item do
   use BinStruct
 
-  field :value, :uint8
+  alias BinStruct.BuiltIn.TerminatedBinary
 
+  field :binary, { TerminatedBinary, termination: <<0>> }
 end
 
 defmodule StructWithItems do
 
   use BinStruct
-
-  field :items, { :list_of, ItemStruct }, count: 3
+  field :items, { :list_of, Item }
 
 end

@@ -95,7 +95,8 @@ defmodule BinStruct.Macro.ParseFunction do
                env
              )
            end)
-      |> List.flatten()
+
+    parse_checkpoints_functions = List.flatten(parse_checkpoints_functions)
 
     type_conversion_checkpoints_functions =
       Enum.map(
