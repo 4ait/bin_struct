@@ -104,20 +104,20 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
           %Field{ name: name } = field
 
-          binary_value_access = Bind.bind_binary_value(name, __MODULE__)
+          unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
 
           case conversion do
 
             { :module_parse_exact_result, encode_expr } ->
 
               quote do
-                { :ok, unquote(binary_value_access), options } <- unquote(encode_expr)
+                { :ok, unquote(unmanaged_value_access), options } <- unquote(encode_expr)
               end
 
             { :items_parse_result, encode_expr } ->
 
               quote do
-                { :ok, unquote(binary_value_access), options } <- unquote(encode_expr)
+                { :ok, unquote(unmanaged_value_access), options } <- unquote(encode_expr)
               end
 
             _ -> nil
