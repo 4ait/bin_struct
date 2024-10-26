@@ -289,7 +289,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     recursive_parse_functions =
 
-      quote do
+      quote generated: true do
 
         def unquote(parse_take_while_by_callback_by_item_size_function_name)(binary, _options, item_size, _items_with_different_type_conversions_acc)
             when is_integer(item_size) and byte_size(binary) < item_size do
