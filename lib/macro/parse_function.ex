@@ -21,12 +21,51 @@ defmodule BinStruct.Macro.ParseFunction do
   
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.Dependencies.ParseDependencies
+  alias BinStruct.Macro.Dependencies.InterfaceImplementationDependencies
+  alias BinStruct.Macro.Structs.DependencyOnField
+  alias BinStruct.Macro.Structs.DependencyOnOption
+
+  alias BinStruct.Macro.Parse.ParseDependencyResolver
 
   #todo read calls in parse may not work
+
+  defp dependencies_to_be_resolved_manually_for_interface_implementations(interface_implementations_dependencies, resolved_dependencies) do
+
+    Enum.filter(
+      interface_implementations_dependencies,
+      fn dependency ->
+
+        is_resolved =
+          case dependency do
+
+            %DependencyOnField{} = dependency_on_field ->
+
+              Enum.any?(
+                resolved_dependencies,
+                fn resolved_dependency -> resolved_dependency == dependency_on_field end
+              )
+
+            %DependencyOnOption{} -> true
+
+          end
+
+        !is_resolved
+
+      end
+    )
+
+  end
 
   def parse_function(fields, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
 
     parse_checkpoints = hydrate_parse_checkpoints([], fields, registered_callbacks_map)
+
+    interface_implementations_dependencies =
+      InterfaceImplementationDependencies.interface_implementations_dependencies(
+        interface_implementations,
+        registered_callbacks_map
+      )
+
 
     dependencies_per_checkpoint =
       Enum.map(
@@ -36,14 +75,19 @@ defmodule BinStruct.Macro.ParseFunction do
         end
       )
 
+    dependencies_to_be_resolved_manually_for_interface_implementations =
+      dependencies_to_be_resolved_manually_for_interface_implementations(
+        interface_implementations_dependencies,
+        List.flatten(dependencies_per_checkpoint)
+      )
+
     type_converter_checkpoint_input_output_by_index =
       TypeConverterCheckpointInputOutputByIndex.type_converter_checkpoint_input_output_by_index(dependencies_per_checkpoint)
-
 
     parse_checkpoints_functions =
       Enum.map(
         Enum.with_index(parse_checkpoints, 1),
-           fn {checkpoint, index} ->
+           fn { checkpoint, index } ->
              parse_checkpoint_function(
                checkpoint,
                index,
@@ -207,6 +251,7 @@ defmodule BinStruct.Macro.ParseFunction do
           nil -> []
 
           implemented_options_call ->
+
             expr =
               quote do
                 options = unquote(implemented_options_call)
@@ -215,6 +260,13 @@ defmodule BinStruct.Macro.ParseFunction do
             [expr]
 
         end
+
+    dependency_resolvers_for_option_interface_impl =
+      ParseDependencyResolver.parse_dependency_resolvers(
+        dependencies_to_be_resolved_manually_for_interface_implementations,
+        __MODULE__
+      )
+
 
     parse_function_body =
       quote do
@@ -234,6 +286,8 @@ defmodule BinStruct.Macro.ParseFunction do
                 unquote_splicing(returning_struct_key_values)
               }
 
+
+            unquote_splicing(dependency_resolvers_for_option_interface_impl)
             unquote_splicing(implemented_options_call)
 
 

@@ -27,7 +27,7 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
 
                 case unquote(unmanaged_value_access) do
                   nil -> <<>>
-                  nil -> unquote(to_binary_value_expression)
+                  unquote(unmanaged_value_access) -> unquote(to_binary_value_expression)
                 end
 
               end
@@ -91,7 +91,7 @@ defmodule BinStruct.Macro.DumpBinaryFunction do
         fields -- static_not_optional_fields,
         fn %Field{} = field ->
 
-          %Field{name: name} = field
+          %Field{ name: name } = field
 
           { name, Bind.bind_unmanaged_value(name, __MODULE__) }
 
