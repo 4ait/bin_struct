@@ -38,7 +38,7 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
     parse_expr = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     body =
-      quote do
+      quote generated: true do
 
         %{
           length: length,
