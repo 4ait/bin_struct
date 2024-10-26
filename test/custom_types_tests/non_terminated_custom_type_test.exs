@@ -22,8 +22,8 @@ defmodule BinStructTest.CustomTypesTests.NonTerminatedCustomTypeTest do
       :unknown
     end
 
-    def to_managed(unmanaged, _custom_type_args), do: unmanaged
-    def to_unmanaged(managed, _custom_type_args), do: managed
+    def from_unmanaged_to_managed(unmanaged, _custom_type_args), do: unmanaged
+    def from_managed_to_unmanaged(managed, _custom_type_args), do: managed
 
   end
 

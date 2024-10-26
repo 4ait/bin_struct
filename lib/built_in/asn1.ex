@@ -85,7 +85,7 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
   end
 
-  def managed_to_unmanaged(managed, custom_type_args) do
+  def from_managed_to_unmanaged(managed, custom_type_args) do
 
 
     %{

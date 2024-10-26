@@ -260,15 +260,25 @@ defmodule BinStruct.Macro.DecodeFunction do
         fields,
         fn field ->
 
-          name =
             case field do
-              %Field{ name: name } -> name
-              %VirtualField{ name: name} -> name
+              %Field{ name: name } ->
+
+                { name, Bind.bind_managed_value(name, __MODULE__) }
+
+              %VirtualField{ name: name, opts: opts } ->
+
+                case opts[:read_by] do
+
+                  read_by when not is_nil(read_by) ->
+
+                    { name, Bind.bind_managed_value(name, __MODULE__) }
+
+                  _ -> nil
+
+                end
+
             end
 
-          managed_value_access = Bind.bind_managed_value(name, __MODULE__)
-
-          { name, managed_value_access }
 
       end)
       |> Enum.reject(&is_nil/1)

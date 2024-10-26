@@ -268,8 +268,8 @@ defmodule BinStruct do
      module_code = BinStruct.MacroDebug.code(result_quote)
 
 
-     if env.module == StructWithVirtualFields do
-      #BinStruct.MacroDebug.puts_code(result_quote)
+     if env.module == Virt do
+      BinStruct.MacroDebug.puts_code(result_quote)
      end
 
       quote do

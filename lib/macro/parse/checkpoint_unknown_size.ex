@@ -580,16 +580,18 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             quote do
 
               defp unquote(function_name)(
-                     unquote(unmanaged_value_access),
+                     unquote(binary_value_access_bind),
                      unquote_splicing(dependencies_bindings),
                      options
-                   ) when is_binary(unquote(unmanaged_value_access)) do
+                   ) when is_binary(unquote(binary_value_access_bind)) do
+
 
                 unquote(
                   DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
                 )
 
-                unquote(validate_patterns_and_prelude) = unquote(unmanaged_value_access)
+                unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
+                unquote(unmanaged_value_access) = unquote(binary_value_access_bind)
 
                 unquote(
                   WrapWithLengthBy.wrap_with_length_by(body, length_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
@@ -615,16 +617,19 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             quote do
 
               defp unquote(function_name)(
-                     unquote(unmanaged_value_access),
+                     unquote(binary_value_access_bind),
                      unquote_splicing(dependencies_bindings),
                      options
-                   ) when is_binary(unquote(unmanaged_value_access)) do
+                   ) when is_binary(unquote(binary_value_access_bind)) do
+
+
 
                 unquote(
                   DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
                 )
 
-                unquote(wrong_data_binary_bind) = unquote(unmanaged_value_access)
+                unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
+                unquote(unmanaged_value_access) = unquote(binary_value_access_bind)
 
                 unquote(
                   WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
