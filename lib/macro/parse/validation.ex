@@ -11,15 +11,6 @@ defmodule BinStruct.Macro.Parse.Validation do
   alias BinStruct.TypeConversion.TypeConversionUnspecified
   alias BinStruct.TypeConversion.TypeConversionBinary
 
-  #todo validation is tricky one case coz it can access field itself, we need somehow provide required
-  #type conversion for validate call if case it accessing self, something like take_while_by
-
-  #todo also i dont really understand where binary name comes from, need to check that too
-
-  #todo parsers returning only self is flexible and should be keept, custom type would broke
-  #todo future implementation would be way to hard, should stick to encoding checkpoints pattern
-  #todo only self reference field callbacks can implement this optimization if they want, coz they are scoped enough
-
   def validate_and_return(validate_fields_with_patterns_and_prelude, return_ok_clause, _context) do
 
       case validate_fields_with_patterns_and_prelude do

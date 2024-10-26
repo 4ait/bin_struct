@@ -3,8 +3,6 @@ defmodule BinStruct do
   #todo add docs
   @moduledoc false
 
-  #todo construct_from_binary_by -> Binary Source
-  #todo compute_by -> Managed Source
 
   alias BinStruct.Macro.Preprocess.Remap
 
@@ -271,7 +269,7 @@ defmodule BinStruct do
 
 
      if env.module == StructWithVirtualFields do
-      BinStruct.MacroDebug.puts_code(result_quote)
+      #BinStruct.MacroDebug.puts_code(result_quote)
      end
 
       quote do

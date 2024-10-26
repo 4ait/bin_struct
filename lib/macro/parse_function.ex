@@ -22,24 +22,7 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.Dependencies.ParseDependencies
 
-  #todo working on common type conversion system
-  #three type of values:
-  #
-  #1. Binary (can only be access in parse functions and constructed from dump_binary functions)
-  #2. Managed
-  #3. Unmanaged
-  #
-  #managed and unmanaged can be converted between vice versa
-
-  # we need to make checkpoint return values others depends on
-  # we need something like dependency three
-  # so when we producing checkpoint we binding to arguments we need
-  # and we producing and returning all requested from below
-  # so when we creating checkpoint we need to know what all checkpoints from below need from us
-
-  #but this will be hard as fuck and not really logical and probably better goal is to introduce middleware checkpoint
-  #what will do all type conversions required and bring them to our with clauses scope
-  #when we actually will need change quite a bit and not change any parsing logic inside
+  #todo read calls in parse may not work
 
   def parse_function(fields, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
 

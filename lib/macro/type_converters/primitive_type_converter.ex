@@ -1,7 +1,5 @@
 defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
 
-  #todo implement new primitive type conversion
-
    def from_managed_to_unmanaged_bool(true_of_false_quoted, bit_size) do
 
      quote do
