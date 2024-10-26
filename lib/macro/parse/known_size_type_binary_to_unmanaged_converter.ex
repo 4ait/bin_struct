@@ -147,7 +147,7 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
         quote do
 
           chunks =
-            for << chunk::binary-size(item_size) <- unquote(binary_access_bind) >> do
+            for << chunk::binary-size(unquote(item_size)) <- unquote(binary_access_bind) >> do
               chunk
             end
 
