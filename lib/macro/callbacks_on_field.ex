@@ -20,10 +20,10 @@ defmodule BinStruct.Macro.CallbacksOnField do
 
   end
 
-  def callbacks_used_while_creating_new_struct(%Field{ opts: opts }, registered_callbacks_map) do
+  def callbacks_used_while_creating_new_struct(%Field { opts: opts }, registered_callbacks_map) do
 
     [
-      opts[:builder],
+      opts[:builder]
     ]
     |> Enum.reject(&is_nil/1)
     |> registered_version_of_callbacks(registered_callbacks_map)

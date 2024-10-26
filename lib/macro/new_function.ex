@@ -2,7 +2,6 @@ defmodule BinStruct.Macro.NewFunction do
 
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.TypeConverterToUnmanaged
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.RegisteredCallback
@@ -10,6 +9,18 @@ defmodule BinStruct.Macro.NewFunction do
   alias BinStruct.Macro.IsOptionalField
   alias BinStruct.Macro.NonVirtualFields
   alias BinStruct.Macro.Structs.VirtualField
+  alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
+  alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
+  alias BinStruct.Macro.Dependencies.CallbacksDependencies
+  alias BinStruct.Macro.Structs.DependencyOnField
+  alias BinStruct.Macro.Structs.DependencyOnOption
+  alias BinStruct.TypeConversion.TypeConversionBinary
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionManaged
+  alias BinStruct.TypeConversion.TypeConversionUnspecified
+  alias BinStruct.Macro.TypeConverterToUnmanaged
+  alias BinStruct.Macro.TypeConverterToBinary
+
 
   defp default_value_initialization(field) do
 
@@ -172,32 +183,81 @@ defmodule BinStruct.Macro.NewFunction do
 
   end
 
+  defp create_type_conversion_resolvers_with_resolved_info(
+         depend_on_field_name,
+         depend_on_field_type,
+         depend_on_type_conversion
+       ) do
+
+
+    depend_on_field_managed_value_access = Bind.bind_managed_value(depend_on_field_name, __MODULE__)
+    depend_on_field_unmanaged_value_access = Bind.bind_unmanaged_value(depend_on_field_name, __MODULE__)
+    depend_on_field_binary_value_access = Bind.bind_binary_value(depend_on_field_name, __MODULE__)
+
+    case depend_on_type_conversion do
+      TypeConversionBinary ->
+
+        unmanaged_value =
+          TypeConverterToUnmanaged.convert_managed_value_to_unmanaged(
+            depend_on_field_type,
+            depend_on_field_managed_value_access
+          )
+
+        binary_value =
+          TypeConverterToBinary.convert_unmanaged_value_to_binary(
+            depend_on_field_type,
+            depend_on_field_unmanaged_value_access
+          )
+
+        resolver =
+
+          quote do
+            unquote(depend_on_field_unmanaged_value_access) = unquote(unmanaged_value)
+            unquote(depend_on_field_binary_value_access) = unquote(binary_value)
+          end
+
+        resolved = [
+          { depend_on_field_name, TypeConversionUnmanaged },
+          { depend_on_field_name, TypeConversionBinary }
+        ]
+
+        { resolver, resolved }
+
+      TypeConversionUnmanaged ->
+
+        unmanaged_value =
+          TypeConverterToUnmanaged.convert_managed_value_to_unmanaged(
+            depend_on_field_type,
+            depend_on_field_managed_value_access
+          )
+
+        resolver =
+
+          quote do
+            unquote(depend_on_field_unmanaged_value_access) = unquote(unmanaged_value)
+          end
+
+        resolved = [
+          { depend_on_field_name, TypeConversionUnmanaged }
+        ]
+
+
+        { resolver, resolved }
+
+      TypeConversionManaged -> nil
+      TypeConversionUnspecified -> nil
+    end
+
+  end
+
 
   def new_function(fields, %RegisteredCallbacksMap{} = registered_callbacks_map) do
 
     non_virtual_fields = NonVirtualFields.skip_virtual_fields(fields)
 
-    virtual_fields = fields -- non_virtual_fields
-
-    virtual_fields_with_defined_write_operation =
-      Enum.filter(
-        virtual_fields,
-        fn %VirtualField{} = virtual_field ->
-
-          %VirtualField{ opts: opts } = virtual_field
-
-          case opts[:write] do
-            true  = _write -> true
-            _ -> false
-          end
-
-        end
-      )
-
-
     default_values_nil_kv =
       Enum.map(
-        non_virtual_fields ++ virtual_fields_with_defined_write_operation,
+        fields,
         fn field ->
 
           field_name =
@@ -213,14 +273,14 @@ defmodule BinStruct.Macro.NewFunction do
 
     default_values_initialization =
       Enum.map(
-        non_virtual_fields ++ virtual_fields_with_defined_write_operation,
+        fields,
         &default_value_initialization/1
       )
       |> Enum.reject(&is_nil/1)
 
     args_deconstruction_fields =
       Enum.map(
-        non_virtual_fields ++ virtual_fields_with_defined_write_operation,
+        fields,
         fn field ->
 
           name =
@@ -237,10 +297,10 @@ defmodule BinStruct.Macro.NewFunction do
     fields_with_builder_ordered = fields_ordered_by_builder_calling_order(fields, registered_callbacks_map)
 
     builder_calls =
-      Enum.map(
+      Enum.reduce(
         fields_with_builder_ordered,
-        fn field ->
-
+        { _builder_calls = [], _resolved_dependencies = [] },
+        fn field, { builder_calls_acc, resolved_dependencies_acc } ->
 
           { name, opts } =
             case field do
@@ -258,14 +318,93 @@ defmodule BinStruct.Macro.NewFunction do
               builder_callback
             )
 
+          builder_depends_on = CallbacksDependencies.dependencies([registered_callback])
+
+          resolved_dependencies_with_info =
+            Enum.map(
+              builder_depends_on,
+              fn dependency ->
+
+                case dependency do
+
+                  %DependencyOnField{} = on_field_dependency ->
+
+                    %DependencyOnField{
+                      field: depend_on_field,
+                      type_conversion: depend_on_type_conversion
+                    } = on_field_dependency
+
+                    depend_on_field_name =
+                      case depend_on_field do
+                        %Field{ name: name } -> name
+                        %VirtualField{ name: name } ->  name
+                      end
+
+                    depend_on_field_type =
+                      case depend_on_field do
+                        %Field{ type: type } -> type
+                        %VirtualField{ type: type } ->  type
+                      end
+
+                    maybe_already_resolved =
+                      Enum.find(
+                        resolved_dependencies_acc,
+                        fn { resolved_dependency_on_field_name, resolved_dependency_on_type_conversion } ->
+
+                          resolved_dependency_on_field_name == depend_on_field_name &&
+                            resolved_dependency_on_type_conversion == depend_on_type_conversion
+
+                        end
+                      )
+
+                    case maybe_already_resolved do
+
+                     nil ->
+                       create_type_conversion_resolvers_with_resolved_info(
+                          depend_on_field_name,
+                          depend_on_field_type,
+                          depend_on_type_conversion
+                       )
+
+                     _already_resolved -> nil
+
+                    end
+
+                  %DependencyOnOption{} -> nil
+
+                end
+
+              end
+            )
+            |> Enum.reject(&is_nil/1)
+            |> List.flatten()
+
+
+          { resolvers_code, resolvers_info } =
+
+            Enum.reduce(
+              resolved_dependencies_with_info,
+              { [], [] },
+              fn { resolver_code, resolvers_info }, { total_resolvers_code, total_resolvers_info } ->
+
+                {  total_resolvers_code ++ [resolver_code], total_resolvers_info ++ resolvers_info}
+
+              end
+            )
+
+
           registered_callback_function_call = RegisteredCallbackFunctionCall.registered_callback_function_call(registered_callback, __MODULE__)
 
-          quote do
-            unquote(managed_value_access) = unquote(registered_callback_function_call)
-          end
+          builder_call =
+            quote do
+              unquote_splicing(resolvers_code)
+              unquote(managed_value_access) = unquote(registered_callback_function_call)
+            end
+
+          { builder_calls_acc ++ [ builder_call ], resolved_dependencies_acc ++ resolvers_info }
 
         end
-      )
+      ) |> then(fn { builder_calls, _resolve_info } -> builder_calls end)
 
     encoder_calls =
       Enum.map(
@@ -380,8 +519,19 @@ defmodule BinStruct.Macro.NewFunction do
                 arguments,
                 fn argument ->
 
-                  case argument  do
-                    _ -> nil
+                  case argument do
+                    %RegisteredCallbackFieldArgument{} = field_argument ->
+
+                      %RegisteredCallbackFieldArgument{
+                        field: field,
+                      } = field_argument
+
+                      case field do
+                        %Field{ name: name } -> name
+                        %VirtualField{ name: name } ->  name
+                      end
+
+                    %RegisteredCallbackOptionArgument{} -> nil
                   end
 
                 end
