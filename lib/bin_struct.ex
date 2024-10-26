@@ -3,6 +3,9 @@ defmodule BinStruct do
   #todo add docs
   @moduledoc false
 
+  #todo construct_from_binary_by -> Binary Source
+  #todo compute_by -> Managed Source
+
   alias BinStruct.Macro.Preprocess.Remap
 
   defmacro __using__(_opts) do
