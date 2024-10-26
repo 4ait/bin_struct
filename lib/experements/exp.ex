@@ -1,22 +1,9 @@
-defmodule StructWithPrimitiveItems do
+defmodule BooleanValuesBinStruct do
 
   use BinStruct
 
-  alias BinStruct.TypeConversion.TypeConversionManaged
-
-  register_callback &take_while_by/1, items: %{ type: :field, type_conversion: TypeConversionManaged }
-
-  field :items, { :list_of, :uint16_be }, take_while_by: &take_while_by/1
-
-  defp take_while_by(items) do
-
-    [ recent | _previous ] = items
-
-    case recent do
-      3 -> :halt
-      _ -> :cont
-    end
-
-  end
+  field :true_bool, :bool
+  field :false_bool, :bool
+  field :bool_16_bit, :bool, bits: 16
 
 end

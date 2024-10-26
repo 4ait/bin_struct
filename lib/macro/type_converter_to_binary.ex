@@ -13,7 +13,7 @@ defmodule BinStruct.Macro.TypeConverterToBinary do
   end
 
   def convert_unmanaged_value_to_binary({:bool, %{ bit_size: bit_size }}, quoted) do
-    PrimitiveTypeConverter.from_managed_to_unmanaged_bool(quoted, bit_size)
+    PrimitiveTypeConverter.from_unmanaged_to_binary_bool(quoted, bit_size)
   end
 
   def convert_unmanaged_value_to_binary({:uint, %{ bit_size: bit_size, endianness: endianness} }, quoted) do

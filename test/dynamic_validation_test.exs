@@ -38,7 +38,7 @@ defmodule BinStructTest.DynamicValidationTest do
       binary: ^correct_binary
     } = values
 
-    { :wrong_data, ^incorrect_binary } = StructMatchingBinaryPattern.parse(incorrect_source_binary)
+    { :wrong_data, _ } = StructMatchingBinaryPattern.parse(incorrect_source_binary)
 
   end
 
