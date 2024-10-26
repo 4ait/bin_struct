@@ -1,30 +1,31 @@
 defmodule Exp do
 
-  use ExUnit.Case
+  defmodule Item do
+    use BinStruct
+
+    alias BinStruct.BuiltIn.TerminatedBinary
+
+    field :binary, { TerminatedBinary, termination: <<0>> }
+  end
 
   defmodule StructWithItems do
 
     use BinStruct
 
-    field :items, { :list_of, :binary }, length: 9, item_size: 3
+    register_callback &take_while_by/1, items: :field
 
-  end
+    field :items, { :list_of, Item }, take_while_by: &take_while_by/1
 
-  test "bound by length and item_size computed" do
+    defp take_while_by(items) do
 
-    items = [ "123", "234", "345" ]
+      [ recent | _previous ] = items
 
-    struct = StructWithItems.new(items: items)
+      case recent.binary do
+        <<4, 5, 6>> -> :halt
+        _ -> :cont
+      end
 
-    dump = StructWithItems.dump_binary(struct)
-
-    { :ok, parsed_struct, "" = _rest } = StructWithItems.parse(dump)
-
-    values = StructWithItems.decode(parsed_struct)
-
-    %{
-      items: ^items
-    } = values
+    end
 
   end
 

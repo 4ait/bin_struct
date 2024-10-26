@@ -464,7 +464,10 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
       quote do
 
-        def unquote(parse_take_while_by_callback_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), items_with_different_type_conversions_acc) when is_binary(binary) and is_list(acc) do
+        def unquote(parse_take_while_by_callback_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), items_with_different_type_conversions_acc)
+            when is_binary( unquote(item_binary_bind) )
+
+          do
 
           { unmanaged_items_acc, managed_items_acc, binary_items_acc } = items_with_different_type_conversions_acc
 
