@@ -1,18 +1,40 @@
-defmodule StructWithOptionalFields do
+defmodule StructWithVirtualFields do
 
   use BinStruct
 
-  register_callback &always_not_present/0
+  register_callback &mac_builder/2,
+                    mac_algo: :field,
+                    payload: :field
 
-  register_callback &present_if_optional_1_present/1,
-                    optional_1: :field
+  register_callback &mac_length_builder/1,
+                    mac: :field
 
-  field :optional_1, :uint8, optional_by: &always_not_present/0
-  field :optional_2, :uint8, optional_by: &present_if_optional_1_present/1
+  register_callback &mac_length/1,
+                    mac_length: :field
 
-  def always_not_present(), do: false
+  virtual :mac_algo, :unspecified, default: :none
 
-  def present_if_optional_1_present(optional_1) when not is_nil(optional_1), do: true
-  def present_if_optional_1_present(_optional_1), do: false
+  field :mac_length, :uint8,
+        builder: &mac_length_builder/1
+
+  field :mac, :binary,
+        builder: &mac_builder/2,
+        length_by: &mac_length/1
+
+  field :payload, :binary
+
+  defp mac_builder(:none, _payload), do: ""
+
+  defp mac_builder(:"hmac-sha2-256", payload) do
+
+    mac_key = "supersecretkey"
+
+    :crypto.mac(:hmac, :sha256, mac_key, payload)
+
+  end
+
+  defp mac_length_builder(mac), do: byte_size(mac)
+
+  defp mac_length(mac_length), do: mac_length
 
 end

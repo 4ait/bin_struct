@@ -50,8 +50,9 @@ defmodule BinStructTest.VirtualFieldSystem.WriteTest do
     struct =
       StructWithVirtualFields.new(
         mac_algo: :"hmac-sha2-256",
-        payload: <<123>>
+        payload: <<1, 2, 3>>
       )
+
 
     dump = StructWithVirtualFields.dump_binary(struct)
 
@@ -59,10 +60,12 @@ defmodule BinStructTest.VirtualFieldSystem.WriteTest do
 
     values = StructWithVirtualFields.decode(parsed_struct)
 
-    expected_mac = <<73, 45, 201, 166, 21, 7, 61, 65, 81, 2, 154, 165, 107, 109, 225, 68, 38, 52, 34, 56, 49, 224, 141, 247, 214, 166, 46, 5, 28, 62, 241, 165>>
+    expected_mac = <<172, 37, 94, 214, 16, 222, 204, 2, 72, 189, 91, 66, 220, 149, 2, 30,
+      56, 44, 36, 165, 96, 218, 218, 207, 113, 47, 13, 5, 2, 156, 135, 133, 1, 2,
+      3>>
 
     %{
-      payload: <<123>>,
+      payload: <<1, 2, 3>>,
       mac_length: 32,
       mac: ^expected_mac
     } = values
