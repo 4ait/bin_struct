@@ -601,7 +601,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     initial_binary_access = { :bin, [], __MODULE__  }
 
     body =
-      quote do
+      quote generated: true do
 
         item_size =
           unquote(
@@ -650,7 +650,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, body, __MODULE__)
 
-    quote do
+    quote  do
 
       defp unquote(function_name)(
              unquote(initial_binary_access),
