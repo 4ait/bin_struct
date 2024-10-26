@@ -22,6 +22,9 @@ defmodule BinStruct.Macro.DecodeFunctionReadByCalls do
 
   alias BinStruct.Macro.TypeConverterToBinary
 
+  alias BinStruct.Macro.IsOptionalField
+  alias BinStruct.Macro.OptionalNilCheckExpression
+
   def read_by_calls(fields, registered_callbacks_map, context) do
 
     fields_with_read_by_ordered = ordered_virtual_fields_with_read_by_callbacks(fields, registered_callbacks_map)
@@ -75,6 +78,12 @@ defmodule BinStruct.Macro.DecodeFunctionReadByCalls do
                       %VirtualField{ type: type } ->  type
                     end
 
+                  is_optional =
+                    case depend_on_field do
+                      %Field{} = field -> IsOptionalField.is_optional_field(field)
+                      %VirtualField{} ->  true
+                    end
+
                   maybe_already_resolved =
                     Enum.find(
                       resolved_dependencies_acc,
@@ -93,6 +102,7 @@ defmodule BinStruct.Macro.DecodeFunctionReadByCalls do
                         depend_on_field_name,
                         depend_on_field_type,
                         depend_on_type_conversion,
+                        is_optional,
                         context
                       )
 
@@ -142,6 +152,7 @@ defmodule BinStruct.Macro.DecodeFunctionReadByCalls do
          depend_on_field_name,
          depend_on_field_type,
          depend_on_type_conversion,
+         is_optional,
          context
        ) do
 
@@ -159,7 +170,7 @@ defmodule BinStruct.Macro.DecodeFunctionReadByCalls do
           TypeConverterToBinary.convert_unmanaged_value_to_binary(
             depend_on_field_type,
             depend_on_field_unmanaged_value_access
-          )
+          ) |> OptionalNilCheckExpression.maybe_wrap_optional(depend_on_field_unmanaged_value_access, is_optional)
 
         resolver =
 

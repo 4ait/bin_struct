@@ -16,9 +16,7 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex
 
   alias BinStruct.Macro.Dependencies.IsFieldDependentOn
-  alias BinStruct.Macro.TypeConverterToManaged
-  alias BinStruct.Macro.TypeConverterToBinary
-  
+
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.Dependencies.ParseDependencies
   alias BinStruct.Macro.Dependencies.InterfaceImplementationDependencies
@@ -26,6 +24,7 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Structs.DependencyOnOption
 
   alias BinStruct.Macro.Parse.ParseDependencyResolver
+  alias BinStruct.Macro.Parse.TypeConversionCheckpoint
 
   #todo read calls in parse may not work
 
@@ -102,10 +101,12 @@ defmodule BinStruct.Macro.ParseFunction do
       Enum.map(
         type_converter_checkpoint_input_output_by_index,
            fn {index, input, output} ->
-             type_conversion_checkpoint_function(
-               index,
+
+             TypeConversionCheckpoint.type_conversion_checkpoint_function(
+               type_conversion_checkpoint_function_name(index),
                input,
-               output
+               output,
+               __MODULE__
              )
            end)
 
@@ -384,93 +385,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
   end
 
-  defp type_conversion_checkpoint_function(checkpoint_index, input_dependencies, output_dependencies) do
 
-    function_name = type_conversion_checkpoint_function_name(checkpoint_index)
-
-    input_binds =
-      Enum.map(
-        input_dependencies,
-        fn input_dependency ->
-
-          case input_dependency do
-            %BinStruct.Macro.Structs.DependencyOnField{} = dependency ->
-
-              %BinStruct.Macro.Structs.DependencyOnField{
-                field: field
-              } = dependency
-
-              name =
-                case field do
-                  %Field{ name: name } -> name
-                  %VirtualField{ name: name } -> name
-                end
-
-              Bind.bind_unmanaged_value(name, __MODULE__)
-
-            %BinStruct.Macro.Structs.DependencyOnOption{} -> nil
-
-          end
-
-        end
-      ) |> Enum.reject(&is_nil/1)
-
-    output_values =
-      Enum.map(
-        output_dependencies,
-
-        fn output_dependency ->
-
-          case output_dependency do
-            %BinStruct.Macro.Structs.DependencyOnField{} = dependency ->
-
-                %BinStruct.Macro.Structs.DependencyOnField{
-                  field: field,
-                  type_conversion: type_conversion
-                } = dependency
-
-                { name, type } =
-                  case field do
-                    %Field{ name: name, type: type } -> { name, type }
-                    %VirtualField{ name: name, type: type } -> { name, type }
-                  end
-
-                unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
-
-                case type_conversion do
-
-                  TypeConversionUnspecified ->
-
-                    TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
-
-                  TypeConversionManaged ->
-
-                    TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access).convert_unmanaged_value_to_managed(type, unmanaged_value_access)
-
-                  TypeConversionUnmanaged -> unmanaged_value_access
-
-                  TypeConversionBinary ->
-
-                    TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_access)
-
-                end
-
-            %BinStruct.Macro.Structs.DependencyOnOption{} -> nil
-
-          end
-
-        end
-      ) |> Enum.reject(&is_nil/1)
-
-    quote do
-
-      defp unquote(function_name)(unquote_splicing(input_binds)) do
-        { unquote_splicing(output_values)}
-      end
-
-    end
-
-  end
 
 
   defp parse_checkpoint_function(fields = _checkpoint, checkpoint_index, registered_callbacks_map, env) do

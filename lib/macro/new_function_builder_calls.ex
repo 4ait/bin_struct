@@ -23,6 +23,9 @@ defmodule BinStruct.Macro.NewFunctionBuilderCalls do
   alias BinStruct.Macro.TypeConverterToUnmanaged
   alias BinStruct.Macro.TypeConverterToBinary
 
+  alias BinStruct.Macro.OptionalNilCheckExpression
+  alias BinStruct.Macro.IsOptionalField
+
   def builder_calls(fields, registered_callbacks_map, context) do
 
     fields_with_builder_ordered = fields_ordered_by_builder_calling_order(fields, registered_callbacks_map)
@@ -76,6 +79,12 @@ defmodule BinStruct.Macro.NewFunctionBuilderCalls do
                       %VirtualField{ type: type } ->  type
                     end
 
+                  is_optional =
+                    case depend_on_field do
+                      %Field{} = field -> IsOptionalField.is_optional_field(field)
+                      %VirtualField{} ->  true
+                    end
+
                   maybe_already_resolved =
                     Enum.find(
                       resolved_dependencies_acc,
@@ -94,6 +103,7 @@ defmodule BinStruct.Macro.NewFunctionBuilderCalls do
                         depend_on_field_name,
                         depend_on_field_type,
                         depend_on_type_conversion,
+                        is_optional,
                         context
                       )
 
@@ -247,6 +257,7 @@ defmodule BinStruct.Macro.NewFunctionBuilderCalls do
          depend_on_field_name,
          depend_on_field_type,
          depend_on_type_conversion,
+         is_optional,
          context
        ) do
 
@@ -256,6 +267,7 @@ defmodule BinStruct.Macro.NewFunctionBuilderCalls do
     depend_on_field_binary_value_access = Bind.bind_binary_value(depend_on_field_name, context)
 
     case depend_on_type_conversion do
+
       TypeConversionBinary ->
 
         unmanaged_value =
@@ -263,12 +275,13 @@ defmodule BinStruct.Macro.NewFunctionBuilderCalls do
             depend_on_field_type,
             depend_on_field_managed_value_access
           )
+          |> OptionalNilCheckExpression.maybe_wrap_optional(depend_on_field_managed_value_access, is_optional)
 
         binary_value =
           TypeConverterToBinary.convert_unmanaged_value_to_binary(
             depend_on_field_type,
             depend_on_field_unmanaged_value_access
-          )
+          ) |> OptionalNilCheckExpression.maybe_wrap_optional(depend_on_field_unmanaged_value_access, is_optional)
 
         resolver =
 
@@ -290,7 +303,7 @@ defmodule BinStruct.Macro.NewFunctionBuilderCalls do
           TypeConverterToUnmanaged.convert_managed_value_to_unmanaged(
             depend_on_field_type,
             depend_on_field_managed_value_access
-          )
+          ) |> OptionalNilCheckExpression.maybe_wrap_optional(depend_on_field_managed_value_access, is_optional)
 
         resolver =
 

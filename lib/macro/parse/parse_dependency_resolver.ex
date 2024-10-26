@@ -13,6 +13,10 @@ defmodule BinStruct.Macro.Parse.ParseDependencyResolver do
   alias BinStruct.TypeConversion.TypeConversionManaged
   alias BinStruct.TypeConversion.TypeConversionUnspecified
 
+  alias BinStruct.Macro.IsOptionalField
+
+  alias BinStruct.Macro.OptionalNilCheckExpression
+
   def parse_dependency_resolvers(dependencies_to_resolve, context) do
 
     Enum.map(
@@ -28,12 +32,15 @@ defmodule BinStruct.Macro.Parse.ParseDependencyResolver do
               type_conversion: type_conversion
             } = dependency_on_field
 
-            { name, type } =
+            { name, type, is_optional } =
               case field do
-                %Field{ name: name, type: type } -> { name, type }
-                %VirtualField{ name: name, type: type } -> { name, type }
+                %Field{ name: name, type: type } = field  ->
+                  { name, type, IsOptionalField.is_optional_field(field)}
+                %VirtualField{ name: name, type: type } ->
+                  { name, type, true }
               end
 
+            binary_value_bind = Bind.bind_binary_value(name, context)
             managed_value_bind = Bind.bind_managed_value(name, context)
             unmanaged_value_bind = Bind.bind_unmanaged_value(name, context)
 
@@ -44,10 +51,13 @@ defmodule BinStruct.Macro.Parse.ParseDependencyResolver do
                 quote do
 
                   unquote(managed_value_bind) = unquote(
+
                     TypeConverterToManaged.convert_unmanaged_value_to_managed(
                       type,
                       unmanaged_value_bind
                     )
+                    |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_bind, is_optional)
+
                   )
 
                 end
@@ -61,6 +71,7 @@ defmodule BinStruct.Macro.Parse.ParseDependencyResolver do
                       type,
                       unmanaged_value_bind
                     )
+                    |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_bind, is_optional)
                   )
 
                 end
@@ -71,11 +82,14 @@ defmodule BinStruct.Macro.Parse.ParseDependencyResolver do
 
                 quote do
 
-                  unquote(managed_value_bind) = unquote(
+                  unquote(binary_value_bind) = unquote(
+
                     TypeConverterToBinary.convert_unmanaged_value_to_binary(
                       type,
                       unmanaged_value_bind
                     )
+                    |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_bind, is_optional)
+
                   )
 
                 end

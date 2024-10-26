@@ -6,10 +6,8 @@ defmodule BinStructTest.VirtualFieldSystem.ReadConsumedInCallbackTest do
 
     use BinStruct
 
-    alias BinStruct.TypeConversion.TypeConversionUnmanaged
-
     register_callback &read_open_or_close_enum/1,
-                      number: %{ type: :field, type_conversion: TypeConversionUnmanaged }
+                      number: :field
 
     register_callback &read_bool_flag/1,
                       open_or_close_enum: :field
@@ -29,19 +27,20 @@ defmodule BinStructTest.VirtualFieldSystem.ReadConsumedInCallbackTest do
 
     field :number, :uint8
 
-    defp read_open_or_close_enum(number), do: number
+    defp read_open_or_close_enum(number) do
 
-    defp read_bool_flag(open_or_close_enum) do
-
-      IO.inspect(open_or_close_enum)
-
-      nil
+      case number do
+        0x00 -> :closed
+        0x01 -> :open
+      end
 
     end
 
+    defp read_bool_flag(open_or_close_enum), do: open_or_close_enum
+
   end
 
-  test "struct with virtual write works" do
+  test "struct with virtual read in callback works" do
 
     struct = StructWithVirtualFields.new(number: 1)
 
