@@ -15,6 +15,5 @@ ExUnit.start()
 
 #todo type managed unmanaged table
 
-#todo implement virtual field working as registered callbacks arguments
-
-#todolater add more detailed examples of uses virtual field system in practice
+#todo add tests for all type conversions on Parse, Decode and New
+#todo implement sequential read_by dependency in parse
