@@ -16,6 +16,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
   alias BinStruct.Macro.Parse.ListItemParseExpressions
   alias BinStruct.Macro.Dependencies.CallbacksDependencies
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
+  alias BinStruct.Macro.Dependencies.BindingsToOnOptionDependencies
 
   def variable_terminated_until_length_by_parse_checkpoint(
         %{
@@ -287,16 +288,36 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
     parse_expr = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
+    inner_function_on_option_dependencies_bindings =
+      BindingsToOnOptionDependencies.bindings(
+        dependencies,
+        __MODULE__
+      )
+
     recursive_parse_functions =
 
       quote generated: true do
 
-        def unquote(parse_take_while_by_callback_by_item_size_function_name)(binary, _options, item_size, _items_with_different_type_conversions_acc)
+        def unquote(parse_take_while_by_callback_by_item_size_function_name)(
+              binary,
+              unquote_splicing(dependencies_bindings),
+              _options,
+              unquote_splicing(inner_function_on_option_dependencies_bindings),
+              item_size,
+              _items_with_different_type_conversions_acc
+            )
             when is_integer(item_size) and byte_size(binary) < item_size do
           :not_enough_bytes
         end
 
-        def unquote(parse_take_while_by_callback_by_item_size_function_name)(binary, unquote(options_bind), item_size, items_with_different_type_conversions_acc) when is_binary(binary) do
+        def unquote(parse_take_while_by_callback_by_item_size_function_name)(
+              binary,
+              unquote_splicing(dependencies_bindings),
+              unquote(options_bind),
+              unquote_splicing(inner_function_on_option_dependencies_bindings),
+              item_size,
+              items_with_different_type_conversions_acc
+            ) when is_binary(binary) do
 
           <<unquote(item_binary_bind)::size(item_size)-bytes, rest::binary>> = binary
 
@@ -341,7 +362,14 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
                     unquote(binary_value_bind)
                   }
 
-                  unquote(parse_take_while_by_callback_by_item_size_function_name)(rest, unquote(options_bind), item_size, new_acc)
+                  unquote(parse_take_while_by_callback_by_item_size_function_name)(
+                    rest,
+                    unquote_splicing(dependencies_bindings),
+                    unquote(options_bind),
+                    unquote_splicing(inner_function_on_option_dependencies_bindings),
+                    item_size,
+                    new_acc
+                  )
 
                 :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
 
@@ -371,7 +399,15 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
         items_with_different_type_conversions_acc = {  _unmanaged = [], _managed = [], _binary = [] }
 
-        parse_function_call_result = unquote(parse_take_while_by_callback_by_item_size_function_name)(unquote(initial_binary_access), options, item_size,  items_with_different_type_conversions_acc)
+        parse_function_call_result =
+          unquote(parse_take_while_by_callback_by_item_size_function_name)(
+            unquote(initial_binary_access),
+            unquote_splicing(dependencies_bindings),
+            options,
+            unquote_splicing(inner_function_on_option_dependencies_bindings),
+            item_size,
+            items_with_different_type_conversions_acc
+          )
 
         case parse_function_call_result do
           { :ok, items, rest } -> { :ok, items, rest, options }
@@ -460,11 +496,24 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
     unmanaged_new_item_bind = { :unmanaged_new_item, [], __MODULE__ }
     parse_expr = ListItemParseExpressions.parse_expression(item_type, item_binary_bind, options_bind)
 
+
+    inner_function_on_option_dependencies_bindings =
+      BindingsToOnOptionDependencies.bindings(
+        dependencies,
+        __MODULE__
+      )
+
     recursive_parse_functions =
 
       quote do
 
-        def unquote(parse_take_while_by_callback_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), items_with_different_type_conversions_acc)
+        def unquote(parse_take_while_by_callback_by_parse_function_name)(
+              unquote(item_binary_bind),
+              unquote_splicing(dependencies_bindings),
+              unquote(options_bind),
+              unquote_splicing(inner_function_on_option_dependencies_bindings),
+              items_with_different_type_conversions_acc
+            )
             when is_binary( unquote(item_binary_bind) )
 
           do
@@ -510,7 +559,13 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
                     unquote(binary_value_bind)
                   }
 
-                  unquote(parse_take_while_by_callback_by_parse_function_name)(rest, unquote(options_bind), new_acc)
+                  unquote(parse_take_while_by_callback_by_parse_function_name)(
+                    rest,
+                    unquote_splicing(dependencies_bindings),
+                    unquote(options_bind),
+                    unquote_splicing(inner_function_on_option_dependencies_bindings),
+                    new_acc
+                  )
 
                 :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
 
@@ -533,7 +588,14 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
         items_with_different_type_conversions_acc = {  _unmanaged = [], _managed = [], _binary = [] }
 
-        parse_function_call_result = unquote(parse_take_while_by_callback_by_parse_function_name)(unquote(initial_binary_access), options, items_with_different_type_conversions_acc)
+        parse_function_call_result =
+          unquote(parse_take_while_by_callback_by_parse_function_name)(
+            unquote(initial_binary_access),
+            unquote_splicing(dependencies_bindings),
+            options,
+            unquote_splicing(inner_function_on_option_dependencies_bindings),
+            items_with_different_type_conversions_acc
+          )
 
         case parse_function_call_result do
           { :ok, items, rest } -> { :ok, items, rest, options }

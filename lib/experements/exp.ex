@@ -1,40 +1,32 @@
-defmodule StructWithVirtualFields do
+defmodule StructWithPrimitiveItems do
 
   use BinStruct
 
-  register_callback &mac_builder/2,
-                    mac_algo: :field,
-                    payload: :field
+  alias BinStruct.TypeConversion.TypeConversionManaged
 
-  register_callback &mac_length_builder/1,
-                    mac: :field
 
-  register_callback &mac_length/1,
-                    mac_length: :field
+  register_option :option_name
 
-  virtual :mac_algo, :unspecified, default: :none
+  register_callback &take_while_by/2,
+                    items: %{ type: :field, type_conversion: TypeConversionManaged },
+                    option_name: :option
 
-  field :mac_length, :uint8,
-        builder: &mac_length_builder/1
+  field :items, { :list_of, :uint16_be }, take_while_by: &take_while_by/2
 
-  field :mac, :binary,
-        builder: &mac_builder/2,
-        length_by: &mac_length/1
+  defp take_while_by(items, option_name) do
 
-  field :payload, :binary
+    [ recent | _previous ] = items
 
-  defp mac_builder(:none, _payload), do: ""
-
-  defp mac_builder(:"hmac-sha2-256", payload) do
-
-    mac_key = "supersecretkey"
-
-    :crypto.mac(:hmac, :sha256, mac_key, payload)
+    case recent do
+      3 ->
+        if option_name do
+          :halt
+        else
+          :cont
+        end
+      _ -> :cont
+    end
 
   end
-
-  defp mac_length_builder(mac), do: byte_size(mac)
-
-  defp mac_length(mac_length), do: mac_length
 
 end
