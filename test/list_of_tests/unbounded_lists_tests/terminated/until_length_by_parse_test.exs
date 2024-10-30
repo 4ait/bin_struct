@@ -7,6 +7,7 @@ defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.UntilLengthBy
     alias BinStruct.BuiltIn.TerminatedBinary
 
     field :binary, { TerminatedBinary, termination: <<0>> }
+
   end
 
   defmodule StructWithItems do

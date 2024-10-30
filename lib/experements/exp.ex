@@ -1,32 +1,41 @@
-defmodule StructWithPrimitiveItems do
+defmodule BinStructWithPrimitiveItemList do
 
   use BinStruct
 
-  alias BinStruct.TypeConversion.TypeConversionManaged
+  field :items, { :list_of, :uint16_be }, length: 1000
+
+end
 
 
-  register_option :option_name
+defmodule Item do
 
-  register_callback &take_while_by/2,
-                    items: %{ type: :field, type_conversion: TypeConversionManaged },
-                    option_name: :option
+  use BinStruct
 
-  field :items, { :list_of, :uint16_be }, take_while_by: &take_while_by/2
+  field :value, :uint16_be
 
-  defp take_while_by(items, option_name) do
+end
 
-    [ recent | _previous ] = items
 
-    case recent do
-      3 ->
-        if option_name do
-          :halt
-        else
-          :cont
-        end
-      _ -> :cont
-    end
+defmodule BinStructWithStructItemList do
 
-  end
+  use BinStruct
+
+  field :items, { :list_of, Item }, length: 1000
+
+end
+
+defmodule BinStructWithStructItemDynamicCallbackList do
+
+  use BinStruct
+
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+
+  register_callback &take_while_not_1000_items/1,
+                    items: :field
+
+  field :items, { :list_of, Item }, take_while_by: &take_while_not_1000_items/1
+
+  defp take_while_not_1000_items([ 1000 | _prev]), do: :halt
+  defp take_while_not_1000_items(_), do: :cont
 
 end

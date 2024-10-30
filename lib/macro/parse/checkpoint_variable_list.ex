@@ -47,11 +47,11 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
       quote do
 
-        def unquote(parse_until_length_by_parse_function_name)(<<>>, _options, acc) do
+        defp unquote(parse_until_length_by_parse_function_name)(<<>>, _options, acc) do
           :lists.reverse(acc)
         end
 
-        def unquote(parse_until_length_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc) when is_binary(unquote(item_binary_bind))  do
+        defp unquote(parse_until_length_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc) when is_binary(unquote(item_binary_bind))  do
 
           case unquote(parse_expr) do
 
@@ -161,11 +161,11 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
       quote do
 
-        def unquote(parse_until_count_by_parse_function_name)(rest, _options, _remain = 0, acc) do
+        defp unquote(parse_until_count_by_parse_function_name)(rest, _options, _remain = 0, acc) do
           { :lists.reverse(acc), rest }
         end
 
-        def unquote(parse_until_count_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), remain, acc) when is_binary(unquote(item_binary_bind)) do
+        defp unquote(parse_until_count_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), remain, acc) when is_binary(unquote(item_binary_bind)) do
 
           case unquote(parse_expr) do
 
@@ -268,7 +268,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
       has_dependency_on_unspecified: has_dependency_on_unspecified,
       has_dependency_on_unmanaged: _has_dependency_on_unmanaged,
       has_dependency_on_binary: has_dependency_on_binary
-    } = take_while_be_dependency_on_self_info(name, take_while_by_registered_callback)
+    } = take_while_by_dependency_on_self_info(name, take_while_by_registered_callback)
 
     has_dependency_on_managed = has_dependency_on_managed || has_dependency_on_unspecified
 
@@ -298,7 +298,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
       quote generated: true do
 
-        def unquote(parse_take_while_by_callback_by_item_size_function_name)(
+        defp unquote(parse_take_while_by_callback_by_item_size_function_name)(
               binary,
               unquote_splicing(dependencies_bindings),
               _options,
@@ -310,7 +310,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
           :not_enough_bytes
         end
 
-        def unquote(parse_take_while_by_callback_by_item_size_function_name)(
+        defp unquote(parse_take_while_by_callback_by_item_size_function_name)(
               binary,
               unquote_splicing(dependencies_bindings),
               unquote(options_bind),
@@ -481,7 +481,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
       has_dependency_on_unspecified: has_dependency_on_unspecified,
       has_dependency_on_unmanaged: _has_dependency_on_unmanaged,
       has_dependency_on_binary: has_dependency_on_binary
-    } = take_while_be_dependency_on_self_info(name, take_while_by_registered_callback)
+    } = take_while_by_dependency_on_self_info(name, take_while_by_registered_callback)
 
     has_dependency_on_managed = has_dependency_on_managed || has_dependency_on_unspecified
 
@@ -507,7 +507,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
       quote do
 
-        def unquote(parse_take_while_by_callback_by_parse_function_name)(
+        defp unquote(parse_take_while_by_callback_by_parse_function_name)(
               unquote(item_binary_bind),
               unquote_splicing(dependencies_bindings),
               unquote(options_bind),
@@ -766,11 +766,11 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
       quote do
 
-        def unquote(parse_until_end_by_parse_function_name)(<<>>, _options, acc) do
+        defp unquote(parse_until_end_by_parse_function_name)(<<>>, _options, acc) do
           { :ok, :lists.reverse(acc) }
         end
 
-        def unquote(parse_until_end_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc)
+        defp unquote(parse_until_end_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc)
             when is_binary( unquote(item_binary_bind) ) do
 
           case unquote(parse_expr) do
@@ -838,7 +838,7 @@ defmodule BinStruct.Macro.Parse.CheckpointVariableList do
 
   end
 
-  defp take_while_be_dependency_on_self_info(current_field_name, take_while_by_registered_callback) do
+  defp take_while_by_dependency_on_self_info(current_field_name, take_while_by_registered_callback) do
 
     take_while_by_dependencies = CallbacksDependencies.dependencies([take_while_by_registered_callback])
 
