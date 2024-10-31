@@ -19,26 +19,6 @@ defmodule BinStruct.Macro.CallbacksOnField do
 
   end
 
-  def callbacks_used_while_creating_new_struct(%Field { opts: opts }, registered_callbacks_map) do
-
-    [
-      opts[:builder]
-    ]
-    |> Enum.reject(&is_nil/1)
-    |> registered_version_of_callbacks(registered_callbacks_map)
-
-  end
-
-  def callbacks_used_while_decoding(%Field{ opts: opts }, registered_callbacks_map) do
-
-    [
-      opts[:read_by]
-    ]
-    |> Enum.reject(&is_nil/1)
-    |> registered_version_of_callbacks(registered_callbacks_map)
-
-  end
-
   defp registered_version_of_callbacks(callbacks, registered_callbacks_map) do
 
       Enum.map(

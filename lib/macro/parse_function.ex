@@ -24,8 +24,12 @@ defmodule BinStruct.Macro.ParseFunction do
 
   alias BinStruct.Macro.Parse.ParseDependencyResolver
   alias BinStruct.Macro.Parse.TypeConversionCheckpoint
-  alias BinStruct.Macro.Parse.VirtualFieldProducingCheckpoint
+  alias BinStruct.Macro.Parse.VirtualFieldsProducingCheckpoint
 
+
+  #virtual fields should be produced right before usage
+  #in case 1 virtual field depends on other there must be order calculated with graph too
+  #also probably new condition
 
   def parse_function(fields, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
 
@@ -36,7 +40,6 @@ defmodule BinStruct.Macro.ParseFunction do
         interface_implementations,
         registered_callbacks_map
       )
-
 
     dependencies_per_checkpoint =
       Enum.map(
@@ -69,6 +72,20 @@ defmodule BinStruct.Macro.ParseFunction do
 
     parse_checkpoints_functions = List.flatten(parse_checkpoints_functions)
 
+    virtual_fields_producing_checkpoint_functions =
+      Enum.map(
+        type_converter_checkpoint_input_output_by_index,
+        fn { index, input, output } ->
+
+          VirtualFieldsProducingCheckpoint.virtual_fields_producing_checkpoint_function(
+            virtual_fields_producing_checkpoint_function_name(index),
+            input,
+            output,
+            registered_callbacks_map
+          )
+
+        end)
+
     type_conversion_checkpoints_functions =
       Enum.map(
         type_converter_checkpoint_input_output_by_index,
@@ -82,24 +99,18 @@ defmodule BinStruct.Macro.ParseFunction do
              )
            end)
 
-    _virtual_field_producing_checkpoint_functions =
-      Enum.map(
-        [],
-        fn _item ->
-
-          index = 1
-
-          VirtualFieldProducingCheckpoint.virtual_field_producing_checkpoint_function(
-            virtual_field_producing_checkpoint_function_name(index),
-            __MODULE__
-          )
-
-        end)
 
     checkpoints_with_clauses =
       Enum.map(
         Enum.with_index(parse_checkpoints, 1),
         fn { fields, index } ->
+
+
+          maybe_virtual_field_producing_checkpoint =
+            Enum.find(
+              type_converter_checkpoint_input_output_by_index,
+              fn { virtual_fields_producing_checkpoint_index, _input, _output } -> virtual_fields_producing_checkpoint_index == index end
+            )
 
           maybe_type_converter_checkpoint =
             Enum.find(
@@ -107,19 +118,78 @@ defmodule BinStruct.Macro.ParseFunction do
               fn { type_converter_checkpoint_index, _input, _output } -> type_converter_checkpoint_index == index end
             )
 
-          returning_from_checkpoint_values_binds =
-            Enum.map(
-              fields,
-              fn %Field{} = field ->
+          maybe_virtual_field_producing_clause =
 
-                %Field{ name: name } = field
+            case maybe_virtual_field_producing_checkpoint do
+              nil -> nil
+              { _index, input_dependencies, output_dependencies } ->
 
-                Bind.bind_unmanaged_value(name, __MODULE__)
+                input_binds =
+                  Enum.map(
+                    input_dependencies,
+                    fn input_dependency ->
 
-              end
-            )
+                      case input_dependency do
+                        %DependencyOnField{} = dependency ->
 
-          maybe_virtual_field_producing_clause = nil
+                          %DependencyOnField{
+                            field: field
+                          } = dependency
+
+                          name =
+                            case field do
+                              %Field{ name: name } -> name
+                              %VirtualField{ name: name } -> name
+                            end
+
+                          Bind.bind_unmanaged_value(name, __MODULE__)
+
+                        %DependencyOnOption{} -> nil
+
+                      end
+
+                    end
+                  ) |> Enum.reject(&is_nil/1)
+
+                output_binds =
+                  Enum.map(
+                    output_dependencies,
+                    fn output_dependency ->
+
+                      case output_dependency do
+
+                        %DependencyOnField{} = dependency ->
+
+                          %DependencyOnField{
+                            field: field,
+                            type_conversion: type_conversion
+                          } = dependency
+
+                          name =
+                            case field do
+                              %Field{ name: name } -> name
+                              %VirtualField{ name: name } -> name
+                            end
+
+                          case type_conversion do
+                            TypeConversionUnspecified -> Bind.bind_managed_value(name, __MODULE__)
+                            TypeConversionManaged -> Bind.bind_managed_value(name, __MODULE__)
+                            TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, __MODULE__)
+                            TypeConversionBinary-> Bind.bind_binary_value(name, __MODULE__)
+                          end
+
+                        %DependencyOnOption{} -> nil
+
+                      end
+
+                    end
+                  ) |> Enum.reject(&is_nil/1)
+
+                quote do
+                  { unquote_splicing(output_binds) } <- unquote(virtual_fields_producing_checkpoint_function_name(index))(unquote_splicing(input_binds), options)
+                end
+
+            end
 
           maybe_type_conversion_clause =
 
@@ -182,6 +252,7 @@ defmodule BinStruct.Macro.ParseFunction do
                           end
 
                         %DependencyOnOption{} -> nil
+
                       end
 
                     end
@@ -198,10 +269,31 @@ defmodule BinStruct.Macro.ParseFunction do
               ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map), __MODULE__
             )
 
+
+
+          returning_from_parse_checkpoint_values_binds =
+            Enum.map(
+              fields,
+              fn %Field{} = field ->
+
+                %Field{ name: name } = field
+
+                Bind.bind_unmanaged_value(name, __MODULE__)
+
+              end
+            )
+
           parse_checkpoint_with_clause =
             quote do
-              { :ok, unquote_splicing(returning_from_checkpoint_values_binds), rest, options } <-
-                unquote(parse_checkpoint_function_name(index))(rest, unquote_splicing(binding_to_received_by_checkpoint_arguments), options)
+
+              { :ok, unquote_splicing(returning_from_parse_checkpoint_values_binds), rest, options } <-
+
+                unquote(parse_checkpoint_function_name(index))(
+                  rest,
+                  unquote_splicing(binding_to_received_by_checkpoint_arguments),
+                  options
+                )
+
             end
 
           Enum.reject([
@@ -510,8 +602,8 @@ defmodule BinStruct.Macro.ParseFunction do
     String.to_atom("type_conversion_checkpoint_#{checkpoint_index}")
   end
 
-  defp virtual_field_producing_checkpoint_function_name(checkpoint_index) do
-    String.to_atom("virtual_field_producing_checkpoint_#{checkpoint_index}")
+  defp virtual_fields_producing_checkpoint_function_name(checkpoint_index) do
+    String.to_atom("virtual_fields_producing_checkpoint_#{checkpoint_index}")
   end
 
 
