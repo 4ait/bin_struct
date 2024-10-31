@@ -29,12 +29,12 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
 
     options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
-    parse_expr = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
+    %{ expr: parse_expr, is_failable: is_parse_expression_failable } = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     initial_binary_access = { :bin, [], __MODULE__  }
 
     body =
-      quote generated: true do
+      quote do
 
         item_size =
           unquote(
@@ -45,35 +45,58 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
             )
           )
 
-        chunks =
-          for << chunk::binary-size(item_size) <- unquote(initial_binary_access) >> do
-            chunk
-          end
+        unquote(
+          if is_parse_expression_failable do
 
-        result =
-          Enum.reduce_while(chunks, { :ok, [] }, fn unquote(item_binary_bind), acc ->
+            quote do
 
-            { _, items } = acc
+              chunks =
+                for << chunk::binary-size(item_size) <- unquote(initial_binary_access) >> do
+                  chunk
+                end
 
-            case unquote(parse_expr) do
+              result =
+                Enum.reduce_while(chunks, { :ok, [] }, fn unquote(item_binary_bind), acc ->
 
-              { :ok, unmanaged_item } ->
+                  { _, items } = acc
 
-                new_items = [ unmanaged_item | items ]
+                  case unquote(parse_expr) do
 
-                { :cont, { :ok, new_items } }
+                    { :ok, unmanaged_item } ->
 
-              bad_result -> { :halt, bad_result }
+                      new_items = [ unmanaged_item | items ]
+
+                      { :cont, { :ok, new_items } }
+
+                    bad_result -> { :halt, bad_result }
+
+                  end
+
+                end)
+
+
+              case result do
+                { :ok, items } ->  { :ok, Enum.reverse(items), "", unquote(options_bind) }
+                bad_result -> bad_result
+              end
 
             end
 
-          end)
+          else
 
+            quote do
 
-        case result do
-          { :ok, items } ->  { :ok, Enum.reverse(items), "", unquote(options_bind) }
-          bad_result -> bad_result
-        end
+              items =
+                for << unquote(item_binary_bind)::binary-size(item_size) <- unquote(initial_binary_access) >> do
+                  unquote(parse_expr)
+                end
+
+              { :ok, Enum.reverse(items), "", unquote(options_bind) }
+
+            end
+
+          end
+        )
 
       end
 

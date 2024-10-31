@@ -43,7 +43,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
     item_binary_bind = {:item, [], __MODULE__}
     unmanaged_new_item_bind = {:unmanaged_new_item, [], __MODULE__}
 
-    parse_expr = ListItemParseExpressions.parse_exact_expression(
+    %{ expr: parse_expr, is_failable: is_parse_expression_failable } = ListItemParseExpressions.parse_exact_expression(
       item_type,
       item_binary_bind,
       options_bind
@@ -73,106 +73,192 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
         __MODULE__
       )
 
+
+
     recursive_parse_function =
-      quote generated: true do
+      quote do
 
         defp unquote(parse_function_name)(
                <<unquote(item_binary_bind)::size(unquote(item_size))-bytes, rest::binary>>,
                unquote_splicing(dependencies_bindings),
                unquote(options_bind),
                unquote_splicing(inner_function_on_option_dependencies_bindings),
-               items_with_different_type_conversions_acc
+               { unmanaged_items_acc, managed_items_acc, binary_items_acc }
              ) do
 
-          { unmanaged_items_acc, managed_items_acc, binary_items_acc } = items_with_different_type_conversions_acc
+          unquote(
 
-          case unquote(parse_expr) do
+            if is_parse_expression_failable do
 
-            {:ok, unquote(unmanaged_new_item_bind) } ->
+              quote do
 
-              unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
+                case unquote(parse_expr) do
 
-              unquote(managed_value_bind) =
+                  {:ok, unquote(unmanaged_new_item_bind) } ->
 
-                unquote(
-                  if has_dependency_on_managed do
+                    unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
 
-                    quote do
+                    unquote(managed_value_bind) =
 
-                      managed_new_item =
-                        unquote(
-                          TypeConverterToManaged.convert_unmanaged_value_to_managed(
-                            item_type,
-                            unmanaged_new_item_bind
-                          )
+                      unquote(
+                        if has_dependency_on_managed do
+
+                          quote do
+
+                            managed_new_item =
+                              unquote(
+                                TypeConverterToManaged.convert_unmanaged_value_to_managed(
+                                  item_type,
+                                  unmanaged_new_item_bind
+                                )
+                              )
+
+                            [ managed_new_item | managed_items_acc ]
+                          end
+
+                        else
+                          quote do
+                            managed_items_acc
+                          end
+                        end
+                      )
+
+                    unquote(binary_value_bind) =
+
+                      unquote(
+                        if has_dependency_on_binary do
+
+                          quote do
+                            [ unquote(item_binary_bind) | binary_items_acc ]
+                          end
+
+                        else
+                          quote do
+                            binary_items_acc
+                          end
+                        end
+                      )
+
+
+                    take_while_by_callback_result = unquote(take_while_by_function_call)
+
+                    case take_while_by_callback_result do
+
+                      :cont ->
+
+                        new_acc = {
+                          unquote(unmanaged_value_bind),
+                          unquote(managed_value_bind),
+                          unquote(binary_value_bind)
+                        }
+
+                        unquote(parse_function_name)(
+                          rest,
+                          unquote_splicing(dependencies_bindings),
+                          unquote(options_bind),
+                          unquote_splicing(inner_function_on_option_dependencies_bindings),
+                          new_acc
                         )
 
-                      [ managed_new_item | managed_items_acc ]
+                      :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+
                     end
 
-                  else
-                    quote do
-                      managed_items_acc
-                    end
-                  end
-                )
+                  { :wrong_data, _wrong_data } = wrong_data -> wrong_data
 
-              unquote(binary_value_bind) =
-
-                unquote(
-                  if has_dependency_on_binary do
-
-                    quote do
-                      [ unquote(item_binary_bind) | binary_items_acc ]
-                    end
-
-                  else
-                    quote do
-                      binary_items_acc
-                    end
-                  end
-                )
-
-
-              take_while_by_callback_result = unquote(take_while_by_function_call)
-
-              case take_while_by_callback_result do
-
-                :cont ->
-
-                  new_acc = {
-                    unquote(unmanaged_value_bind),
-                    unquote(managed_value_bind),
-                    unquote(binary_value_bind)
-                  }
-
-                  unquote(parse_function_name)(
-                    rest,
-                    unquote_splicing(dependencies_bindings),
-                    unquote(options_bind),
-                    unquote_splicing(inner_function_on_option_dependencies_bindings),
-                    new_acc
-                  )
-
-                :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+                end
 
               end
 
-            { :wrong_data, _wrong_data } = wrong_data -> wrong_data
+            else
 
-          end
+              quote do
+
+                unquote(unmanaged_new_item_bind) = unquote(parse_expr)
+
+                unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
+
+                unquote(managed_value_bind) =
+
+                  unquote(
+                    if has_dependency_on_managed do
+
+                      quote do
+
+                        managed_new_item =
+                          unquote(
+                            TypeConverterToManaged.convert_unmanaged_value_to_managed(
+                              item_type,
+                              unmanaged_new_item_bind
+                            )
+                          )
+
+                        [ managed_new_item | managed_items_acc ]
+                      end
+
+                    else
+                      quote do
+                        managed_items_acc
+                      end
+                    end
+                  )
+
+                unquote(binary_value_bind) =
+
+                  unquote(
+                    if has_dependency_on_binary do
+
+                      quote do
+                        [ unquote(item_binary_bind) | binary_items_acc ]
+                      end
+
+                    else
+                      quote do
+                        binary_items_acc
+                      end
+                    end
+                  )
+
+
+                take_while_by_callback_result = unquote(take_while_by_function_call)
+
+                case take_while_by_callback_result do
+
+                  :cont ->
+
+                    new_acc = {
+                      unquote(unmanaged_value_bind),
+                      unquote(managed_value_bind),
+                      unquote(binary_value_bind)
+                    }
+
+                    unquote(parse_function_name)(
+                      rest,
+                      unquote_splicing(dependencies_bindings),
+                      unquote(options_bind),
+                      unquote_splicing(inner_function_on_option_dependencies_bindings),
+                      new_acc
+                    )
+
+                  :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+
+                end
+
+              end
+
+            end
+          )
 
         end
 
         defp unquote(parse_function_name)(
-               binary,
+               _binary,
                unquote_splicing(dependencies_bindings),
                _options,
                unquote_splicing(inner_function_on_option_dependencies_bindings),
                _items_with_different_type_conversions_acc
              ) do
           :not_enough_bytes
-
         end
 
       end
@@ -279,7 +365,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
     item_binary_bind = {:item, [], __MODULE__}
     unmanaged_new_item_bind = {:unmanaged_new_item, [], __MODULE__}
 
-    parse_expr = ListItemParseExpressions.parse_exact_expression(
+    %{ expr: parse_expr, is_failable: is_parse_expression_failable } = ListItemParseExpressions.parse_exact_expression(
       item_type,
       item_binary_bind,
       options_bind
@@ -337,82 +423,171 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
           <<unquote(item_binary_bind)::size(item_size)-bytes, rest::binary>> = binary
 
-          case unquote(parse_expr) do
 
-            {:ok, unquote(unmanaged_new_item_bind) } ->
+          unquote(
 
-              unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
+            if is_parse_expression_failable do
 
-              unquote(managed_value_bind) =
+              quote do
 
-                unquote(
-                  if has_dependency_on_managed do
+                case unquote(parse_expr) do
 
-                    quote do
+                  {:ok, unquote(unmanaged_new_item_bind) } ->
 
-                      managed_new_item =
-                        unquote(
-                          TypeConverterToManaged.convert_unmanaged_value_to_managed(
-                            item_type,
-                            unmanaged_new_item_bind
-                          )
+                    unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
+
+                    unquote(managed_value_bind) =
+
+                      unquote(
+                        if has_dependency_on_managed do
+
+                          quote do
+
+                            managed_new_item =
+                              unquote(
+                                TypeConverterToManaged.convert_unmanaged_value_to_managed(
+                                  item_type,
+                                  unmanaged_new_item_bind
+                                )
+                              )
+
+                            [ managed_new_item | managed_items_acc ]
+
+                          end
+
+                        else
+                          quote do
+                            managed_items_acc
+                          end
+                        end
+                      )
+
+                    unquote(binary_value_bind) =
+
+                      unquote(
+                        if has_dependency_on_binary do
+
+                          quote do
+                            [ unquote(item_binary_bind) | binary_items_acc ]
+                          end
+
+                        else
+                          quote do
+                            binary_items_acc
+                          end
+                        end
+                      )
+
+                    take_while_by_callback_result = unquote(take_while_by_function_call)
+
+                    case take_while_by_callback_result do
+
+                      :cont ->
+
+                        new_acc = {
+                          unquote(unmanaged_value_bind),
+                          unquote(managed_value_bind),
+                          unquote(binary_value_bind)
+                        }
+
+                        unquote(parse_function_name)(
+                          rest,
+                          unquote_splicing(dependencies_bindings),
+                          unquote(options_bind),
+                          unquote_splicing(inner_function_on_option_dependencies_bindings),
+                          item_size,
+                          new_acc
                         )
 
-                      [ managed_new_item | managed_items_acc ]
+                      :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
 
                     end
 
-                  else
-                    quote do
-                      managed_items_acc
-                    end
-                  end
-                )
+                  { :wrong_data, _wrong_data } = wrong_data -> wrong_data
 
-              unquote(binary_value_bind) =
-
-                unquote(
-                  if has_dependency_on_binary do
-
-                    quote do
-                      [ unquote(item_binary_bind) | binary_items_acc ]
-                    end
-
-                  else
-                    quote do
-                      binary_items_acc
-                    end
-                  end
-                )
-
-              take_while_by_callback_result = unquote(take_while_by_function_call)
-
-              case take_while_by_callback_result do
-
-                :cont ->
-
-                  new_acc = {
-                    unquote(unmanaged_value_bind),
-                    unquote(managed_value_bind),
-                    unquote(binary_value_bind)
-                  }
-
-                  unquote(parse_function_name)(
-                    rest,
-                    unquote_splicing(dependencies_bindings),
-                    unquote(options_bind),
-                    unquote_splicing(inner_function_on_option_dependencies_bindings),
-                    item_size,
-                    new_acc
-                  )
-
-                :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+                end
 
               end
 
-            { :wrong_data, _wrong_data } = wrong_data -> wrong_data
+            else
 
-          end
+              quote do
+
+                  unquote(unmanaged_new_item_bind) = unquote(parse_expr)
+
+                  unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
+
+                  unquote(managed_value_bind) =
+
+                    unquote(
+                      if has_dependency_on_managed do
+
+                        quote do
+
+                          managed_new_item =
+                            unquote(
+                              TypeConverterToManaged.convert_unmanaged_value_to_managed(
+                                item_type,
+                                unmanaged_new_item_bind
+                              )
+                            )
+
+                          [ managed_new_item | managed_items_acc ]
+
+                        end
+
+                      else
+                        quote do
+                          managed_items_acc
+                        end
+                      end
+                    )
+
+                  unquote(binary_value_bind) =
+
+                    unquote(
+                      if has_dependency_on_binary do
+
+                        quote do
+                          [ unquote(item_binary_bind) | binary_items_acc ]
+                        end
+
+                      else
+                        quote do
+                          binary_items_acc
+                        end
+                      end
+                    )
+
+                  take_while_by_callback_result = unquote(take_while_by_function_call)
+
+                  case take_while_by_callback_result do
+
+                    :cont ->
+
+                      new_acc = {
+                        unquote(unmanaged_value_bind),
+                        unquote(managed_value_bind),
+                        unquote(binary_value_bind)
+                      }
+
+                      unquote(parse_function_name)(
+                        rest,
+                        unquote_splicing(dependencies_bindings),
+                        unquote(options_bind),
+                        unquote_splicing(inner_function_on_option_dependencies_bindings),
+                        item_size,
+                        new_acc
+                      )
+
+                    :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+
+                  end
+
+              end
+
+            end
+          )
 
         end
 

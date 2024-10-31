@@ -35,17 +35,22 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
 
     case item_type do
 
-      _item_type when is_item_of_primitive_type ->
-
-        quote do
-          { :ok, unquote(item_binary_bind) }
-        end
+      _item_type when is_item_of_primitive_type -> %{
+          expr: item_binary_bind,
+          is_failable: false
+        }
 
       { :module, %{ module_type: :bin_struct, module: module } } ->
 
-        quote do
-          unquote(module).parse_exact(unquote(item_binary_bind), unquote(options_bind))
-        end
+        expr =
+          quote do
+            unquote(module).parse_exact(unquote(item_binary_bind), unquote(options_bind))
+          end
+
+        %{
+          expr: expr,
+          is_failable: true
+        }
 
       {
         :module,
@@ -56,12 +61,20 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
         }
       } ->
 
-        quote do
-          unquote(module).parse_exact(unquote(item_binary_bind), unquote(custom_type_args), unquote(options_bind))
-        end
+        expr =
+          quote do
+            unquote(module).parse_exact(unquote(item_binary_bind), unquote(custom_type_args), unquote(options_bind))
+          end
 
+        %{
+          expr: expr,
+          is_failable: true
+        }
 
     end
+
+
+
 
   end
 

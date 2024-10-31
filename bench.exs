@@ -20,6 +20,7 @@ defmodule BenchBinStructWithDynamicPrimitiveItemList do
 
 end
 
+
 defmodule BenchItem do
 
   use BinStruct
@@ -29,13 +30,6 @@ defmodule BenchItem do
 end
 
 
-defmodule BenchBinStructWithStructItemList do
-
-  use BinStruct
-
-  field :items, { :list_of, BenchItem }, length: 1000
-
-end
 
 defmodule BenchBinStructWithStructDynamicItemList do
 
@@ -56,6 +50,15 @@ defmodule BenchBinStructWithStructDynamicItemList do
     end
 
   end
+
+end
+
+
+defmodule BenchBinStructWithStructItemList do
+
+  use BinStruct
+
+  field :items, { :list_of, BenchItem }, length: 1000
 
 end
 

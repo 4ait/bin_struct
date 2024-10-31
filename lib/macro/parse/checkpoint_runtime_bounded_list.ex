@@ -35,10 +35,10 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
     item_binary_bind = { :item, [], __MODULE__ }
     initial_binary_access = { :bin, [], __MODULE__ }
 
-    parse_expr = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
+    %{ expr: parse_expr, is_failable: is_parse_expression_failable } = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     body =
-      quote generated: true do
+      quote do
 
         %{
           length: length,
@@ -50,35 +50,59 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
 
           <<target_binary::size(length)-bytes, rest::binary>> = unquote(initial_binary_access)
 
-          chunks =
-            for << chunk::binary-size(item_size) <- unquote(initial_binary_access) >> do
-              chunk
-            end
+          unquote(
+             if is_parse_expression_failable do
 
-          result =
-            Enum.reduce_while(chunks, { :ok, [] }, fn unquote(item_binary_bind), acc ->
+               quote do
 
-              { _, items } = acc
+                 chunks =
+                   for << chunk::binary-size(item_size) <- target_binary >> do
+                     chunk
+                   end
 
-              case unquote(parse_expr) do
+                 result =
+                   Enum.reduce_while(chunks, { :ok, [] }, fn unquote(item_binary_bind), acc ->
 
-                { :ok, unmanaged_item } ->
+                     { _, items } = acc
 
-                  new_items = [ unmanaged_item | items ]
+                     case unquote(parse_expr) do
 
-                  { :cont, { :ok, new_items } }
+                       { :ok, unmanaged_item } ->
 
-                bad_result -> { :halt, bad_result }
+                         new_items = [ unmanaged_item | items ]
+
+                         { :cont, { :ok, new_items } }
+
+                       bad_result -> { :halt, bad_result }
+
+                     end
+
+                   end)
+
+
+                 case result do
+                   { :ok, items } ->  { :ok, Enum.reverse(items), rest, unquote(options_bind) }
+                   bad_result -> bad_result
+                 end
+
+               end
+
+             else
+
+              quote do
+
+                  items =
+                    for << unquote(item_binary_bind)::binary-size(item_size) <- target_binary >> do
+                      unquote(parse_expr)
+                    end
+
+                  { :ok, Enum.reverse(items), rest, unquote(options_bind) }
 
               end
 
-            end)
+             end
+          )
 
-
-          case result do
-            { :ok, items } ->  { :ok, Enum.reverse(items), rest, unquote(options_bind) }
-            bad_result -> bad_result
-          end
 
         else
           :not_enough_bytes
