@@ -4,7 +4,7 @@ defmodule BinStruct.Macro.Parse.TakeWhileByDependencyOnSelfInfo do
   alias BinStruct.Macro.Structs.DependencyOnField
   alias BinStruct.TypeConversion.TypeConversionManaged
   alias BinStruct.TypeConversion.TypeConversionUnmanaged
-  alias BinStruct.Types.TypeConversionBinary
+  alias BinStruct.TypeConversion.TypeConversionBinary
   alias BinStruct.TypeConversion.TypeConversionUnspecified
   alias BinStruct.Macro.Dependencies.CallbacksDependencies
 

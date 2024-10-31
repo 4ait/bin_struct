@@ -10,6 +10,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
   alias BinStruct.Macro.Parse.ListItemParseExpressions
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.Dependencies.BindingsToOnOptionDependencies
+  alias BinStruct.Macro.TypeConverterToManaged
 
   alias BinStruct.Macro.Parse.TakeWhileByDependencyOnSelfInfo
 
@@ -89,24 +90,6 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
             {:ok, unquote(unmanaged_new_item_bind) } ->
 
-              managed_new_item =
-                unquote(
-                  if has_dependency_on_managed do
-                    BinStruct.Macro.TypeConverterToManaged.convert_unmanaged_value_to_managed(item_type, unmanaged_new_item_bind)
-                  end
-                )
-
-              binary_new_item =
-                unquote(
-                  if has_dependency_on_binary do
-
-                    quote do
-                      item_binary_bind
-                    end
-
-                  end
-                )
-
               unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
 
               unquote(managed_value_bind) =
@@ -115,12 +98,21 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
                   if has_dependency_on_managed do
 
                     quote do
+
+                      managed_new_item =
+                        unquote(
+                          TypeConverterToManaged.convert_unmanaged_value_to_managed(
+                            item_type,
+                            unmanaged_new_item_bind
+                          )
+                        )
+
                       [ managed_new_item | managed_items_acc ]
                     end
 
                   else
                     quote do
-                      []
+                      managed_items_acc
                     end
                   end
                 )
@@ -128,15 +120,15 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
               unquote(binary_value_bind) =
 
                 unquote(
-                  if has_dependency_on_managed do
+                  if has_dependency_on_binary do
 
                     quote do
-                      [ binary_new_item | binary_items_acc ]
+                      [ unquote(item_binary_bind) | binary_items_acc ]
                     end
 
                   else
                     quote do
-                      []
+                      binary_items_acc
                     end
                   end
                 )
@@ -349,24 +341,6 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
             {:ok, unquote(unmanaged_new_item_bind) } ->
 
-              managed_new_item =
-                unquote(
-                  if has_dependency_on_managed do
-                    BinStruct.Macro.TypeConverterToManaged.convert_unmanaged_value_to_managed(item_type, unmanaged_new_item_bind)
-                  end
-                )
-
-              binary_new_item =
-                unquote(
-                  if has_dependency_on_binary do
-
-                    quote do
-                      item_binary_bind
-                    end
-
-                  end
-                )
-
               unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
 
               unquote(managed_value_bind) =
@@ -375,12 +349,22 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
                   if has_dependency_on_managed do
 
                     quote do
+
+                      managed_new_item =
+                        unquote(
+                          TypeConverterToManaged.convert_unmanaged_value_to_managed(
+                            item_type,
+                            unmanaged_new_item_bind
+                          )
+                        )
+
                       [ managed_new_item | managed_items_acc ]
+
                     end
 
                   else
                     quote do
-                      []
+                      managed_items_acc
                     end
                   end
                 )
@@ -388,19 +372,18 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
               unquote(binary_value_bind) =
 
                 unquote(
-                  if has_dependency_on_managed do
+                  if has_dependency_on_binary do
 
                     quote do
-                      [ binary_new_item | binary_items_acc ]
+                      [ unquote(item_binary_bind) | binary_items_acc ]
                     end
 
                   else
                     quote do
-                      []
+                      binary_items_acc
                     end
                   end
                 )
-
 
               take_while_by_callback_result = unquote(take_while_by_function_call)
 
