@@ -1,41 +1,35 @@
-defmodule BinStructWithPrimitiveItemList do
-
-  use BinStruct
-
-  field :items, { :list_of, :uint16_be }, length: 1000
-
-end
-
-
 defmodule Item do
-
   use BinStruct
 
-  field :value, :uint16_be
+  register_callback &length_by/0
+
+  field :binary, :binary, length_by: &length_by/0
+
+  defp length_by(), do: 1
 
 end
 
-
-defmodule BinStructWithStructItemList do
-
-  use BinStruct
-
-  field :items, { :list_of, Item }, length: 1000
-
-end
-
-defmodule BinStructWithStructItemDynamicCallbackList do
+defmodule StructWithItems do
 
   use BinStruct
 
-  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+  register_callback &take_while_by/1, items: :field
 
-  register_callback &take_while_not_1000_items/1,
-                    items: :field
+  field :items, { :list_of, Item }, take_while_by: &take_while_by/1
 
-  field :items, { :list_of, Item }, take_while_by: &take_while_not_1000_items/1
+  defp take_while_by(items) do
 
-  defp take_while_not_1000_items([ 1000 | _prev]), do: :halt
-  defp take_while_not_1000_items(_), do: :cont
+    [ recent | _previous ] = items
+
+    %{
+      binary: binary
+    } = Item.decode(recent)
+
+    case binary do
+      <<3>> -> :halt
+      _ -> :cont
+    end
+
+  end
 
 end

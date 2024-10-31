@@ -6,12 +6,19 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
   alias BinStruct.Macro.Parse.WrapWithLengthBy
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
   alias BinStruct.Macro.Termination
-  alias BinStruct.Macro.Parse.CheckpointVariableList
   alias BinStruct.Macro.Dependencies.DeconstructionOfOnOptionDependencies
   alias BinStruct.Macro.Parse.CheckpointRuntimeBoundedList
 
   alias BinStruct.Macro.Dependencies.ParseDependencies
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
+
+
+  alias BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilLengthByParse
+  alias BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilCountByParse
+  alias BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWhileByCallbackByItemSize
+  alias BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWhileByCallbackByParse
+  alias BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUntilEndByItemSize
+  alias BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUntilEndByParse
 
   alias BinStruct.Macro.Structs.Field
 
@@ -52,7 +59,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             take: :until_length_by_parse
           } = list_of_info ->
 
-            CheckpointVariableList.variable_terminated_until_length_by_parse_checkpoint(
+            VariableTerminatedUntilLengthByParse.variable_terminated_until_length_by_parse_checkpoint(
                list_of_info,
                field,
                function_name,
@@ -67,7 +74,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             take: :until_count_by_parse
           } = list_of_info ->
 
-            CheckpointVariableList.variable_terminated_until_count_by_parse_checkpoint(
+            VariableTerminatedUntilCountByParse.variable_terminated_until_count_by_parse_checkpoint(
               list_of_info,
               field,
               function_name,
@@ -82,7 +89,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             take: :take_while_by_callback_by_item_size
           } = list_of_info ->
 
-            CheckpointVariableList.variable_terminated_take_while_by_callback_by_item_size_checkpoint(
+            VariableTerminatedTakeWhileByCallbackByItemSize.variable_terminated_take_while_by_callback_by_item_size_checkpoint(
               list_of_info,
               field,
               function_name,
@@ -97,7 +104,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             take: :take_while_by_callback_by_parse
           } = list_of_info ->
 
-            CheckpointVariableList.variable_terminated_take_while_by_callback_by_parse_checkpoint(
+            VariableTerminatedTakeWhileByCallbackByParse.variable_terminated_take_while_by_callback_by_parse_checkpoint(
               list_of_info,
               field,
               function_name,
@@ -112,7 +119,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             take: :until_end_by_item_size
           } = list_of_info ->
 
-            CheckpointVariableList.variable_not_terminated_until_end_by_item_size_checkpoint(
+            VariableNotTerminatedUntilEndByItemSize.variable_not_terminated_until_end_by_item_size_checkpoint(
               list_of_info,
               field,
               function_name,
@@ -127,7 +134,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             take: :until_end_by_parse
           } = list_of_info ->
 
-            CheckpointVariableList.variable_not_terminated_until_end_by_parse_checkpoint(
+            VariableNotTerminatedUntilEndByParse.variable_not_terminated_until_end_by_parse_checkpoint(
               list_of_info,
               field,
               function_name,
@@ -563,6 +570,7 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
         end
 
+
       :binary = binary_type ->
 
         case binary_type do
@@ -575,7 +583,17 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
-            body = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
+            body =
+
+              quote do
+
+                unquote(unmanaged_value_access) = unquote(binary_value_access_bind)
+
+                unquote(
+                  Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
+                )
+
+              end
 
             quote do
 
@@ -591,7 +609,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                 )
 
                 unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
-                unquote(unmanaged_value_access) = unquote(binary_value_access_bind)
 
                 unquote(
                   WrapWithLengthBy.wrap_with_length_by(body, length_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
@@ -612,7 +629,17 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
             validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
 
-            body = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
+            body =
+
+              quote do
+
+                unquote(unmanaged_value_access) = unquote(binary_value_access_bind)
+
+                unquote(
+                  Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
+                )
+
+              end
 
             quote do
 
@@ -622,14 +649,11 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
                      options
                    ) when is_binary(unquote(binary_value_access_bind)) do
 
-
-
                 unquote(
                   DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
                 )
 
                 unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
-                unquote(unmanaged_value_access) = unquote(binary_value_access_bind)
 
                 unquote(
                   WrapWithOptionalBy.maybe_wrap_with_optional_by(body, optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)

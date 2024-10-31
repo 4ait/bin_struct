@@ -18,8 +18,10 @@ defmodule BinaryValuesBench do
       %{
         "parse, decode, new struct, and dump BinStructWithPrimitiveItemList" => (fn bin ->
           { :ok, parsed_struct, _rest } = BinStructWithPrimitiveItemList.parse(bin)
+        end),
 
-
+        "parse, decode, new struct, and dump BinStructWithDynamicPrimitiveItemList" => (fn bin ->
+           { :ok, parsed_struct, _rest } = BinStructWithDynamicPrimitiveItemList.parse(bin)
 
         end),
 
@@ -28,10 +30,12 @@ defmodule BinaryValuesBench do
 
                                                                               end),
 
-        "parse, decode, new struct, and dump BinStructWithStructItemDynamicCallbackList" => (fn bin ->
-          { :ok, parsed_struct, _rest } = BinStructWithStructItemDynamicCallbackList.parse(bin)
+        "parse, decode, new struct, and dump BinStructWithStructDynamicItemList" => (fn bin ->
+          { :ok, parsed_struct, _rest } = BinStructWithStructDynamicItemList.parse(bin)
 
                                                                                              end),
+
+
 
       },
       inputs: inputs
