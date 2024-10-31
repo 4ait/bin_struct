@@ -29,7 +29,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
 
     options_bind = { :options, [], __MODULE__ }
     item_binary_bind = { :item, [], __MODULE__ }
-    %{ expr: parse_expr, is_failable: is_parse_expression_failable } = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
+    %{ expr: parse_expr, is_infailable_of_primitive_type: is_infailable_of_primitive_type } = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     initial_binary_access = { :bin, [], __MODULE__  }
 
@@ -46,7 +46,22 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
           )
 
         unquote(
-          if is_parse_expression_failable do
+          if is_infailable_of_primitive_type do
+
+
+            quote do
+
+              items =
+                for << unquote(item_binary_bind)::binary-size(item_size) <- unquote(initial_binary_access) >> do
+                  unquote(parse_expr)
+                end
+
+              { :ok, items, "", unquote(options_bind) }
+
+            end
+
+          else
+
 
             quote do
 
@@ -79,19 +94,6 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
                 { :ok, items } ->  { :ok, Enum.reverse(items), "", unquote(options_bind) }
                 bad_result -> bad_result
               end
-
-            end
-
-          else
-
-            quote do
-
-              items =
-                for << unquote(item_binary_bind)::binary-size(item_size) <- unquote(initial_binary_access) >> do
-                  unquote(parse_expr)
-                end
-
-              { :ok, items, "", unquote(options_bind) }
 
             end
 

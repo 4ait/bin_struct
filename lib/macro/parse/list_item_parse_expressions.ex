@@ -37,7 +37,7 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
 
       _item_type when is_item_of_primitive_type -> %{
           expr: item_binary_bind,
-          is_failable: false
+          is_infailable_of_primitive_type: true
         }
 
       { :module, %{ module_type: :bin_struct, module: module } } ->
@@ -49,7 +49,7 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
 
         %{
           expr: expr,
-          is_failable: true
+          is_infailable_of_primitive_type: false
         }
 
       {
@@ -69,7 +69,7 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
 
         %{
           expr: expr,
-          is_failable: true
+          is_infailable_of_primitive_type: false
         }
 
     end

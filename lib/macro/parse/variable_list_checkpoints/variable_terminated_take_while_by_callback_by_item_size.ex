@@ -43,7 +43,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
     item_binary_bind = {:item, [], __MODULE__}
     unmanaged_new_item_bind = {:unmanaged_new_item, [], __MODULE__}
 
-    %{ expr: parse_expr, is_failable: is_parse_expression_failable } = ListItemParseExpressions.parse_exact_expression(
+    %{ expr: parse_expr, is_infailable_of_primitive_type: is_infailable_of_primitive_type } = ListItemParseExpressions.parse_exact_expression(
       item_type,
       item_binary_bind,
       options_bind
@@ -88,7 +88,83 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
           unquote(
 
-            if is_parse_expression_failable do
+            if is_infailable_of_primitive_type do
+
+              quote do
+
+                unquote(unmanaged_new_item_bind) = unquote(parse_expr)
+
+                unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
+
+                unquote(managed_value_bind) =
+
+                  unquote(
+                    if has_dependency_on_managed do
+
+                      quote do
+
+                        managed_new_item =
+                          unquote(
+                            TypeConverterToManaged.convert_unmanaged_value_to_managed(
+                              item_type,
+                              unmanaged_new_item_bind
+                            )
+                          )
+
+                        [ managed_new_item | managed_items_acc ]
+                      end
+
+                    else
+                      quote do
+                        managed_items_acc
+                      end
+                    end
+                  )
+
+                unquote(binary_value_bind) =
+
+                  unquote(
+                    if has_dependency_on_binary do
+
+                      quote do
+                        [ unquote(item_binary_bind) | binary_items_acc ]
+                      end
+
+                    else
+                      quote do
+                        binary_items_acc
+                      end
+                    end
+                  )
+
+
+                take_while_by_callback_result = unquote(take_while_by_function_call)
+
+                case take_while_by_callback_result do
+
+                  :cont ->
+
+                    new_acc = {
+                      unquote(unmanaged_value_bind),
+                      unquote(managed_value_bind),
+                      unquote(binary_value_bind)
+                    }
+
+                    unquote(parse_function_name)(
+                      rest,
+                      unquote_splicing(dependencies_bindings),
+                      unquote(options_bind),
+                      unquote_splicing(inner_function_on_option_dependencies_bindings),
+                      new_acc
+                    )
+
+                  :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+
+                end
+
+              end
+
+            else
 
               quote do
 
@@ -165,82 +241,6 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
                     end
 
                   { :wrong_data, _wrong_data } = wrong_data -> wrong_data
-
-                end
-
-              end
-
-            else
-
-              quote do
-
-                unquote(unmanaged_new_item_bind) = unquote(parse_expr)
-
-                unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
-
-                unquote(managed_value_bind) =
-
-                  unquote(
-                    if has_dependency_on_managed do
-
-                      quote do
-
-                        managed_new_item =
-                          unquote(
-                            TypeConverterToManaged.convert_unmanaged_value_to_managed(
-                              item_type,
-                              unmanaged_new_item_bind
-                            )
-                          )
-
-                        [ managed_new_item | managed_items_acc ]
-                      end
-
-                    else
-                      quote do
-                        managed_items_acc
-                      end
-                    end
-                  )
-
-                unquote(binary_value_bind) =
-
-                  unquote(
-                    if has_dependency_on_binary do
-
-                      quote do
-                        [ unquote(item_binary_bind) | binary_items_acc ]
-                      end
-
-                    else
-                      quote do
-                        binary_items_acc
-                      end
-                    end
-                  )
-
-
-                take_while_by_callback_result = unquote(take_while_by_function_call)
-
-                case take_while_by_callback_result do
-
-                  :cont ->
-
-                    new_acc = {
-                      unquote(unmanaged_value_bind),
-                      unquote(managed_value_bind),
-                      unquote(binary_value_bind)
-                    }
-
-                    unquote(parse_function_name)(
-                      rest,
-                      unquote_splicing(dependencies_bindings),
-                      unquote(options_bind),
-                      unquote_splicing(inner_function_on_option_dependencies_bindings),
-                      new_acc
-                    )
-
-                  :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
 
                 end
 
@@ -365,7 +365,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
     item_binary_bind = {:item, [], __MODULE__}
     unmanaged_new_item_bind = {:unmanaged_new_item, [], __MODULE__}
 
-    %{ expr: parse_expr, is_failable: is_parse_expression_failable } = ListItemParseExpressions.parse_exact_expression(
+    %{ expr: parse_expr, is_infailable_of_primitive_type: is_infailable_of_primitive_type } = ListItemParseExpressions.parse_exact_expression(
       item_type,
       item_binary_bind,
       options_bind
@@ -426,7 +426,84 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
           unquote(
 
-            if is_parse_expression_failable do
+            if is_infailable_of_primitive_type do
+
+              quote do
+
+                unquote(unmanaged_new_item_bind) = unquote(parse_expr)
+
+                unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
+
+                unquote(managed_value_bind) =
+
+                  unquote(
+                    if has_dependency_on_managed do
+
+                      quote do
+
+                        managed_new_item =
+                          unquote(
+                            TypeConverterToManaged.convert_unmanaged_value_to_managed(
+                              item_type,
+                              unmanaged_new_item_bind
+                            )
+                          )
+
+                        [ managed_new_item | managed_items_acc ]
+
+                      end
+
+                    else
+                      quote do
+                        managed_items_acc
+                      end
+                    end
+                  )
+
+                unquote(binary_value_bind) =
+
+                  unquote(
+                    if has_dependency_on_binary do
+
+                      quote do
+                        [ unquote(item_binary_bind) | binary_items_acc ]
+                      end
+
+                    else
+                      quote do
+                        binary_items_acc
+                      end
+                    end
+                  )
+
+                take_while_by_callback_result = unquote(take_while_by_function_call)
+
+                case take_while_by_callback_result do
+
+                  :cont ->
+
+                    new_acc = {
+                      unquote(unmanaged_value_bind),
+                      unquote(managed_value_bind),
+                      unquote(binary_value_bind)
+                    }
+
+                    unquote(parse_function_name)(
+                      rest,
+                      unquote_splicing(dependencies_bindings),
+                      unquote(options_bind),
+                      unquote_splicing(inner_function_on_option_dependencies_bindings),
+                      item_size,
+                      new_acc
+                    )
+
+                  :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+
+                end
+
+              end
+
+            else
 
               quote do
 
@@ -506,83 +583,6 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
                   { :wrong_data, _wrong_data } = wrong_data -> wrong_data
 
                 end
-
-              end
-
-            else
-
-              quote do
-
-                  unquote(unmanaged_new_item_bind) = unquote(parse_expr)
-
-                  unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
-
-                  unquote(managed_value_bind) =
-
-                    unquote(
-                      if has_dependency_on_managed do
-
-                        quote do
-
-                          managed_new_item =
-                            unquote(
-                              TypeConverterToManaged.convert_unmanaged_value_to_managed(
-                                item_type,
-                                unmanaged_new_item_bind
-                              )
-                            )
-
-                          [ managed_new_item | managed_items_acc ]
-
-                        end
-
-                      else
-                        quote do
-                          managed_items_acc
-                        end
-                      end
-                    )
-
-                  unquote(binary_value_bind) =
-
-                    unquote(
-                      if has_dependency_on_binary do
-
-                        quote do
-                          [ unquote(item_binary_bind) | binary_items_acc ]
-                        end
-
-                      else
-                        quote do
-                          binary_items_acc
-                        end
-                      end
-                    )
-
-                  take_while_by_callback_result = unquote(take_while_by_function_call)
-
-                  case take_while_by_callback_result do
-
-                    :cont ->
-
-                      new_acc = {
-                        unquote(unmanaged_value_bind),
-                        unquote(managed_value_bind),
-                        unquote(binary_value_bind)
-                      }
-
-                      unquote(parse_function_name)(
-                        rest,
-                        unquote_splicing(dependencies_bindings),
-                        unquote(options_bind),
-                        unquote_splicing(inner_function_on_option_dependencies_bindings),
-                        item_size,
-                        new_acc
-                      )
-
-                    :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
-
-                  end
 
               end
 

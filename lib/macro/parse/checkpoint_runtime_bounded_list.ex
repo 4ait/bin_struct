@@ -35,7 +35,7 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
     item_binary_bind = { :item, [], __MODULE__ }
     initial_binary_access = { :bin, [], __MODULE__ }
 
-    %{ expr: parse_expr, is_failable: is_parse_expression_failable } = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
+    %{ expr: parse_expr, is_infailable_of_primitive_type: is_infailable_of_primitive_type } = ListItemParseExpressions.parse_exact_expression(item_type, item_binary_bind, options_bind)
 
     body =
       quote do
@@ -51,7 +51,21 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
           <<target_binary::size(length)-bytes, rest::binary>> = unquote(initial_binary_access)
 
           unquote(
-             if is_parse_expression_failable do
+             if is_infailable_of_primitive_type do
+
+               quote do
+
+                 items =
+                   for << unquote(item_binary_bind)::binary-size(item_size) <- target_binary >> do
+                     unquote(parse_expr)
+                   end
+
+                 { :ok, items, rest, unquote(options_bind) }
+
+               end
+
+             else
+
 
                quote do
 
@@ -87,18 +101,6 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
 
                end
 
-             else
-
-              quote do
-
-                  items =
-                    for << unquote(item_binary_bind)::binary-size(item_size) <- target_binary >> do
-                      unquote(parse_expr)
-                    end
-
-                  { :ok, items, rest, unquote(options_bind) }
-
-              end
 
              end
           )
