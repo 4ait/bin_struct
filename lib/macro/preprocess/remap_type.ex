@@ -28,10 +28,10 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
 
         module when is_module -> RemapModule.remap_module(module, opts, nil, env)
 
-        { :enum, _enum_info } = enum ->  RemapEnum.remap_enum(enum, opts, env)
-        { :flags, _flags_info } = flags ->  RemapFlags.remap_flags(flags, opts, env)
+        { :enum, _enum_info } = enum -> RemapEnum.remap_enum(enum, opts, env)
+        { :flags, _flags_info } = flags -> RemapFlags.remap_flags(flags, opts, env)
 
-        { :list_of, _item_type } = list_of ->  RemapListOf.remap_list_of(list_of, opts, env)
+        { :list_of, _item_type } = list_of -> RemapListOf.remap_list_of(list_of, opts, env)
 
         { :variant_of, _variants } = variant_of -> remap_variant_of(variant_of, opts, env)
 

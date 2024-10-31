@@ -27,86 +27,33 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
 
         function_name when function_name != :unknown ->
 
-          arguments_and_returns =
+          arguments =
             Enum.reduce(
               raw_arguments,
-              %{
-                arguments: [],
-                returns: :unspecified
-              },
-              fn raw_argument, %{} = acc ->
+              _arguments_acc = [],
+
+              fn raw_argument, arguments_acc ->
 
                 { name, type } = raw_argument
 
                 { type, _binding } = Code.eval_quoted(type, [], env)
 
-                case { name, type } do
+                normalized_type = validate_input_and_normalize_raw_callback_argument(name, type, env)
 
-                  {:returns, return_fields } when is_list(return_fields) ->
 
-                    %{
-                      acc |
-                      returns:
-                        Enum.map(
-                          return_fields,
-                          fn return_field ->
-                            FieldsMap.get_field_by_name(fields_map, return_field)
-                          end
-                        )
-                    }
+                argument = remap_raw_callback_argument(name, normalized_type, fields_map, registered_options_map, env)
 
-                  {:arguments, arguments } when is_list(arguments) ->
 
-                    arguments =
-                      Enum.map(
-                        arguments,
-                        fn argument ->
-
-                          { name, type } = argument
-
-                          normalize_raw_callback_argument(name, type, fields_map, registered_options_map, env)
-
-                        end
-                      )
-
-                    %{
-                      arguments: current_arguments
-                    } = acc
-
-                    %{
-                      acc |
-                      arguments: current_arguments ++ arguments
-                    }
-
-                  { name, type } ->
-
-                    argument = normalize_raw_callback_argument(name, type, fields_map, registered_options_map, env)
-
-                    %{
-                      arguments: current_arguments
-                    } = acc
-
-                    %{
-                      acc |
-                      arguments: current_arguments ++ [argument]
-                    }
-
-                end
+                arguments_acc ++  [argument]
 
               end
             )
-
-           %{
-             arguments: arguments,
-             returns: returns
-           } = arguments_and_returns
 
            arguments = List.flatten(arguments)
 
            %RegisteredCallback{
              function: function,
-             arguments: arguments,
-             returns: returns
+             arguments: arguments
            }
 
         :unknown -> raise "not a function reference (&), given: #{inspect(function)}"
@@ -116,19 +63,32 @@ defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
   end
 
 
-  defp normalize_raw_callback_argument(name, type_atom, fields_map, registered_options_map, env) when is_atom(type_atom)  do
+  defp validate_input_and_normalize_raw_callback_argument(name, type, env)  do
 
-    argument_type =
-      case type_atom do
-        :field -> %{ type: :field }
-        :option -> %{ type: :option, interface: env.module }
-      end
+    case type do
+      type_map when is_map(type_map) ->
 
-    normalize_raw_callback_argument(name, argument_type, fields_map, registered_options_map, env)
+        valid_keys = [:type, :interface, :type_conversion]
+
+        if Enum.all?(Map.keys(type_map), &(&1 in valid_keys)) do
+          type_map
+        else
+          raise "not supported argument for #{name}, given: #{inspect(type_map)}, valid map keys are: #{inspect(valid_keys)}"
+        end
+
+      type_atom when is_atom(type) ->
+
+        case type_atom do
+          :field -> %{ type: :field }
+          :option -> %{ type: :option, interface: env.module }
+          _else -> raise "not supported argument for #{name}, given: #{inspect(type_atom)}, valid arguments are: #{inspect([:field, :option])}"
+        end
+
+    end
 
   end
 
-  defp normalize_raw_callback_argument(
+  defp remap_raw_callback_argument(
          name,
          %{} = argument_type_map,
          %FieldsMap{} = fields_map,
