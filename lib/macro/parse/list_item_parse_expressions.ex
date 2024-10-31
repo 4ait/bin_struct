@@ -59,6 +59,7 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
           module: module,
           custom_type_args: custom_type_args
         }
+
       } ->
 
         expr =

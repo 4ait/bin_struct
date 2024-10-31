@@ -91,7 +91,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
                   unquote(parse_expr)
                 end
 
-              { :ok, Enum.reverse(items), "", unquote(options_bind) }
+              { :ok, items, "", unquote(options_bind) }
 
             end
 

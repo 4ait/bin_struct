@@ -96,7 +96,7 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
                       unquote(parse_expr)
                     end
 
-                  { :ok, Enum.reverse(items), rest, unquote(options_bind) }
+                  { :ok, items, rest, unquote(options_bind) }
 
               end
 
