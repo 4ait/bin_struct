@@ -60,9 +60,7 @@ defmodule BinStructTest.VirtualFieldSystem.WriteTest do
 
     values = StructWithVirtualFields.decode(parsed_struct)
 
-    expected_mac = <<172, 37, 94, 214, 16, 222, 204, 2, 72, 189, 91, 66, 220, 149, 2, 30,
-      56, 44, 36, 165, 96, 218, 218, 207, 113, 47, 13, 5, 2, 156, 135, 133, 1, 2,
-      3>>
+    expected_mac = <<172, 37, 94, 214, 16, 222, 204, 2, 72, 189, 91, 66, 220, 149, 2, 30, 56, 44, 36, 165, 96, 218, 218, 207, 113, 47, 13, 5, 2, 156, 135, 133>>
 
     %{
       payload: <<1, 2, 3>>,
