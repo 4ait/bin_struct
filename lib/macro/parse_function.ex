@@ -14,46 +14,18 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.TypeConversion.TypeConversionUnspecified
   alias BinStruct.TypeConversion.TypeConversionBinary
   alias BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex
-
   alias BinStruct.Macro.Dependencies.IsFieldDependentOn
-
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.Dependencies.ParseDependencies
   alias BinStruct.Macro.Dependencies.InterfaceImplementationDependencies
   alias BinStruct.Macro.Structs.DependencyOnField
   alias BinStruct.Macro.Structs.DependencyOnOption
+  alias BinStruct.Macro.IsOptionalField
 
   alias BinStruct.Macro.Parse.ParseDependencyResolver
   alias BinStruct.Macro.Parse.TypeConversionCheckpoint
+  alias BinStruct.Macro.Parse.VirtualFieldProducingCheckpoint
 
-  #todo read calls in parse may not work
-
-  defp dependencies_to_be_resolved_manually_for_interface_implementations(interface_implementations_dependencies, resolved_dependencies) do
-
-    Enum.filter(
-      interface_implementations_dependencies,
-      fn dependency ->
-
-        is_resolved =
-          case dependency do
-
-            %DependencyOnField{} = dependency_on_field ->
-
-              Enum.any?(
-                resolved_dependencies,
-                fn resolved_dependency -> resolved_dependency == dependency_on_field end
-              )
-
-            %DependencyOnOption{} -> true
-
-          end
-
-        !is_resolved
-
-      end
-    )
-
-  end
 
   def parse_function(fields, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
 
@@ -100,7 +72,7 @@ defmodule BinStruct.Macro.ParseFunction do
     type_conversion_checkpoints_functions =
       Enum.map(
         type_converter_checkpoint_input_output_by_index,
-           fn {index, input, output} ->
+           fn { index, input, output } ->
 
              TypeConversionCheckpoint.type_conversion_checkpoint_function(
                type_conversion_checkpoint_function_name(index),
@@ -110,9 +82,22 @@ defmodule BinStruct.Macro.ParseFunction do
              )
            end)
 
+    _virtual_field_producing_checkpoint_functions =
+      Enum.map(
+        [],
+        fn _item ->
+
+          index = 1
+
+          VirtualFieldProducingCheckpoint.virtual_field_producing_checkpoint_function(
+            virtual_field_producing_checkpoint_function_name(index),
+            __MODULE__
+          )
+
+        end)
+
     checkpoints_with_clauses =
       Enum.map(
-
         Enum.with_index(parse_checkpoints, 1),
         fn { fields, index } ->
 
@@ -134,7 +119,9 @@ defmodule BinStruct.Macro.ParseFunction do
               end
             )
 
-          maybe_type_conversion_clause_before =
+          maybe_virtual_field_producing_clause = nil
+
+          maybe_type_conversion_clause =
 
             case maybe_type_converter_checkpoint do
               nil -> nil
@@ -146,9 +133,9 @@ defmodule BinStruct.Macro.ParseFunction do
                     fn input_dependency ->
 
                       case input_dependency do
-                        %BinStruct.Macro.Structs.DependencyOnField{} = dependency ->
+                        %DependencyOnField{} = dependency ->
 
-                          %BinStruct.Macro.Structs.DependencyOnField{
+                          %DependencyOnField{
                             field: field
                           } = dependency
 
@@ -160,7 +147,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
                           Bind.bind_unmanaged_value(name, __MODULE__)
 
-                        %BinStruct.Macro.Structs.DependencyOnOption{} -> nil
+                        %DependencyOnOption{} -> nil
 
                       end
 
@@ -174,9 +161,9 @@ defmodule BinStruct.Macro.ParseFunction do
 
                       case output_dependency do
 
-                        %BinStruct.Macro.Structs.DependencyOnField{} = dependency ->
+                        %DependencyOnField{} = dependency ->
 
-                          %BinStruct.Macro.Structs.DependencyOnField{
+                          %DependencyOnField{
                             field: field,
                             type_conversion: type_conversion
                           } = dependency
@@ -194,7 +181,7 @@ defmodule BinStruct.Macro.ParseFunction do
                             TypeConversionBinary-> Bind.bind_binary_value(name, __MODULE__)
                           end
 
-                        %BinStruct.Macro.Structs.DependencyOnOption{} -> nil
+                        %DependencyOnOption{} -> nil
                       end
 
                     end
@@ -218,7 +205,8 @@ defmodule BinStruct.Macro.ParseFunction do
             end
 
           Enum.reject([
-            maybe_type_conversion_clause_before,
+            maybe_virtual_field_producing_clause,
+            maybe_type_conversion_clause,
             parse_checkpoint_with_clause
           ], &is_nil/1)
 
@@ -259,7 +247,7 @@ defmodule BinStruct.Macro.ParseFunction do
                 options = unquote(implemented_options_call)
               end
 
-            [expr]
+            [ expr ]
 
         end
 
@@ -379,9 +367,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
       end
 
-    utils = [ ]
-
-    type_conversion_checkpoints_functions ++ parse_checkpoints_functions ++ parse_functions ++ utils
+    type_conversion_checkpoints_functions ++ parse_checkpoints_functions ++ parse_functions
 
   end
 
@@ -399,7 +385,7 @@ defmodule BinStruct.Macro.ParseFunction do
         optional = opts[:optional]
         optional_by = opts[:optional_by]
 
-        size_bits = BinStruct.Macro.FieldSize.field_size_bits(field)
+        size_bits = FieldSize.field_size_bits(field)
 
         optional_not_present_clause =
           if optional do
@@ -467,7 +453,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
     size = FieldSize.field_size_bits(field)
 
-    is_optional = BinStruct.Macro.IsOptionalField.is_optional_field(field)
+    is_optional = IsOptionalField.is_optional_field(field)
 
     case size do
 
@@ -522,6 +508,38 @@ defmodule BinStruct.Macro.ParseFunction do
 
   defp type_conversion_checkpoint_function_name(checkpoint_index) do
     String.to_atom("type_conversion_checkpoint_#{checkpoint_index}")
+  end
+
+  defp virtual_field_producing_checkpoint_function_name(checkpoint_index) do
+    String.to_atom("virtual_field_producing_checkpoint_#{checkpoint_index}")
+  end
+
+
+  defp dependencies_to_be_resolved_manually_for_interface_implementations(interface_implementations_dependencies, resolved_dependencies) do
+
+    Enum.filter(
+      interface_implementations_dependencies,
+      fn dependency ->
+
+        is_resolved =
+          case dependency do
+
+            %DependencyOnField{} = dependency_on_field ->
+
+              Enum.any?(
+                resolved_dependencies,
+                fn resolved_dependency -> resolved_dependency == dependency_on_field end
+              )
+
+            %DependencyOnOption{} -> true
+
+          end
+
+        !is_resolved
+
+      end
+    )
+
   end
 
 
