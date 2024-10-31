@@ -397,7 +397,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
     recursive_parse_function =
 
-      quote generated: true do
+      quote do
 
         defp unquote(parse_function_name)(
                binary,
