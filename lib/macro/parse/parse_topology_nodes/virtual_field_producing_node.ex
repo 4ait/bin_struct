@@ -1,7 +1,7 @@
-defmodule BinStruct.Macro.Parse.ParseTopologyNode.VirtualFieldProducingNode do
+defmodule BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode do
 
 
-    alias BinStruct.Macro.Parse.ParseTopologyNode.VirtualFieldProducingNode
+    alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode
 
     alias BinStruct.Macro.Structs.VirtualField
 

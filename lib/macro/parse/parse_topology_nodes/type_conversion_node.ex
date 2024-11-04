@@ -1,7 +1,7 @@
-defmodule BinStruct.Macro.Parse.ParseTopologyNode.TypeConversionNode do
+defmodule BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode do
 
 
-    alias BinStruct.Macro.Parse.ParseTopologyNode.TypeConversionNode
+    alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
 
     alias BinStruct.Macro.Structs.Field
     alias BinStruct.Macro.Structs.VirtualField

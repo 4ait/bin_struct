@@ -17,6 +17,10 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
 
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.ParseNode
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode
+
   def topology(
         fields,
         registered_callbacks_map
