@@ -144,7 +144,7 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpoint do
                 field: %VirtualField { name: sub_dependency_name }
               } = sub_dependency
 
-              { name, sub_dependency_name }
+              { sub_dependency_name, name }
 
             end
           )
@@ -161,7 +161,7 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpoint do
 
     case Graph.topsort(graph) do
       false -> { :error, :topology_not_exists }
-      topology -> { :ok, Enum.reverse(topology) }
+      topology -> { :ok, topology }
     end
 
   end

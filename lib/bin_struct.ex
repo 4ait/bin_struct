@@ -127,14 +127,24 @@ defmodule BinStruct do
         env
       )
 
-    parse_functions =
-      BinStruct.Macro.ParseFunction.parse_function(
-        non_virtual_fields,
-        interface_implementations,
-        registered_callbacks_map,
-        env,
-        _is_should_be_defined_private = !is_bin_struct_terminated
-      )
+    BinStruct.Macro.ParseGraphFunction.parse_function(
+      non_virtual_fields,
+      interface_implementations,
+      registered_callbacks_map,
+      env,
+      _is_should_be_defined_private = !is_bin_struct_terminated
+    )
+
+    #parse_functions =
+    #  BinStruct.Macro.ParseFunction.parse_function(
+    #    non_virtual_fields,
+      #  interface_implementations,
+    #    registered_callbacks_map,
+     #   env,
+    #    _is_should_be_defined_private = !is_bin_struct_terminated
+    #  )
+
+    parse_functions = []
 
     decode_function = BinStruct.Macro.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
 
@@ -268,7 +278,7 @@ defmodule BinStruct do
      module_code = BinStruct.MacroDebug.code(result_quote)
 
      #if env.module == Exp.StructWithItems do
-      BinStruct.MacroDebug.puts_code(result_quote)
+      #BinStruct.MacroDebug.puts_code(result_quote)
      #end
 
       quote do

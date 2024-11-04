@@ -10,7 +10,7 @@ defmodule BinStruct.Macro.DependenciesTopology do
 
     case Graph.topsort(graph) do
       false -> { :error, :topology_not_exists }
-      topology -> { :ok, Enum.reverse(topology) }
+      topology -> { :ok, topology }
     end
 
 
@@ -25,7 +25,7 @@ defmodule BinStruct.Macro.DependenciesTopology do
           Enum.map(
             depend_on,
             fn dependency ->
-              { node, dependency }
+              { dependency, node }
             end
           )
 
