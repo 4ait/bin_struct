@@ -18,6 +18,9 @@ defmodule BinStruct.Macro.Parse.TypeConversionCheckpointFunction do
   alias BinStruct.Macro.Structs.TypeConversionCheckpoint
   alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
 
+
+  #todo exclude from dependencies intermediate type conversion we producing itself
+
   def receiving_arguments_bindings(%TypeConversionCheckpoint{} = checkpoint, _registered_callbacks_map, context) do
 
     %TypeConversionCheckpoint{ type_conversion_nodes: type_conversion_nodes } = checkpoint

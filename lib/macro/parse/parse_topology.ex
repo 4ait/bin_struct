@@ -21,6 +21,8 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
   alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode
 
+  #todo we need add options_interface_implementation as last nodes to graph
+
   def topology(
         fields,
         registered_callbacks_map

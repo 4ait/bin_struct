@@ -9,6 +9,7 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint
+  alias BinStruct.Macro.Dependencies.ExcludeDependenciesOnField
 
   def receiving_arguments_bindings(%VirtualFieldProducingCheckpoint{} = checkpoint, registered_callbacks_map, context) do
 
@@ -52,7 +53,16 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
         end
       )
 
-    CallbacksDependencies.dependencies(read_by_callbacks)
+    dependencies = CallbacksDependencies.dependencies(read_by_callbacks)
+
+    Enum.reduce(
+      virtual_fields,
+      dependencies,
+      fn virtual_field, dependencies_acc ->
+        ExcludeDependenciesOnField.exclude_dependencies_on_field(dependencies_acc, virtual_field)
+      end
+    )
+
 
   end
 

@@ -10,7 +10,7 @@ defmodule BinStruct.MixProject do
       elixirc_paths: ["lib"] |> maybe_add_test_elixirc_path(),
       deps: deps(),
       erlc_paths: maybe_add_test_erlc_path([]),
-      compilers: [:unused] ++ Mix.compilers(),
+      #compilers: [:unused] ++ Mix.compilers(),
     ]
   end
 
