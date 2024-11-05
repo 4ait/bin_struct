@@ -4,16 +4,11 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Bind
 
   alias BinStruct.Macro.Structs.Field
-  alias BinStruct.Macro.Parse.MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
-  alias BinStruct.Macro.Dependencies.ParseDependencies
-  alias BinStruct.Macro.Dependencies.InterfaceImplementationDependencies
-  alias BinStruct.Macro.Structs.DependencyOnField
-  alias BinStruct.Macro.Structs.DependencyOnOption
   alias BinStruct.Macro.IsOptionalField
 
-  alias BinStruct.Macro.Parse.ParseDependencyResolver
   alias BinStruct.Macro.Parse.TypeConversionCheckpointFunction
   alias BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction
+  alias BinStruct.Macro.Parse.OptionsInterfaceImplementationCheckpointFunction
   alias BinStruct.Macro.Parse.ParseTopology
   alias BinStruct.Macro.Parse.ParseTopologyNodes.ParseNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
@@ -21,30 +16,15 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Structs.ParseCheckpoint
   alias BinStruct.Macro.Structs.TypeConversionCheckpoint
   alias BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint
+  alias BinStruct.Macro.Structs.OptionsInterfaceImplementationCheckpoint
   alias BinStruct.Macro.Parse.ParseCheckpointFunction
-  alias BinStruct.Macro.Dependencies.ParseDependencies
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.InterfaceImplementationNode
 
   def parse_function(fields, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
 
-    parse_topology = ParseTopology.topology(fields, registered_callbacks_map)
-
-    IO.inspect(parse_topology)
+    parse_topology = ParseTopology.topology(fields, registered_callbacks_map, interface_implementations)
 
     checkpoints = create_checkpoints_from_topology(parse_topology)
-
-    interface_implementations_dependencies =
-      InterfaceImplementationDependencies.interface_implementations_dependencies(
-        interface_implementations,
-        registered_callbacks_map
-      )
-
-    resolved_until_end_dependencies = ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map)
-
-    dependencies_to_be_resolved_manually_for_interface_implementations =
-      dependencies_to_be_resolved_manually_for_interface_implementations(
-        interface_implementations_dependencies,
-        resolved_until_end_dependencies
-      )
 
     checkpoint_functions =
       Enum.map(
@@ -77,6 +57,15 @@ defmodule BinStruct.Macro.ParseFunction do
                 VirtualFieldsProducingCheckpointFunction.virtual_fields_producing_checkpoint_function(
                   virtual_field_producing_checkpoint,
                   virtual_fields_producing_checkpoint_function_name(index),
+                  registered_callbacks_map,
+                  env
+                )
+
+              %OptionsInterfaceImplementationCheckpoint{} = options_interface_implementation_checkpoint ->
+
+                OptionsInterfaceImplementationCheckpointFunction.options_interface_implementation_checkpoint_function(
+                  options_interface_implementation_checkpoint,
+                  interface_implementation_checkpoint_function_name(index),
                   registered_callbacks_map,
                   env
                 )
@@ -174,6 +163,25 @@ defmodule BinStruct.Macro.ParseFunction do
 
               end
 
+            %OptionsInterfaceImplementationCheckpoint{} = interface_implementation_checkpoint ->
+
+              receiving_arguments_bindings =
+                OptionsInterfaceImplementationCheckpointFunction.receiving_arguments_bindings(
+                  interface_implementation_checkpoint,
+                  registered_callbacks_map,
+                  __MODULE__
+                )
+
+              quote do
+                options <-
+
+                  unquote(interface_implementation_checkpoint_function_name(index))(
+                    unquote_splicing(receiving_arguments_bindings),
+                    options
+                  )
+
+              end
+
           end
 
 
@@ -192,37 +200,6 @@ defmodule BinStruct.Macro.ParseFunction do
         end
       ) |> List.flatten()
 
-    maybe_implemented_options_call =
-      MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
-        .maybe_call_interface_implementations_callbacks(
-          interface_implementations,
-          registered_callbacks_map,
-          __MODULE__
-        )
-
-    implemented_options_call =
-        case maybe_implemented_options_call do
-
-          nil -> []
-
-          implemented_options_call ->
-
-            expr =
-              quote do
-                options = unquote(implemented_options_call)
-              end
-
-            [ expr ]
-
-        end
-
-    dependency_resolvers_for_option_interface_impl =
-      ParseDependencyResolver.parse_dependency_resolvers(
-        dependencies_to_be_resolved_manually_for_interface_implementations,
-        __MODULE__
-      )
-
-
     parse_function_body =
       quote do
 
@@ -240,11 +217,6 @@ defmodule BinStruct.Macro.ParseFunction do
               %__MODULE__{
                 unquote_splicing(returning_struct_key_values)
               }
-
-
-            unquote_splicing(dependency_resolvers_for_option_interface_impl)
-            unquote_splicing(implemented_options_call)
-
 
           { :ok, struct, rest, options }
 
@@ -367,6 +339,8 @@ defmodule BinStruct.Macro.ParseFunction do
       %VirtualFieldProducingNode{} = virtual_field_producing_node ->
         add_virtual_field_producing_node(virtual_field_producing_node, remain_nodes, current_checkpoint, checkpoints_acc)
 
+      %InterfaceImplementationNode{} = interface_implementation_node ->
+        add_interface_implementation_node(interface_implementation_node, remain_nodes, current_checkpoint, checkpoints_acc)
     end
 
   end
@@ -522,6 +496,54 @@ defmodule BinStruct.Macro.ParseFunction do
 
   end
 
+  defp add_interface_implementation_node(%InterfaceImplementationNode{} = interface_implementation_node, remain_nodes, current_checkpoint, checkpoints_acc) do
+
+
+    %InterfaceImplementationNode{ interface_implementation: interface_implementation } = interface_implementation_node
+
+    case current_checkpoint do
+
+      %OptionsInterfaceImplementationCheckpoint{ interface_implementations: interface_implementations } ->
+
+        next_checkpoint =
+          %OptionsInterfaceImplementationCheckpoint{
+            interface_implementations: interface_implementations ++ [ interface_implementation ]
+          }
+
+        create_checkpoints_from_topology_rec(
+          remain_nodes,
+          next_checkpoint,
+          checkpoints_acc
+        )
+
+      _ ->
+
+        next_checkpoint = %OptionsInterfaceImplementationCheckpoint{ interface_implementations: [ interface_implementation ] }
+
+        case current_checkpoint do
+
+          nil ->
+
+            create_checkpoints_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              checkpoints_acc
+            )
+
+          current_checkpoint ->
+
+            create_checkpoints_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              [ current_checkpoint | checkpoints_acc ]
+            )
+
+        end
+
+    end
+
+  end
+
   defp can_combine_fields_to_single_parse_checkpoint?(fields) do
 
     Enum.all?(
@@ -557,32 +579,8 @@ defmodule BinStruct.Macro.ParseFunction do
     String.to_atom("virtual_fields_producing_checkpoint_#{checkpoint_index}")
   end
 
-  defp dependencies_to_be_resolved_manually_for_interface_implementations(interface_implementations_dependencies, resolved_dependencies) do
-
-    Enum.filter(
-      interface_implementations_dependencies,
-      fn dependency ->
-
-        is_resolved =
-          case dependency do
-
-            %DependencyOnField{} = dependency_on_field ->
-
-              Enum.any?(
-                resolved_dependencies,
-                fn resolved_dependency -> resolved_dependency == dependency_on_field end
-              )
-
-            %DependencyOnOption{} -> true
-
-          end
-
-        !is_resolved
-
-      end
-    )
-
+  defp interface_implementation_checkpoint_function_name(checkpoint_index) do
+    String.to_atom("interface_implementation_checkpoint_#{checkpoint_index}")
   end
-
 
 end
