@@ -3,19 +3,8 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.FieldSize
   alias BinStruct.Macro.Bind
 
-  alias BinStruct.Macro.Parse.CheckpointKnownSize
-  alias BinStruct.Macro.Parse.CheckpointOptionalByOfKnownSize
-  alias BinStruct.Macro.Parse.CheckpointUnknownSize
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Parse.MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
-  alias BinStruct.Macro.Structs.VirtualField
-  alias BinStruct.TypeConversion.TypeConversionManaged
-  alias BinStruct.TypeConversion.TypeConversionUnmanaged
-  alias BinStruct.TypeConversion.TypeConversionUnspecified
-  alias BinStruct.TypeConversion.TypeConversionBinary
-  alias BinStruct.Macro.Parse.TypeConverterCheckpointInputOutputByIndex
-  alias BinStruct.Macro.Dependencies.IsFieldDependentOn
-  alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.Dependencies.ParseDependencies
   alias BinStruct.Macro.Dependencies.InterfaceImplementationDependencies
   alias BinStruct.Macro.Structs.DependencyOnField

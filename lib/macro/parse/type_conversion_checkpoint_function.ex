@@ -1,8 +1,6 @@
 defmodule BinStruct.Macro.Parse.TypeConversionCheckpointFunction do
 
   alias BinStruct.Macro.Bind
-  alias BinStruct.Macro.Structs.DependencyOnField
-  alias BinStruct.Macro.Structs.DependencyOnOption
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.IsOptionalField

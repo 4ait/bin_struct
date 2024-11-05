@@ -180,7 +180,7 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
 
           %DependencyOnField{} = on_field_dependency ->
 
-            %DependencyOnField{ field: depend_on_field, type_conversion: type_conversion } = on_field_dependency
+            %DependencyOnField{ field: depend_on_field } = on_field_dependency
 
               case depend_on_field do
 
@@ -188,9 +188,13 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
 
                 %VirtualField{} = virtual_field ->
 
-                  #looks like need to connect something to type_conversion here
 
-                  indirect_connections_to_produce_virtual_field(virtual_field, registered_callbacks_map)
+                  create_virtual_field_producing_node = create_virtual_field_producing_node(virtual_field)
+
+                  [
+                    indirect_connections_to_produce_virtual_field(virtual_field, registered_callbacks_map),
+                    { create_virtual_field_producing_node, current_parse_node }
+                  ]
 
               end
 
