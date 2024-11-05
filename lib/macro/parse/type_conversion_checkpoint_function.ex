@@ -110,30 +110,49 @@ defmodule BinStruct.Macro.Parse.TypeConversionCheckpointFunction do
             end
 
           unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
+          managed_value_access = Bind.bind_managed_value(name, __MODULE__)
+          binary_value_access = Bind.bind_binary_value(name, __MODULE__)
 
           case type_conversion do
 
             TypeConversionUnspecified ->
 
-              TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
-              |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
+              managed_value_expr =
+                TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
+                |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
+
+
+              quote do
+                unquote(managed_value_access) = unquote(managed_value_expr)
+              end
 
             TypeConversionManaged ->
 
-              TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
-              |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
+              managed_value_expr =
+                TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
+                |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
 
-            TypeConversionUnmanaged -> unmanaged_value_access
+              quote do
+                unquote(managed_value_access) = unquote(managed_value_expr)
+              end
+
+            TypeConversionUnmanaged -> nil
 
             TypeConversionBinary ->
 
-              TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_access)
-              |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
+              binary_value_expr =
+                TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_access)
+                |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
+
+              quote do
+                unquote(binary_value_access) = unquote(binary_value_expr)
+              end
 
           end
 
         end
       )
+      |> Enum.reject(&is_nil/1)
 
     quote do
 

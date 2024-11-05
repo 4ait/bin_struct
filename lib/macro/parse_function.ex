@@ -28,6 +28,8 @@ defmodule BinStruct.Macro.ParseFunction do
 
     parse_topology = ParseTopology.topology(fields, registered_callbacks_map)
 
+    IO.inspect(parse_topology)
+
     checkpoints = create_checkpoints_from_topology(parse_topology)
 
     interface_implementations_dependencies =
