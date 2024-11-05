@@ -25,6 +25,9 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
   alias BinStruct.Macro.Dependencies.ExcludeDependenciesOnField
   alias BinStruct.Macro.Structs.InterfaceImplementation
 
+
+  #todo implement node sparse algorithm, keep as much distance as we can not breaking connections rules
+
   def topology(
         fields,
         registered_callbacks_map,
