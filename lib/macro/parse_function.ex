@@ -66,6 +66,7 @@ defmodule BinStruct.Macro.ParseFunction do
                 TypeConversionCheckpointFunction.type_conversion_checkpoint_function(
                   type_conversion_checkpoint,
                   type_conversion_checkpoint_function_name(index),
+                  registered_callbacks_map,
                   env
                 )
 
@@ -87,7 +88,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
     checkpoints_with_clauses =
       Enum.map(
-        Enum.with_index(checkpoint_functions, 1),
+        Enum.with_index(checkpoints, 1),
         fn { checkpoint, index } ->
 
           case checkpoint do
@@ -390,7 +391,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
         else
 
-          next_checkpoint = %ParseCheckpoint{ fields: field }
+          next_checkpoint = %ParseCheckpoint{ fields: [ field ] }
 
           create_checkpoints_from_topology_rec(
             remain_nodes,
@@ -402,7 +403,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
       _ ->
 
-        next_checkpoint = %ParseCheckpoint{ fields: field }
+        next_checkpoint = %ParseCheckpoint{ fields: [ field ] }
 
         case current_checkpoint do
 

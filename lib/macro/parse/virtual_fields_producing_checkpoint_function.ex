@@ -63,14 +63,15 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
         _env
       ) do
 
-    %VirtualFieldProducingCheckpoint{ virtual_fields: virtual_fields } = checkpoint
 
 
     receiving_dependencies = receiving_dependencies(checkpoint, registered_callbacks_map)
 
-    receiving_arguments_bindings = receiving_arguments_bindings(virtual_fields, registered_callbacks_map, __MODULE__)
+    receiving_arguments_bindings = receiving_arguments_bindings(checkpoint, registered_callbacks_map, __MODULE__)
 
-    output_bindings = output_bindings(virtual_fields, registered_callbacks_map, __MODULE__)
+    output_bindings = output_bindings(checkpoint, registered_callbacks_map, __MODULE__)
+
+    %VirtualFieldProducingCheckpoint{ virtual_fields: virtual_fields } = checkpoint
 
     read_by_calls =
 
