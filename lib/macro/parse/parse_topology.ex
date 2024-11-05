@@ -73,7 +73,12 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
       Graph.new()
       |> Graph.add_edges(connections)
 
-    Graph.topsort(graph)
+
+    case Graph.topsort(graph) do
+      false -> raise "Topology not exists, there is arguments requesting field which is not yet available at this point"
+      topology -> topology
+    end
+
 
   end
 
@@ -94,7 +99,6 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
           %DependencyOnField{} = on_field_dependency ->
 
             %DependencyOnField{ field: depend_on_field, type_conversion: type_conversion } = on_field_dependency
-
 
             case depend_on_field do
 
@@ -183,6 +187,9 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
                 %Field{} -> nil
 
                 %VirtualField{} = virtual_field ->
+
+                  #looks like need to connect something to type_conversion here
+
                   indirect_connections_to_produce_virtual_field(virtual_field, registered_callbacks_map)
 
               end

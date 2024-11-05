@@ -504,7 +504,7 @@ defmodule BinStruct.Macro.ParseFunction do
 
       _ ->
 
-        next_checkpoint = %VirtualFieldProducingCheckpoint{ virtual_field: virtual_field }
+        next_checkpoint = %VirtualFieldProducingCheckpoint{ virtual_fields: [ virtual_field ] }
 
         case current_checkpoint do
 

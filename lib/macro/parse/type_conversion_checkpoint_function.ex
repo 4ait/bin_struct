@@ -18,29 +18,58 @@ defmodule BinStruct.Macro.Parse.TypeConversionCheckpointFunction do
   alias BinStruct.Macro.OptionalNilCheckExpression
 
   alias BinStruct.Macro.Structs.TypeConversionCheckpoint
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
 
+  def receiving_arguments_bindings(%TypeConversionCheckpoint{} = checkpoint, _registered_callbacks_map, context) do
 
-  def receiving_arguments_bindings(%TypeConversionCheckpoint{} = checkpoint, registered_callbacks_map, context) do
+    %TypeConversionCheckpoint{ type_conversion_nodes: type_conversion_nodes } = checkpoint
 
-    %ParseCheckpoint{ fields: fields } = checkpoint
+    Enum.map(
+      type_conversion_nodes,
+      fn type_conversion_node ->
 
-    dependencies = ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map)
+        %TypeConversionNode{
+          subject: subject
+        } = type_conversion_node
 
-    BindingsToOnFieldDependencies.bindings(dependencies, context)
+        name =
+          case subject do
+            %Field{ name: name } -> name
+            %VirtualField{ name: name } -> name
+          end
+
+        Bind.bind_unmanaged_value(name, context)
+
+      end
+    )
 
   end
 
-  def output_bindings(%TypeConversionCheckpoint{} = checkpoint, registered_callbacks_map, context) do
+  def output_bindings(%TypeConversionCheckpoint{} = checkpoint, _registered_callbacks_map, context) do
 
-    %ParseCheckpoint{ fields: fields } = checkpoint
+    %TypeConversionCheckpoint{ type_conversion_nodes: type_conversion_nodes } = checkpoint
 
     Enum.map(
-      fields,
-      fn field ->
+      type_conversion_nodes,
+      fn type_conversion_node ->
 
-        %Field{ name: name } = field
+        %TypeConversionNode{
+          subject: subject,
+          type_conversion: type_conversion
+        } = type_conversion_node
 
-        Bind.bind_unmanaged_value(name, context)
+        name =
+          case subject do
+            %Field{ name: name } -> name
+            %VirtualField{ name: name } -> name
+          end
+
+        case type_conversion do
+          TypeConversionUnspecified -> Bind.bind_managed_value(name, context)
+          TypeConversionManaged -> Bind.bind_managed_value(name, context)
+          TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, context)
+          TypeConversionBinary-> Bind.bind_binary_value(name, context)
+        end
 
       end
     )
@@ -51,165 +80,73 @@ defmodule BinStruct.Macro.Parse.TypeConversionCheckpointFunction do
   def type_conversion_checkpoint_function(
         %TypeConversionCheckpoint{} = checkpoint,
         function_name,
+        registered_callbacks_map,
         _env
       ) do
 
-    input_binds =
+    receiving_arguments_bindings = receiving_arguments_bindings(checkpoint, registered_callbacks_map, __MODULE__)
+    output_bindings = output_bindings(checkpoint, registered_callbacks_map, __MODULE__)
+
+    %TypeConversionCheckpoint{ type_conversion_nodes: type_conversion_nodes } = checkpoint
+
+    conversions =
       Enum.map(
-        input_dependencies,
-        fn input_dependency ->
+        type_conversion_nodes,
 
-          case input_dependency do
-            %DependencyOnField{} = dependency ->
+        fn type_conversion_node ->
 
-              %DependencyOnField{
-                field: field
-              } = dependency
+          %TypeConversionNode{
+            subject: subject,
+            type_conversion: type_conversion
+          } = type_conversion_node
 
-              name =
-                case field do
-                  %Field{ name: name } -> name
-                  %VirtualField{ name: name } -> name
-                end
+          { name, type, is_optional } =
 
-              Bind.bind_unmanaged_value(name, __MODULE__)
+            case subject do
+              %Field{ name: name, type: type } = field ->
 
-            %DependencyOnOption{} -> nil
+                { name, type, IsOptionalField.is_optional_field(field) }
+
+              %VirtualField{ name: name, type: type } -> { name, type, true }
+
+            end
+
+          unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
+
+          case type_conversion do
+
+            TypeConversionUnspecified ->
+
+              TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
+              |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
+
+            TypeConversionManaged ->
+
+              TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
+              |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
+
+            TypeConversionUnmanaged -> unmanaged_value_access
+
+            TypeConversionBinary ->
+
+              TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_access)
+              |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
 
           end
 
         end
-      ) |> Enum.reject(&is_nil/1)
-
-    output_values =
-      Enum.map(
-        output_dependencies,
-
-        fn output_dependency ->
-
-          case output_dependency do
-
-            %DependencyOnField{} = dependency ->
-
-              %DependencyOnField{
-                field: field,
-                type_conversion: type_conversion
-              } = dependency
-
-              { name, type, is_optional } =
-                case field do
-                  %Field{ name: name, type: type } = field ->
-
-                    { name, type, IsOptionalField.is_optional_field(field) }
-
-                  %VirtualField{ name: name, type: type } -> { name, type, true }
-                end
-
-              unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
-
-              case type_conversion do
-
-                TypeConversionUnspecified ->
-
-                  TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
-                  |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
-
-                TypeConversionManaged ->
-
-                  TypeConverterToManaged.convert_unmanaged_value_to_managed(type, unmanaged_value_access)
-                  |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
-
-                TypeConversionUnmanaged -> unmanaged_value_access
-
-                TypeConversionBinary ->
-
-                  TypeConverterToBinary.convert_unmanaged_value_to_binary(type, unmanaged_value_access)
-                  |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_access, is_optional)
-
-              end
-
-            %DependencyOnOption{} -> nil
-
-          end
-
-        end
-      ) |> Enum.reject(&is_nil/1)
+      )
 
     quote do
 
-      defp unquote(function_name)(unquote_splicing(input_binds)) do
-        { unquote_splicing(output_values)}
+      defp unquote(function_name)(unquote_splicing(receiving_arguments_bindings)) do
+
+         unquote_splicing(conversions)
+
+        { unquote_splicing(output_bindings) }
+
       end
 
-    end
-
-  end
-
-  defp old() do
-
-    input_binds =
-      Enum.map(
-        input_dependencies,
-        fn input_dependency ->
-
-          case input_dependency do
-            %DependencyOnField{} = dependency ->
-
-              %DependencyOnField{
-                field: field
-              } = dependency
-
-              name =
-                case field do
-                  %Field{ name: name } -> name
-                  %VirtualField{ name: name } -> name
-                end
-
-              Bind.bind_unmanaged_value(name, __MODULE__)
-
-            %DependencyOnOption{} -> nil
-
-          end
-
-        end
-      ) |> Enum.reject(&is_nil/1)
-
-    output_binds =
-      Enum.map(
-        output_dependencies,
-        fn output_dependency ->
-
-          case output_dependency do
-
-            %DependencyOnField{} = dependency ->
-
-              %DependencyOnField{
-                field: field,
-                type_conversion: type_conversion
-              } = dependency
-
-              name =
-                case field do
-                  %Field{ name: name } -> name
-                  %VirtualField{ name: name } -> name
-                end
-
-              case type_conversion do
-                TypeConversionUnspecified -> Bind.bind_managed_value(name, __MODULE__)
-                TypeConversionManaged -> Bind.bind_managed_value(name, __MODULE__)
-                TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, __MODULE__)
-                TypeConversionBinary-> Bind.bind_binary_value(name, __MODULE__)
-              end
-
-            %DependencyOnOption{} -> nil
-
-          end
-
-        end
-      ) |> Enum.reject(&is_nil/1)
-
-    quote do
-      { unquote_splicing(output_binds) } <- unquote(virtual_fields_producing_checkpoint_function_name(index))(unquote_splicing(input_binds), options)
     end
 
   end

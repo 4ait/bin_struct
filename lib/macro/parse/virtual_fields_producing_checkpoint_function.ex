@@ -13,35 +13,33 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint
 
-
   def receiving_arguments_bindings(%VirtualFieldProducingCheckpoint{} = checkpoint, registered_callbacks_map, context) do
 
-    %VirtualFieldProducingCheckpoint{ fields: fields } = checkpoint
-
-    dependencies = ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map)
-
-    BindingsToOnFieldDependencies.bindings(dependencies, context)
+    receiving_dependencies(checkpoint, registered_callbacks_map)
+    |> BindingsToOnFieldDependencies.bindings(context)
 
   end
 
-  def output_bindings(%VirtualFieldProducingCheckpoint{} = checkpoint, registered_callbacks_map, context) do
+  def output_bindings(%VirtualFieldProducingCheckpoint{} = checkpoint, _registered_callbacks_map, context) do
 
-    %VirtualFieldProducingCheckpoint{ fields: fields } = checkpoint
+    %VirtualFieldProducingCheckpoint{ virtual_fields: virtual_fields } = checkpoint
 
     Enum.map(
-      fields,
-      fn field ->
+      virtual_fields,
+      fn virtual_field ->
 
-        %Field{ name: name } = field
+        %VirtualField{ name: name } = virtual_field
 
-        Bind.bind_unmanaged_value(name, context)
+        Bind.bind_managed_value(name, context)
 
       end
     )
 
   end
 
-  def input_dependencies_OLD(virtual_fields, registered_callbacks_map) do
+  def receiving_dependencies(%VirtualFieldProducingCheckpoint{} = checkpoint, registered_callbacks_map) do
+
+    %VirtualFieldProducingCheckpoint{ virtual_fields: virtual_fields } = checkpoint
 
     read_by_callbacks =
       Enum.map(
@@ -68,9 +66,14 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
         _env
       ) do
 
-    input_dependencies = input_dependencies(virtual_fields, registered_callbacks_map)
+    %VirtualFieldProducingCheckpoint{ virtual_fields: virtual_fields } = checkpoint
 
-    dependencies_bindings = BindingsToOnFieldDependencies.bindings(input_dependencies, __MODULE__)
+
+    receiving_dependencies = receiving_dependencies(checkpoint, registered_callbacks_map)
+
+    receiving_arguments_bindings = receiving_arguments_bindings(virtual_fields, registered_callbacks_map, __MODULE__)
+
+    output_bindings = output_bindings(virtual_fields, registered_callbacks_map, __MODULE__)
 
     read_by_calls =
 
@@ -95,101 +98,21 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
         end
       )
 
-    returns =
-      Enum.map(
-        virtual_fields,
-        fn  virtual_field ->
-
-          %VirtualField{ name: field_name, opts: opts } = virtual_field
-
-          Bind.bind_managed_value(field_name, __MODULE__)
-
-        end
-      )
 
     quote do
 
-      defp unquote(function_name)(unquote_splicing(dependencies_bindings), options) do
+      defp unquote(function_name)(unquote_splicing(receiving_arguments_bindings), options) do
 
         unquote(
-          DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(input_dependencies, __MODULE__)
+          DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(receiving_dependencies, __MODULE__)
         )
 
         unquote_splicing(read_by_calls)
 
-        { unquote_splicing(returns) }
+        { unquote_splicing(output_bindings) }
 
       end
 
-    end
-
-  end
-
-  defp old() do
-
-    input_binds =
-      Enum.map(
-        input_dependencies,
-        fn input_dependency ->
-
-          case input_dependency do
-            %DependencyOnField{} = dependency ->
-
-              %DependencyOnField{
-                field: field
-              } = dependency
-
-              name =
-                case field do
-                  %Field{ name: name } -> name
-                  %VirtualField{ name: name } -> name
-                end
-
-              Bind.bind_unmanaged_value(name, __MODULE__)
-
-            %DependencyOnOption{} -> nil
-
-          end
-
-        end
-      ) |> Enum.reject(&is_nil/1)
-
-    output_binds =
-      Enum.map(
-        output_dependencies,
-        fn output_dependency ->
-
-          case output_dependency do
-
-            %DependencyOnField{} = dependency ->
-
-              %DependencyOnField{
-                field: field,
-                type_conversion: type_conversion
-              } = dependency
-
-              name =
-                case field do
-                  %Field{ name: name } -> name
-                  %VirtualField{ name: name } -> name
-                end
-
-              case type_conversion do
-                TypeConversionUnspecified -> Bind.bind_managed_value(name, __MODULE__)
-                TypeConversionManaged -> Bind.bind_managed_value(name, __MODULE__)
-                TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, __MODULE__)
-                TypeConversionBinary-> Bind.bind_binary_value(name, __MODULE__)
-              end
-
-            %DependencyOnOption{} -> nil
-
-          end
-
-        end
-      ) |> Enum.reject(&is_nil/1)
-
-    quote do
-      { unquote_splicing(output_binds) } <- unquote(type_conversion_checkpoint_function_name(index))(unquote_splicing(input_binds))
     end
 
   end

@@ -21,7 +21,7 @@ defmodule BinStruct.Macro.Parse.ParseCheckpointFunction do
 
   end
 
-  def output_bindings(%ParseCheckpoint{} = checkpoint, registered_callbacks_map, context) do
+  def output_bindings(%ParseCheckpoint{} = checkpoint, _registered_callbacks_map, context) do
 
     %ParseCheckpoint{ fields: fields } = checkpoint
 

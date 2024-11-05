@@ -136,8 +136,6 @@ defmodule BinStruct do
         _is_should_be_defined_private = !is_bin_struct_terminated
       )
 
-    parse_functions = []
-
     decode_function = BinStruct.Macro.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
 
     new_function = BinStruct.Macro.NewFunction.new_function(fields, registered_callbacks_map)
