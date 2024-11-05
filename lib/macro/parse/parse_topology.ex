@@ -98,7 +98,10 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
           type_conversion_connections = create_type_conversion_connections_for_interface_implementation_node(interface_implementation_node, registered_callbacks_map)
           virtual_field_producing_connections = create_virtual_field_producing_connections_for_interface_implementation_node(interface_implementation_node, registered_callbacks_map)
 
-          List.flatten([type_conversion_connections, virtual_field_producing_connections])
+          List.flatten([
+            type_conversion_connections,
+            virtual_field_producing_connections
+          ])
 
         end
       )
@@ -109,11 +112,35 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
       Graph.new()
       |> Graph.add_edges(connections_to_parse_nodes ++ connections_to_interface_implementations_node)
 
-    case Graph.topsort(graph) do
-      false -> raise "Topology not exists, there is arguments requesting field which is not yet available at this point"
-      topology -> topology
-    end
+    topology =
+      case Graph.topsort(graph) do
+        false -> raise "Topology not exists, there is arguments requesting field which is not yet available at this point"
+        topology -> topology
+      end
 
+    move_interface_implementation_nodes_on_top(topology)
+
+  end
+
+  defp move_interface_implementation_nodes_on_top(topology) do
+
+    Enum.reduce(
+      topology,
+      { _other_nodes_acc = [], _interface_impl_nodes_acc = [] },
+      fn node, { other_nodes_acc, interface_impl_nodes_acc} ->
+
+        case node do
+          %InterfaceImplementationNode{} = interface_impl_node ->
+            {  other_nodes_acc, [ interface_impl_node | interface_impl_nodes_acc ] }
+
+          other_node ->
+            { [ other_node | other_nodes_acc ], interface_impl_nodes_acc  }
+        end
+
+      end
+    ) |> then(fn { other_nodes_acc, interface_impl_nodes_acc} ->
+      Enum.reverse(other_nodes_acc) ++ Enum.reverse(interface_impl_nodes_acc)
+    end)
 
   end
 

@@ -39,9 +39,7 @@ defmodule BinStruct.Macro.Parse.OptionsInterfaceImplementationCheckpointFunction
 
       defp unquote(function_name)(unquote_splicing(receiving_arguments_bindings), options) do
 
-         options = unquote(new_options_expr)
-
-         options
+        unquote(new_options_expr)
 
       end
 
