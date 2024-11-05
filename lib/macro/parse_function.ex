@@ -23,17 +23,23 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.IsOptionalField
 
   alias BinStruct.Macro.Parse.ParseDependencyResolver
-  alias BinStruct.Macro.Parse.TypeConversionCheckpoint
-  alias BinStruct.Macro.Parse.VirtualFieldsProducingCheckpoint
-
-
-  #virtual fields should be produced right before usage
-  #in case 1 virtual field depends on other there must be order calculated with graph too
-  #also probably new condition
+  alias BinStruct.Macro.Parse.TypeConversionCheckpointFunction
+  alias BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction
+  alias BinStruct.Macro.Parse.ParseTopology
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.ParseNode
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode
+  alias BinStruct.Macro.Structs.ParseCheckpoint
+  alias BinStruct.Macro.Structs.TypeConversionCheckpoint
+  alias BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint
+  alias BinStruct.Macro.Parse.ParseCheckpointFunction
+  alias BinStruct.Macro.Dependencies.ParseDependencies
 
   def parse_function(fields, interface_implementations, registered_callbacks_map, env, is_should_be_defined_private) do
 
-    parse_checkpoints = hydrate_parse_checkpoints([], fields, registered_callbacks_map)
+    parse_topology = ParseTopology.topology(fields, registered_callbacks_map)
+
+    checkpoints = create_checkpoints_from_topology(parse_topology)
 
     interface_implementations_dependencies =
       InterfaceImplementationDependencies.interface_implementations_dependencies(
@@ -41,293 +47,166 @@ defmodule BinStruct.Macro.ParseFunction do
         registered_callbacks_map
       )
 
-    dependencies_per_checkpoint =
-      Enum.map(
-        parse_checkpoints,
-        fn checkpoint ->
-          ParseDependencies.parse_dependencies_excluded_self(checkpoint, registered_callbacks_map)
-        end
-      )
+    resolved_until_end_dependencies = ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map)
 
     dependencies_to_be_resolved_manually_for_interface_implementations =
       dependencies_to_be_resolved_manually_for_interface_implementations(
         interface_implementations_dependencies,
-        List.flatten(dependencies_per_checkpoint)
+        resolved_until_end_dependencies
       )
 
-    type_converter_checkpoint_input_output_by_index =
-      TypeConverterCheckpointInputOutputByIndex.type_converter_checkpoint_input_output_by_index(dependencies_per_checkpoint)
-
-    parse_checkpoints_functions =
+    checkpoint_functions =
       Enum.map(
-        Enum.with_index(parse_checkpoints, 1),
+        Enum.with_index(checkpoints, 1),
+
            fn { checkpoint, index } ->
-             parse_checkpoint_function(
-               checkpoint,
-               index,
-               registered_callbacks_map,
-               env
-             )
-           end)
 
-    parse_checkpoints_functions = List.flatten(parse_checkpoints_functions)
+            case checkpoint do
 
-    virtual_fields_producing_checkpoint_functions =
-      Enum.map(
-        type_converter_checkpoint_input_output_by_index,
-        fn { index, input, output } ->
+              %ParseCheckpoint{} = parse_checkpoint ->
 
-          VirtualFieldsProducingCheckpoint.virtual_fields_producing_checkpoint_function(
-            virtual_fields_producing_checkpoint_function_name(index),
-            input,
-            output,
-            registered_callbacks_map
-          )
+              ParseCheckpointFunction.parse_checkpoint_function(
+                parse_checkpoint,
+                  parse_checkpoint_function_name(index),
+                  registered_callbacks_map,
+                  env
+                )
 
-        end)
+              %TypeConversionCheckpoint{} = type_conversion_checkpoint ->
 
-    type_conversion_checkpoints_functions =
-      Enum.map(
-        type_converter_checkpoint_input_output_by_index,
-           fn { index, input, output } ->
+                TypeConversionCheckpointFunction.type_conversion_checkpoint_function(
+                  type_conversion_checkpoint,
+                  type_conversion_checkpoint_function_name(index),
+                  env
+                )
 
-             TypeConversionCheckpoint.type_conversion_checkpoint_function(
-               type_conversion_checkpoint_function_name(index),
-               input,
-               output,
-               __MODULE__
-             )
-           end)
+              %VirtualFieldProducingCheckpoint{} = virtual_field_producing_checkpoint ->
 
-
-    checkpoints_with_clauses =
-      Enum.map(
-        Enum.with_index(parse_checkpoints, 1),
-        fn { fields, index } ->
-
-
-          maybe_type_converter_checkpoint =
-            Enum.find(
-              type_converter_checkpoint_input_output_by_index,
-              fn { type_converter_checkpoint_index, _input, _output } -> type_converter_checkpoint_index == index end
-            )
-
-
-          maybe_virtual_field_producing_checkpoint =
-            Enum.find(
-              type_converter_checkpoint_input_output_by_index,
-              fn { virtual_fields_producing_checkpoint_index, _input, _output } -> virtual_fields_producing_checkpoint_index == index end
-            )
-
-          maybe_type_conversion_clause =
-
-            case maybe_type_converter_checkpoint do
-              nil -> nil
-              { _index, input_dependencies, output_dependencies } ->
-
-                input_binds =
-                  Enum.map(
-                    input_dependencies,
-                    fn input_dependency ->
-
-                      case input_dependency do
-                        %DependencyOnField{} = dependency ->
-
-                          %DependencyOnField{
-                            field: field
-                          } = dependency
-
-                          name =
-                            case field do
-                              %Field{ name: name } -> name
-                              %VirtualField{ name: name } -> name
-                            end
-
-                          Bind.bind_unmanaged_value(name, __MODULE__)
-
-                        %DependencyOnOption{} -> nil
-
-                      end
-
-                    end
-                  ) |> Enum.reject(&is_nil/1)
-
-                output_binds =
-                  Enum.map(
-                    output_dependencies,
-                    fn output_dependency ->
-
-                      case output_dependency do
-
-                        %DependencyOnField{} = dependency ->
-
-                          %DependencyOnField{
-                            field: field,
-                            type_conversion: type_conversion
-                          } = dependency
-
-                          name =
-                            case field do
-                              %Field{ name: name } -> name
-                              %VirtualField{ name: name } -> name
-                            end
-
-                          case type_conversion do
-                            TypeConversionUnspecified -> Bind.bind_managed_value(name, __MODULE__)
-                            TypeConversionManaged -> Bind.bind_managed_value(name, __MODULE__)
-                            TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, __MODULE__)
-                            TypeConversionBinary-> Bind.bind_binary_value(name, __MODULE__)
-                          end
-
-                        %DependencyOnOption{} -> nil
-
-                      end
-
-                    end
-                  ) |> Enum.reject(&is_nil/1)
-
-                quote do
-                  { unquote_splicing(output_binds) } <- unquote(type_conversion_checkpoint_function_name(index))(unquote_splicing(input_binds))
-                end
-
-            end
-
-
-          maybe_virtual_field_producing_clause =
-
-            case maybe_virtual_field_producing_checkpoint do
-              nil -> nil
-              { _index, input_dependencies, output_dependencies } ->
-
-                input_binds =
-                  Enum.map(
-                    input_dependencies,
-                    fn input_dependency ->
-
-                      case input_dependency do
-                        %DependencyOnField{} = dependency ->
-
-                          %DependencyOnField{
-                            field: field
-                          } = dependency
-
-                          name =
-                            case field do
-                              %Field{ name: name } -> name
-                              %VirtualField{ name: name } -> name
-                            end
-
-                          Bind.bind_unmanaged_value(name, __MODULE__)
-
-                        %DependencyOnOption{} -> nil
-
-                      end
-
-                    end
-                  ) |> Enum.reject(&is_nil/1)
-
-                output_binds =
-                  Enum.map(
-                    output_dependencies,
-                    fn output_dependency ->
-
-                      case output_dependency do
-
-                        %DependencyOnField{} = dependency ->
-
-                          %DependencyOnField{
-                            field: field,
-                            type_conversion: type_conversion
-                          } = dependency
-
-                          name =
-                            case field do
-                              %Field{ name: name } -> name
-                              %VirtualField{ name: name } -> name
-                            end
-
-                          case type_conversion do
-                            TypeConversionUnspecified -> Bind.bind_managed_value(name, __MODULE__)
-                            TypeConversionManaged -> Bind.bind_managed_value(name, __MODULE__)
-                            TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, __MODULE__)
-                            TypeConversionBinary-> Bind.bind_binary_value(name, __MODULE__)
-                          end
-
-                        %DependencyOnOption{} -> nil
-
-                      end
-
-                    end
-                  ) |> Enum.reject(&is_nil/1)
-
-                quote do
-                  { unquote_splicing(output_binds) } <- unquote(virtual_fields_producing_checkpoint_function_name(index))(unquote_splicing(input_binds), options)
-                end
-
-            end
-
-          binding_to_received_by_checkpoint_arguments =
-            BindingsToOnFieldDependencies.bindings(
-              ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map), __MODULE__
-            )
-
-
-
-          returning_from_parse_checkpoint_values_binds =
-            Enum.map(
-              fields,
-              fn %Field{} = field ->
-
-                %Field{ name: name } = field
-
-                Bind.bind_unmanaged_value(name, __MODULE__)
-
-              end
-            )
-
-          parse_checkpoint_with_clause =
-            quote do
-
-              { :ok, unquote_splicing(returning_from_parse_checkpoint_values_binds), rest, options } <-
-
-                unquote(parse_checkpoint_function_name(index))(
-                  rest,
-                  unquote_splicing(binding_to_received_by_checkpoint_arguments),
-                  options
+                VirtualFieldsProducingCheckpointFunction.virtual_fields_producing_checkpoint_function(
+                  virtual_field_producing_checkpoint,
+                  virtual_fields_producing_checkpoint_function_name(index),
+                  registered_callbacks_map,
+                  env
                 )
 
             end
 
-          Enum.reject([
-            maybe_type_conversion_clause,
-            maybe_virtual_field_producing_clause,
-            parse_checkpoint_with_clause
-          ], &is_nil/1)
+           end)
+
+      |> List.flatten()
+
+
+    checkpoints_with_clauses =
+      Enum.map(
+        Enum.with_index(checkpoint_functions, 1),
+        fn { checkpoint, index } ->
+
+          case checkpoint do
+            %ParseCheckpoint{} = parse_checkpoint ->
+
+              receiving_arguments_bindings =
+                ParseCheckpointFunction.receiving_arguments_bindings(
+                  parse_checkpoint,
+                  registered_callbacks_map,
+                  __MODULE__
+                )
+
+              output_bindings =
+                ParseCheckpointFunction.output_bindings(
+                  parse_checkpoint,
+                  registered_callbacks_map,
+                  __MODULE__
+                )
+
+              quote do
+
+                { :ok, unquote_splicing(output_bindings), rest, options } <-
+
+                  unquote(parse_checkpoint_function_name(index))(
+                    rest,
+                    unquote_splicing(receiving_arguments_bindings),
+                    options
+                  )
+
+              end
+
+            %TypeConversionCheckpoint{} = type_conversion_checkpoint ->
+
+
+              receiving_arguments_bindings =
+                TypeConversionCheckpointFunction.receiving_arguments_bindings(
+                  type_conversion_checkpoint,
+                  registered_callbacks_map,
+                  __MODULE__
+                )
+
+              output_bindings =
+                TypeConversionCheckpointFunction.output_bindings(
+                  type_conversion_checkpoint,
+                  registered_callbacks_map,
+                  __MODULE__
+                )
+
+              quote do
+                { unquote_splicing(output_bindings) } <-
+
+                  unquote(type_conversion_checkpoint_function_name(index))(
+                    unquote_splicing(receiving_arguments_bindings)
+                  )
+
+              end
+
+            %VirtualFieldProducingCheckpoint{} = virtual_field_producing_checkpoint ->
+
+              receiving_arguments_bindings =
+                VirtualFieldsProducingCheckpointFunction.receiving_arguments_bindings(
+                  virtual_field_producing_checkpoint,
+                  registered_callbacks_map,
+                  __MODULE__
+                )
+
+              output_bindings =
+                VirtualFieldsProducingCheckpointFunction.output_bindings(
+                  virtual_field_producing_checkpoint,
+                  registered_callbacks_map,
+                  __MODULE__
+                )
+
+              quote do
+                { unquote_splicing(output_bindings) } <-
+
+                  unquote(virtual_fields_producing_checkpoint_function_name(index))(
+                    unquote_splicing(receiving_arguments_bindings),
+                    options
+                  )
+
+              end
+
+          end
+
 
         end
       ) |> List.flatten()
 
     returning_struct_key_values =
       Enum.map(
-        parse_checkpoints,
-        fn fields ->
+        fields,
+        fn field ->
 
-          Enum.map(
-            fields,
-            fn %Field{} = field ->
+          %Field{ name: name } = field
 
-               %Field{ name: name } = field
-
-              { name, Bind.bind_unmanaged_value(name, __MODULE__) }
-
-            end
-          )
+          { name, Bind.bind_unmanaged_value(name, __MODULE__) }
 
         end
       ) |> List.flatten()
 
     maybe_implemented_options_call =
-      MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions.maybe_call_interface_implementations_callbacks(interface_implementations, registered_callbacks_map, __MODULE__)
+      MaybeCallInterfaceImplementationCallbacksAndCollapseNewOptions
+        .maybe_call_interface_implementations_callbacks(
+          interface_implementations,
+          registered_callbacks_map,
+          __MODULE__
+        )
 
     implemented_options_call =
         case maybe_implemented_options_call do
@@ -461,136 +340,214 @@ defmodule BinStruct.Macro.ParseFunction do
 
       end
 
-    type_conversion_checkpoints_functions ++ parse_checkpoints_functions ++ parse_functions
+    checkpoint_functions ++ parse_functions
 
   end
 
 
 
-
-  defp parse_checkpoint_function(fields = _checkpoint, checkpoint_index, registered_callbacks_map, env) do
-
-    function_name = parse_checkpoint_function_name(checkpoint_index)
-
-    case fields do
-      #if its single element we need check is that optional or unknown
-      [ %Field{ opts: opts } = field ] ->
-
-        optional = opts[:optional]
-        optional_by = opts[:optional_by]
-
-        size_bits = FieldSize.field_size_bits(field)
-
-        optional_not_present_clause =
-          if optional do
-            optional_not_present_parse_checkpoint_function([field], function_name, registered_callbacks_map)
-          else
-            []
-          end
-
-        main_clause =
-          case size_bits do
-            :unknown -> CheckpointUnknownSize.checkpoint_unknown_size([field], function_name, registered_callbacks_map, env)
-            _size when not is_nil(optional_by) -> CheckpointOptionalByOfKnownSize.checkpoint_optional_by_of_known_size([field], function_name, registered_callbacks_map, env)
-            _known_size_not_optional_field -> CheckpointKnownSize.checkpoint_known_size([field], function_name, registered_callbacks_map, env)
-          end
-
-        [ optional_not_present_clause, main_clause ]
-
-      fields -> CheckpointKnownSize.checkpoint_known_size(fields, function_name, registered_callbacks_map, env)
-
+  defp create_checkpoints_from_topology(parse_topology) do
+    create_checkpoints_from_topology_rec(parse_topology, nil, [])
   end
 
+  defp create_checkpoints_from_topology_rec([], current_checkpoint, checkpoints_acc) do
 
-
-  end
-
-  defp optional_not_present_parse_checkpoint_function(fields, function_name, registered_callbacks_map) do
-    
-    dependencies_bindings =
-      ParseDependencies.parse_dependencies_excluded_self(fields,registered_callbacks_map)
-      |> BindingsToOnFieldDependencies.bindings(__MODULE__)
-
-      quote do
-
-        defp unquote(function_name)(
-               "" = _bin,
-               unquote_splicing(dependencies_bindings),
-               options
-             ) do
-
-          { :ok, nil, "", options }
-
-        end
-
+    checkpoints_acc =
+      case current_checkpoint do
+        nil -> checkpoints_acc
+        current_checkpoint -> [ current_checkpoint | checkpoints_acc ]
       end
 
+    Enum.reverse(checkpoints_acc)
 
   end
 
-  defp hydrate_parse_checkpoints(checkpoints, [], _registered_callbacks_map), do: Enum.reverse(checkpoints)
+  defp create_checkpoints_from_topology_rec([ head_node | remain_nodes ], current_checkpoint, checkpoints_acc) do
 
-  defp hydrate_parse_checkpoints(checkpoints, remain, registered_callbacks_map) do
+    case head_node do
 
-    { checkpoint, remain } = hydrate_parse_checkpoint_fields([], remain, registered_callbacks_map)
+      %ParseNode{} = parse_node ->
+        add_parse_node(parse_node, remain_nodes, current_checkpoint, checkpoints_acc)
 
-    new_checkpoints = [ checkpoint | checkpoints]
+      %TypeConversionNode{} = type_conversion_node ->
+        add_type_conversion_node(type_conversion_node, remain_nodes, current_checkpoint, checkpoints_acc)
 
-    hydrate_parse_checkpoints(new_checkpoints, remain, registered_callbacks_map)
+      %VirtualFieldProducingNode{} = virtual_field_producing_node ->
+        add_virtual_field_producing_node(virtual_field_producing_node, remain_nodes, current_checkpoint, checkpoints_acc)
+
+    end
 
   end
 
+  defp add_parse_node(%ParseNode{} = parse_node, remain_nodes, current_checkpoint, checkpoints_acc) do
 
-  defp hydrate_parse_checkpoint_fields(checkpoint, [], _registered_callbacks_map), do: { Enum.reverse(checkpoint), []}
+    %ParseNode{ field: field } = parse_node
 
-  defp hydrate_parse_checkpoint_fields(checkpoint, [ field | rest ], registered_callbacks_map) do
+    case current_checkpoint do
 
-    size = FieldSize.field_size_bits(field)
+      %ParseCheckpoint{ fields: fields } ->
 
-    is_optional = IsOptionalField.is_optional_field(field)
+        fields_combined = fields ++ [field]
 
-    case size do
+        if can_combine_fields_to_single_parse_checkpoint?(fields_combined) do
 
-      size when is_integer(size) and not is_optional ->
+          current_checkpoint = %ParseCheckpoint{ fields: fields_combined }
 
-        new_checkpoint = [ field | checkpoint ]
-
-        has_for_cross_checkpoint_dependency_requirements =
-          has_for_cross_checkpoint_dependency(
-            Enum.reverse(new_checkpoint),
-            registered_callbacks_map
+          create_checkpoints_from_topology_rec(
+            remain_nodes,
+            current_checkpoint,
+            checkpoints_acc
           )
 
-        if !has_for_cross_checkpoint_dependency_requirements do
-          hydrate_parse_checkpoint_fields(new_checkpoint, rest, registered_callbacks_map)
         else
-          produce_checkpoint(checkpoint, field, rest)
+
+          next_checkpoint = %ParseCheckpoint{ fields: field }
+
+          create_checkpoints_from_topology_rec(
+            remain_nodes,
+            next_checkpoint,
+            [ current_checkpoint | checkpoints_acc ]
+          )
+
         end
 
+      _ ->
 
-      _ -> produce_checkpoint(checkpoint, field, rest)
+        next_checkpoint = %ParseCheckpoint{ fields: field }
+
+        case current_checkpoint do
+
+          nil ->
+
+            create_checkpoints_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              checkpoints_acc
+            )
+
+          current_checkpoint ->
+
+            create_checkpoints_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              [ current_checkpoint | checkpoints_acc ]
+            )
+
+        end
 
     end
 
   end
 
-  defp produce_checkpoint(checkpoint, field, rest) do
 
-    case checkpoint do
-      [] -> { [field], rest }
-      checkpoint -> { Enum.reverse(checkpoint), [ field | rest ] }
+
+  defp add_type_conversion_node(%TypeConversionNode{} = type_conversion_node, remain_nodes, current_checkpoint, checkpoints_acc) do
+
+
+    case current_checkpoint do
+
+      %TypeConversionCheckpoint{ type_conversion_nodes: type_conversion_nodes } ->
+
+        next_checkpoint = %TypeConversionCheckpoint{ type_conversion_nodes: type_conversion_nodes ++ [ type_conversion_node ] }
+
+        create_checkpoints_from_topology_rec(
+          remain_nodes,
+          next_checkpoint,
+          checkpoints_acc
+        )
+
+      _ ->
+
+        next_checkpoint = %TypeConversionCheckpoint{ type_conversion_nodes: [ type_conversion_node ] }
+
+        case current_checkpoint do
+
+          nil ->
+
+            create_checkpoints_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              checkpoints_acc
+            )
+
+          current_checkpoint ->
+
+            create_checkpoints_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              [ current_checkpoint | checkpoints_acc ]
+            )
+
+        end
+
     end
 
   end
 
-  defp has_for_cross_checkpoint_dependency(checkpoint, registered_callbacks_map) do
 
-    dependencies = ParseDependencies.parse_dependencies_excluded_self(checkpoint, registered_callbacks_map)
+  defp add_virtual_field_producing_node(%VirtualFieldProducingNode{} = virtual_field_producing_node, remain_nodes, current_checkpoint, checkpoints_acc) do
 
-    Enum.any?(
-      checkpoint,
+
+    %VirtualFieldProducingNode{ virtual_field: virtual_field } = virtual_field_producing_node
+
+    case current_checkpoint do
+
+      %VirtualFieldProducingCheckpoint{ virtual_fields: virtual_fields } ->
+
+        next_checkpoint = %VirtualFieldProducingCheckpoint{ virtual_fields: virtual_fields ++ [ virtual_field ] }
+
+        create_checkpoints_from_topology_rec(
+          remain_nodes,
+          next_checkpoint,
+          checkpoints_acc
+        )
+
+      _ ->
+
+        next_checkpoint = %VirtualFieldProducingCheckpoint{ virtual_field: virtual_field }
+
+        case current_checkpoint do
+
+          nil ->
+
+            create_checkpoints_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              checkpoints_acc
+            )
+
+          current_checkpoint ->
+
+            create_checkpoints_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              [ current_checkpoint | checkpoints_acc ]
+            )
+
+        end
+
+    end
+
+  end
+
+  defp can_combine_fields_to_single_parse_checkpoint?(fields) do
+
+    Enum.all?(
+      fields,
       fn field ->
-        IsFieldDependentOn.is_field_dependent_on(dependencies, field)
+
+        size = FieldSize.field_size_bits(field)
+
+        is_optional = IsOptionalField.is_optional_field(field)
+
+        case size do
+
+          size when is_integer(size) and not is_optional -> true
+
+          _ -> false
+
+        end
+
       end
     )
 
@@ -607,7 +564,6 @@ defmodule BinStruct.Macro.ParseFunction do
   defp virtual_fields_producing_checkpoint_function_name(checkpoint_index) do
     String.to_atom("virtual_fields_producing_checkpoint_#{checkpoint_index}")
   end
-
 
   defp dependencies_to_be_resolved_manually_for_interface_implementations(interface_implementations_dependencies, resolved_dependencies) do
 

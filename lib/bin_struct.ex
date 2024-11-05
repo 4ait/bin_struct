@@ -127,22 +127,14 @@ defmodule BinStruct do
         env
       )
 
-    BinStruct.Macro.ParseGraphFunction.parse_function(
-      non_virtual_fields,
-      interface_implementations,
-      registered_callbacks_map,
-      env,
-      _is_should_be_defined_private = !is_bin_struct_terminated
-    )
-
-    #parse_functions =
-    #  BinStruct.Macro.ParseFunction.parse_function(
-    #    non_virtual_fields,
-      #  interface_implementations,
-    #    registered_callbacks_map,
-     #   env,
-    #    _is_should_be_defined_private = !is_bin_struct_terminated
-    #  )
+    parse_functions =
+      BinStruct.Macro.ParseFunction.parse_function(
+        non_virtual_fields,
+        interface_implementations,
+        registered_callbacks_map,
+        env,
+        _is_should_be_defined_private = !is_bin_struct_terminated
+      )
 
     parse_functions = []
 

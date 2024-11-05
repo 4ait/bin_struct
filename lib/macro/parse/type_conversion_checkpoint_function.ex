@@ -1,4 +1,4 @@
-defmodule BinStruct.Macro.Parse.TypeConversionCheckpoint do
+defmodule BinStruct.Macro.Parse.TypeConversionCheckpointFunction do
 
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.DependencyOnField
@@ -17,11 +17,41 @@ defmodule BinStruct.Macro.Parse.TypeConversionCheckpoint do
 
   alias BinStruct.Macro.OptionalNilCheckExpression
 
+  alias BinStruct.Macro.Structs.TypeConversionCheckpoint
+
+
+  def receiving_arguments_bindings(%TypeConversionCheckpoint{} = checkpoint, registered_callbacks_map, context) do
+
+    %ParseCheckpoint{ fields: fields } = checkpoint
+
+    dependencies = ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map)
+
+    BindingsToOnFieldDependencies.bindings(dependencies, context)
+
+  end
+
+  def output_bindings(%TypeConversionCheckpoint{} = checkpoint, registered_callbacks_map, context) do
+
+    %ParseCheckpoint{ fields: fields } = checkpoint
+
+    Enum.map(
+      fields,
+      fn field ->
+
+        %Field{ name: name } = field
+
+        Bind.bind_unmanaged_value(name, context)
+
+      end
+    )
+
+  end
+
+
   def type_conversion_checkpoint_function(
+        %TypeConversionCheckpoint{} = checkpoint,
         function_name,
-        input_dependencies,
-        output_dependencies,
-        context
+        _env
       ) do
 
     input_binds =
@@ -42,7 +72,7 @@ defmodule BinStruct.Macro.Parse.TypeConversionCheckpoint do
                   %VirtualField{ name: name } -> name
                 end
 
-              Bind.bind_unmanaged_value(name, context)
+              Bind.bind_unmanaged_value(name, __MODULE__)
 
             %DependencyOnOption{} -> nil
 
@@ -75,7 +105,7 @@ defmodule BinStruct.Macro.Parse.TypeConversionCheckpoint do
                   %VirtualField{ name: name, type: type } -> { name, type, true }
                 end
 
-              unmanaged_value_access = Bind.bind_unmanaged_value(name, context)
+              unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
 
               case type_conversion do
 
@@ -111,6 +141,75 @@ defmodule BinStruct.Macro.Parse.TypeConversionCheckpoint do
         { unquote_splicing(output_values)}
       end
 
+    end
+
+  end
+
+  defp old() do
+
+    input_binds =
+      Enum.map(
+        input_dependencies,
+        fn input_dependency ->
+
+          case input_dependency do
+            %DependencyOnField{} = dependency ->
+
+              %DependencyOnField{
+                field: field
+              } = dependency
+
+              name =
+                case field do
+                  %Field{ name: name } -> name
+                  %VirtualField{ name: name } -> name
+                end
+
+              Bind.bind_unmanaged_value(name, __MODULE__)
+
+            %DependencyOnOption{} -> nil
+
+          end
+
+        end
+      ) |> Enum.reject(&is_nil/1)
+
+    output_binds =
+      Enum.map(
+        output_dependencies,
+        fn output_dependency ->
+
+          case output_dependency do
+
+            %DependencyOnField{} = dependency ->
+
+              %DependencyOnField{
+                field: field,
+                type_conversion: type_conversion
+              } = dependency
+
+              name =
+                case field do
+                  %Field{ name: name } -> name
+                  %VirtualField{ name: name } -> name
+                end
+
+              case type_conversion do
+                TypeConversionUnspecified -> Bind.bind_managed_value(name, __MODULE__)
+                TypeConversionManaged -> Bind.bind_managed_value(name, __MODULE__)
+                TypeConversionUnmanaged -> Bind.bind_unmanaged_value(name, __MODULE__)
+                TypeConversionBinary-> Bind.bind_binary_value(name, __MODULE__)
+              end
+
+            %DependencyOnOption{} -> nil
+
+          end
+
+        end
+      ) |> Enum.reject(&is_nil/1)
+
+    quote do
+      { unquote_splicing(output_binds) } <- unquote(virtual_fields_producing_checkpoint_function_name(index))(unquote_splicing(input_binds), options)
     end
 
   end
