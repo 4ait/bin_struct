@@ -24,9 +24,8 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
 
   alias BinStruct.Macro.Dependencies.ExcludeDependenciesOnField
   alias BinStruct.Macro.Structs.InterfaceImplementation
+  alias BinStruct.Macro.Parse.ParseTopologySortBasedOnNodePriority
 
-
-  #todo implement node sparse algorithm, keep as much distance as we can not breaking connections rules
 
   def topology(
         fields,
@@ -37,59 +36,54 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
 
     non_virtual_fields = NonVirtualFields.skip_virtual_fields(fields)
 
+    parse_vertexes =
+      Enum.map(
+        non_virtual_fields,
+        fn field ->
+          create_parse_node(field)
+        end
+      )
+
     connections_to_parse_nodes =
+      Enum.reduce(
+        non_virtual_fields,
+        { [], nil },
+        fn field, { edges_acc, prev_parse_node } ->
 
-      case non_virtual_fields do
+          current_parse_node = create_parse_node(field)
 
-        [ non_virtual_field ] = _single ->
+          type_conversion_connections = create_type_conversion_connections_for_parse_node(current_parse_node, registered_callbacks_map)
+          virtual_field_producing_connections = create_virtual_field_producing_connections_for_parse_node(current_parse_node, registered_callbacks_map)
 
-          parse_node = create_parse_node(non_virtual_field)
+          if prev_parse_node do
 
-          [{ parse_node, parse_node }]
+            connection_between_parse_nodes = { prev_parse_node, current_parse_node }
 
-        non_virtual_fields ->
+            {
+              List.flatten([
+                edges_acc,
+                connection_between_parse_nodes,
+                type_conversion_connections,
+                virtual_field_producing_connections
+              ]),
+              current_parse_node
+            }
 
-          Enum.reduce(
-            non_virtual_fields,
-            { [], nil },
-            fn field, { edges_acc, prev_parse_node } ->
+          else
+            {
+              List.flatten([
+                edges_acc,
+                type_conversion_connections,
+                virtual_field_producing_connections
+              ]),
+              current_parse_node
+            }
 
-              current_parse_node = create_parse_node(field)
+          end
 
-              type_conversion_connections = create_type_conversion_connections_for_parse_node(current_parse_node, registered_callbacks_map)
-              virtual_field_producing_connections = create_virtual_field_producing_connections_for_parse_node(current_parse_node, registered_callbacks_map)
-
-              if prev_parse_node do
-
-                connection_between_parse_nodes = { prev_parse_node, current_parse_node }
-
-                {
-                  List.flatten([
-                    edges_acc,
-                    connection_between_parse_nodes,
-                    type_conversion_connections,
-                    virtual_field_producing_connections
-                  ]),
-                  current_parse_node
-                }
-
-              else
-                {
-                  List.flatten([
-                    edges_acc,
-                    type_conversion_connections,
-                    virtual_field_producing_connections
-                  ]),
-                  current_parse_node
-                }
-
-              end
-
-            end
-          )
-          |> then(fn { edges_acc, _prev_node } -> edges_acc end)
-
-      end
+        end
+      )
+      |> then(fn { edges_acc, _prev_node } -> edges_acc end)
 
     connections_to_interface_implementations_node =
       Enum.map(
@@ -110,10 +104,12 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
       )
       |> List.flatten()
 
+    edges = connections_to_parse_nodes ++ connections_to_interface_implementations_node
 
     graph =
       Graph.new()
-      |> Graph.add_edges(connections_to_parse_nodes ++ connections_to_interface_implementations_node)
+      |> Graph.add_vertices(parse_vertexes)
+      |> Graph.add_edges(edges)
 
     topology =
       case Graph.topsort(graph) do
@@ -121,29 +117,7 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
         topology -> topology
       end
 
-    move_interface_implementation_nodes_on_top(topology)
-
-  end
-
-  defp move_interface_implementation_nodes_on_top(topology) do
-
-    Enum.reduce(
-      topology,
-      { _other_nodes_acc = [], _interface_impl_nodes_acc = [] },
-      fn node, { other_nodes_acc, interface_impl_nodes_acc} ->
-
-        case node do
-          %InterfaceImplementationNode{} = interface_impl_node ->
-            {  other_nodes_acc, [ interface_impl_node | interface_impl_nodes_acc ] }
-
-          other_node ->
-            { [ other_node | other_nodes_acc ], interface_impl_nodes_acc  }
-        end
-
-      end
-    ) |> then(fn { other_nodes_acc, interface_impl_nodes_acc} ->
-      Enum.reverse(other_nodes_acc) ++ Enum.reverse(interface_impl_nodes_acc)
-    end)
+    ParseTopologySortBasedOnNodePriority.sort_topology_based_on_node_priority(topology, edges)
 
   end
 
