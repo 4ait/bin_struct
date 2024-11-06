@@ -5,10 +5,10 @@ defmodule BinStruct.Macro.Parse.ParseTopologyDebug do
   alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.InterfaceImplementationNode
 
-  def print_topology(topology) do
+  def print_topology(topology, label \\ "") do
 
     IO.puts("")
-    IO.puts("START TOPOLOGY >>")
+    IO.puts("START TOPOLOGY #{label}>>")
     IO.puts("")
 
     Enum.map(
@@ -33,8 +33,10 @@ defmodule BinStruct.Macro.Parse.ParseTopologyDebug do
 
 
     IO.puts("")
-    IO.puts("<< END TOPOLOGY")
+    IO.puts("<< END TOPOLOGY #{label}")
     IO.puts("")
+
+    topology
 
   end
 
