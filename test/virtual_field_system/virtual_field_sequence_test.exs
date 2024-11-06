@@ -53,7 +53,6 @@ defmodule BinStructTest.VirtualFieldSystem.StructWithSequenceTest do
 
     { :ok, parsed_struct } = StructWithSequenceOfVirtualFields.parse_exact(dump)
 
-
     values = StructWithSequenceOfVirtualFields.decode(parsed_struct)
 
     %{
