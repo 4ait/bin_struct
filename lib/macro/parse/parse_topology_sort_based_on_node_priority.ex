@@ -6,12 +6,13 @@ defmodule BinStruct.Macro.Parse.ParseTopologySortBasedOnNodePriority do
   alias BinStruct.Macro.Parse.ParseTopologyNodes.InterfaceImplementationNode
 
   def sort_topology_based_on_node_priority(topology, connection_rules) do
-    do_steps_to_until_unchanged(topology, connection_rules)
+    connection_rules_set = MapSet.new(connection_rules)
+    do_steps_to_until_unchanged(topology, connection_rules_set)
   end
 
-  defp can_swap?(node_a, node_b, connection_rules) do
+  defp can_swap?(node_a, node_b, connection_rules_set) do
     # Check that no rule requires node_b to come after node_a
-    !Enum.any?(connection_rules, fn {a, b} -> a == node_a and b == node_b end)
+    !MapSet.member?(connection_rules_set, { node_a, node_b })
   end
 
   defp should_try_to_swap_according_to_priority?(node_a, node_b) do
