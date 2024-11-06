@@ -17,7 +17,18 @@ defmodule BinStruct.Macro.Parse.ParseTopologyDebug do
 
         case node do
           %ParseNode{ field: field } -> "ParseNode #{field.name}"
-          %TypeConversionNode{ subject: subject } -> "TypeConversionNode #{subject.name}"
+          %TypeConversionNode{ subject: subject, type_conversion: type_conversion } ->
+
+
+            to =
+              case type_conversion do
+                BinStruct.TypeConversion.TypeConversionUnmanaged -> "Unmanaged"
+                BinStruct.TypeConversion.TypeConversionManaged -> "Managed"
+                BinStruct.TypeConversion.TypeConversionBinary -> "Binary"
+              end
+
+            "TypeConversionNode #{subject.name} to: #{to}"
+
           %VirtualFieldProducingNode{ virtual_field: virtual_field } -> "VirtualFieldProducingNode #{virtual_field.name}"
           %InterfaceImplementationNode{ interface_implementation: interface_implementation} ->
 

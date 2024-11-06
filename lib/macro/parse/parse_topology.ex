@@ -27,6 +27,7 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
   alias BinStruct.Macro.Parse.ParseTopologySortBasedOnNodePriority
 
 
+
   def topology(
         fields,
         registered_callbacks_map,
@@ -278,10 +279,10 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
               TypeConversionManaged -> { depend_on_node_virtual_field_producing_node, node_type_conversion_required_before }
               TypeConversionUnspecified -> { depend_on_node_virtual_field_producing_node, node_type_conversion_required_before }
 
-
               type_conversion ->
 
-                type_conversion_node = create_type_conversion_node(depend_on_field, type_conversion)
+                type_conversion_node =
+                  create_type_conversion_node(depend_on_virtual_field, type_conversion)
 
                 [
                   { depend_on_node_virtual_field_producing_node, type_conversion_node },
@@ -397,12 +398,12 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
                       case depend_on_type_conversion do
 
                         TypeConversionManaged -> { virtual_field_current_field_depend_on_node, virtual_field_producing_node }
-
                         TypeConversionUnspecified -> { virtual_field_current_field_depend_on_node, virtual_field_producing_node }
 
                         type_conversion ->
 
-                          type_conversion_node = create_type_conversion_node(depend_on_virtual_field, type_conversion)
+                          type_conversion_node =
+                            create_type_conversion_node(depend_on_virtual_field, type_conversion)
 
                           [
                             { virtual_field_current_field_depend_on_node, type_conversion_node },
