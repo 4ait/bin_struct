@@ -117,7 +117,10 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
         topology -> topology
       end
 
+    #BinStruct.Macro.Parse.ParseTopologyDebug.print_topology(topology, "BEFORE SORT")
+
     ParseTopologySortBasedOnNodePriority.sort_topology_based_on_node_priority(topology, edges)
+    #|> BinStruct.Macro.Parse.ParseTopologyDebug.print_topology("AFTER SORT")
 
   end
 
