@@ -20,6 +20,20 @@ defmodule BinStructTest.EnumsValuesTest do
       }
     }
 
+    field :enum_as_binary, {
+      :enum,
+      %{
+        type: :binary,
+        values: [
+          { "A", :high_color_4bpp },
+          { "B", :high_color_8bpp },
+          { "C", :high_color_15bpp },
+          { "D", :high_color_16bpp },
+          { "E", :high_color_24bpp }
+        ]
+      }
+    }, length: 1
+
   end
 
 
@@ -29,7 +43,8 @@ defmodule BinStructTest.EnumsValuesTest do
 
     struct =
       EnumsValuesBinStruct.new(
-        enum: enum_variant
+        enum: enum_variant,
+        enum_as_binary: enum_variant
       )
 
 
@@ -41,6 +56,7 @@ defmodule BinStructTest.EnumsValuesTest do
 
     %{
       enum: ^enum_variant,
+      enum_as_binary: ^enum_variant,
     } = values
 
   end

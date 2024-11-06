@@ -9,30 +9,6 @@ defmodule BinStructCustomType do
 
   end
 
-  defp maybe_auto_implementation_of_parse(is_custom_type_terminated) do
-
-    impl =
-      if is_custom_type_terminated do
-
-        quote do
-          def parse(bin, options \\ nil) do
-            case parse_returning_options(bin, options) do
-              { :wrong_data, _wrong_data } = wrong_data -> wrong_data
-              :not_enough_bytes ->  :not_enough_bytes
-              { :ok, struct, rest, _options } -> { :ok, struct, rest }
-            end
-          end
-        end
-
-      end
-
-    case impl do
-      nil -> []
-      impl -> [impl]
-    end
-
-  end
-
   defp maybe_auto_implementation_of_parse_exact_returning_options(is_custom_type_terminated) do
 
     impl =
@@ -62,8 +38,14 @@ defmodule BinStructCustomType do
 
   end
 
+
+
   defmacro __before_compile__(env) do
 
+
+    ensure_custom_type_has_required_function_defined(env.module)
+
+    is_custom_type_terminated = is_custom_type_terminated(env.module)
 
     result_quote =
       quote do
@@ -71,23 +53,17 @@ defmodule BinStructCustomType do
         def __default_options__(), do: %{}
         def __module_type__(), do: :bin_struct_custom_type
 
+        unquote_splicing(
+          maybe_auto_implementation_of_parse_exact_returning_options(is_custom_type_terminated)
+        )
+
       end
 
     module_code = BinStruct.MacroDebug.code(result_quote)
 
-    is_custom_type_terminated = BinStruct.Macro.Termination.is_bin_struct_custom_type_terminated(env.module)
-
     quote do
 
       unquote(result_quote)
-
-      unquote_splicing(
-        maybe_auto_implementation_of_parse_exact_returning_options(is_custom_type_terminated)
-      )
-
-      unquote_splicing(
-        maybe_auto_implementation_of_parse(is_custom_type_terminated)
-      )
 
       unquote(
 
@@ -106,6 +82,48 @@ defmodule BinStructCustomType do
       )
 
     end
+
+  end
+
+  defp is_custom_type_terminated(module) do
+    Module.defines?(module, {:parse_returning_options, 3})
+  end
+
+
+  defp ensure_custom_type_has_required_function_defined(module) do
+
+    parse_returning_options = Module.defines?(module, {:parse_returning_options, 3})
+
+    parse_exact_returning_options = Module.defines?(module, {:parse_exact_returning_options, 3})
+
+    if !parse_returning_options && !parse_exact_returning_options  do
+      raise "Custom type required to define either parse_returning_options/3 or parse_exact_returning_options/3"
+    end
+
+    if parse_returning_options && parse_exact_returning_options  do
+      raise "Custom type required to define either parse_returning_options/3 or parse_exact_returning_options/3, not both"
+    end
+
+    if !Module.defines?(module, {:dump_binary, 2}) do
+      raise "Custom type required to define dump_binary/2"
+    end
+
+    if !Module.defines?(module, {:size, 2}) do
+      raise "Custom type required to define size/2"
+    end
+
+    if !Module.defines?(module, {:from_unmanaged_to_managed, 2}) do
+      raise "Custom type required to define from_unmanaged_to_managed/2"
+    end
+
+    if !Module.defines?(module, {:from_managed_to_unmanaged, 2}) do
+      raise "Custom type required to define from_managed_to_unmanaged/2"
+    end
+
+    if !Module.defines?(module, {:known_total_size_bytes, 1}) do
+      raise "Custom type required to define known_total_size_bytes/2"
+    end
+
 
   end
 
