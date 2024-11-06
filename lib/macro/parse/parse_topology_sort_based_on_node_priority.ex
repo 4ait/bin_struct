@@ -5,14 +5,14 @@ defmodule BinStruct.Macro.Parse.ParseTopologySortBasedOnNodePriority do
   alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.InterfaceImplementationNode
 
-  def sort_topology_based_on_node_priority(topology, connection_rules) do
-    connection_rules_set = MapSet.new(connection_rules)
-    do_steps_to_until_unchanged(topology, connection_rules_set)
+  def sort_topology_based_on_node_priority(topology, edges) do
+    connection_rules = MapSet.new(edges)
+    do_steps_to_until_unchanged(topology, connection_rules)
   end
 
-  defp can_swap?(node_a, node_b, connection_rules_set) do
+  defp can_swap?(node_a, node_b, connection_rules) do
     # Check that no rule requires node_b to come after node_a
-    !MapSet.member?(connection_rules_set, { node_a, node_b })
+    !MapSet.member?(connection_rules, { node_a, node_b })
   end
 
   defp should_try_to_swap_according_to_priority?(node_a, node_b) do
