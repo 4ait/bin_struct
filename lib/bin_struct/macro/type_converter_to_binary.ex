@@ -142,6 +142,8 @@ defmodule BinStruct.Macro.TypeConverterToBinary do
     ListOfTypeConverter.from_unmanaged_to_binary_list_of(list_of_type, quoted)
   end
 
-  def convert_unmanaged_value_to_binary(:unspecified, quoted), do: quoted
+  def convert_unmanaged_value_to_binary(:unspecified, _quoted) do
+    raise "Converting #{inspect(:unspecified)} value to binary impossible"
+  end
 
 end
