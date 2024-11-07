@@ -12,7 +12,7 @@ defmodule BinStructTest.StaticValueTest do
     field :static_value_binary, <<1, 2, 3>>
     field :static_value_string, "123"
     field :static_value_ext, { :static, @val }
-    field :static_value_ext2, { :static, BinStructStaticValue.uint32_be(1) }
+    field :static_value_ext2, { :static, BinStruct.StaticValue.uint32_be(1) }
 
   end
 
