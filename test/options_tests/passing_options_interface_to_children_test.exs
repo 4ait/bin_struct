@@ -6,9 +6,12 @@ defmodule BinStructTest.OptionsTests.PassingOptionsInterfaceToChildrenTest do
 
     use BinStructOptionsInterface
 
+    @type length_indicator :: integer()
+    @type presence_indicator :: :content_not_present | :content_present
+
     register_options_interface do
-      register_option :length_indicator
-      register_option :presence_indicator
+      register_option :length_indicator, type: length_indicator()
+      register_option :presence_indicator, type: presence_indicator()
     end
 
   end

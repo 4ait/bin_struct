@@ -23,7 +23,7 @@ defmodule BinStructTest.VirtualFieldSystem.ReadConsumedInCallbackTest do
       }
     }, read_by: &read_open_or_close_enum/1
 
-    virtual :open_or_close_flag, :unspecified, read_by: &read_bool_flag/1
+    virtual :open_or_close_flag, { :unspecified, type: :open | :closed }, read_by: &read_bool_flag/1
 
     field :number, :uint8
 
