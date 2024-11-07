@@ -250,17 +250,6 @@ defmodule BinStruct do
 
           end
 
-          def parse_decode_exact(bin, options \\ nil) do
-
-            case parse_decode(bin, options) do
-              { :ok, parsed, "" } -> { :ok, parsed }
-              { :ok, _parsed, non_empty_binary } -> raise "non empty binary left after parse exact call #{inspect(non_empty_binary)}"
-              { :wrong_data, _wrong_data } = wrong_data_clause -> wrong_data_clause
-              :not_enough_bytes -> raise "not_enough_bytes returned from parse exact"
-            end
-
-          end
-
           def __module_type__(), do: :bin_struct
 
       end

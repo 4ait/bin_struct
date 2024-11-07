@@ -249,21 +249,8 @@ defmodule BinStruct.Macro.ParseFunction do
             end
           end
 
-        parse_decode_function =
-          quote do
-            defp parse_decode(bin, options \\ nil) do
-              case parse(bin, options) do
-                { :ok, struct, rest } ->
 
-                  decoded_struct = unquote(env.module).decode(struct, deep: true)
-
-                  { :ok, decoded_struct, rest }
-                other_result -> other_result
-              end
-            end
-          end
-
-         [parse_returning_options, parse_function, parse_decode_function]
+         [parse_returning_options, parse_function]
 
       else
 
@@ -285,22 +272,8 @@ defmodule BinStruct.Macro.ParseFunction do
             end
           end
 
-        parse_decode_function =
-          quote do
-            def parse_decode(bin, options \\ nil) do
-              case parse(bin, options) do
-                { :ok, struct, rest } ->
 
-                  decoded_struct = unquote(env.module).decode(struct, deep: true)
-
-                  { :ok, decoded_struct, rest }
-                other_result -> other_result
-              end
-            end
-          end
-
-
-          [parse_returning_options, parse_function, parse_decode_function]
+          [parse_returning_options, parse_function]
 
       end
 
