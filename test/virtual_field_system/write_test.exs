@@ -7,6 +7,8 @@ defmodule BinStructTest.VirtualFieldSystem.WriteTest do
 
     use BinStruct
 
+    @type mac_algo :: :"hmac-sha2-256" | :none
+
     register_callback &mac_builder/2,
                       mac_algo: :field,
                       payload: :field
@@ -17,7 +19,8 @@ defmodule BinStructTest.VirtualFieldSystem.WriteTest do
     register_callback &mac_length/1,
                       mac_length: :field
 
-    virtual :mac_algo, { :unspecified, type: :"hmac-sha2-256" | :none }, default: :none
+
+    virtual :mac_algo, { :unspecified, type: mac_algo() }, default: :none
 
     field :mac_length, :uint8,
           builder: &mac_length_builder/1
