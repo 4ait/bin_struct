@@ -26,6 +26,8 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
 
         { module, custom_type_args } when is_module -> RemapModule.remap_module(module, opts, custom_type_args, env)
 
+        { :unspecified, _type_spec } -> :unspecified
+
         module when is_module -> RemapModule.remap_module(module, opts, nil, env)
 
         { :enum, _enum_info } = enum -> RemapEnum.remap_enum(enum, opts, env)
