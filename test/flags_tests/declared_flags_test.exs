@@ -1,8 +1,8 @@
-defmodule BinStructTest.FlagsValuesTest do
+defmodule BinStructTest.Flags.DeclaredFlagsTest do
 
   use ExUnit.Case
 
-  defmodule FlagsValuesBinStruct do
+  defmodule DeclaredFlagsValuesBinStruct do
 
     use BinStruct
 
@@ -39,7 +39,7 @@ defmodule BinStructTest.FlagsValuesTest do
   end
 
 
-  test "struct with flag values works" do
+  test "struct with declared flag values works" do
 
     flags = [
       :info_mouse,
@@ -48,16 +48,16 @@ defmodule BinStructTest.FlagsValuesTest do
     ]
 
     struct =
-      FlagsValuesBinStruct.new(
+      DeclaredFlagsValuesBinStruct.new(
         flags: flags
       )
 
 
-    dump = FlagsValuesBinStruct.dump_binary(struct)
+    dump = DeclaredFlagsValuesBinStruct.dump_binary(struct)
 
-    { :ok, parsed_struct } = FlagsValuesBinStruct.parse_exact(dump)
+    { :ok, parsed_struct } = DeclaredFlagsValuesBinStruct.parse_exact(dump)
 
-    values = FlagsValuesBinStruct.decode(parsed_struct)
+    values = DeclaredFlagsValuesBinStruct.decode(parsed_struct)
 
     %{
       flags: ^flags,

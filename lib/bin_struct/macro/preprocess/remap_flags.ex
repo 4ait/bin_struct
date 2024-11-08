@@ -6,6 +6,8 @@ defmodule BinStruct.Macro.Preprocess.RemapFlags do
 
     {:%{}, _meta, [type: flags_representation_type, values: flags_values]} = flags_info_ast
 
+    { flags_values, _binding } = Code.eval_quoted(flags_values, [], env)
+
     flags_representation_type = RemapType.remap_type(flags_representation_type, opts, env)
 
     values =

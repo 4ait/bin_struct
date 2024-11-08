@@ -6,6 +6,8 @@ defmodule BinStruct.Macro.Preprocess.RemapEnum do
 
     {:%{}, _meta, [type: enum_representation_type, values: enum_values]} = enum_info_ast
 
+    { enum_values, _binding } = Code.eval_quoted(enum_values, [], env)
+
     enum_representation_type = RemapType.remap_type(enum_representation_type, opts, env)
 
     values =

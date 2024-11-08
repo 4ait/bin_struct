@@ -1,8 +1,8 @@
-defmodule BinStructTest.EnumsValuesTest do
+defmodule BinStructTest.EnumsTests.DeclaredEnumTest do
 
   use ExUnit.Case
 
-  defmodule EnumsValuesBinStruct do
+  defmodule DeclaredEnumValuesBinStruct do
 
     use BinStruct
 
@@ -37,22 +37,21 @@ defmodule BinStructTest.EnumsValuesTest do
   end
 
 
-  test "struct with enum values works" do
+  test "struct with declared enum values works" do
 
     enum_variant = :high_color_15bpp
 
     struct =
-      EnumsValuesBinStruct.new(
+      DeclaredEnumValuesBinStruct.new(
         enum: enum_variant,
         enum_as_binary: enum_variant
       )
 
+    dump = DeclaredEnumValuesBinStruct.dump_binary(struct)
 
-    dump = EnumsValuesBinStruct.dump_binary(struct)
+    { :ok, parsed_struct } = DeclaredEnumValuesBinStruct.parse_exact(dump)
 
-    { :ok, parsed_struct } = EnumsValuesBinStruct.parse_exact(dump)
-
-    values = EnumsValuesBinStruct.decode(parsed_struct)
+    values = DeclaredEnumValuesBinStruct.decode(parsed_struct)
 
     %{
       enum: ^enum_variant,
