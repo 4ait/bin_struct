@@ -45,7 +45,8 @@ defmodule BinStructCustomType do
 
     ensure_custom_type_has_required_function_defined(env.module)
 
-    is_custom_type_terminated = is_custom_type_terminated(env.module)
+    is_parse_returning_options_defined = Module.defines?(env.module, {:parse_returning_options, 3})
+    is_parse_exact_returning_options_defined = Module.defines?(env.module, {:parse_exact_returning_options, 3})
 
     result_quote =
       quote do
@@ -54,7 +55,9 @@ defmodule BinStructCustomType do
         def __module_type__(), do: :bin_struct_custom_type
 
         unquote_splicing(
-          maybe_auto_implementation_of_parse_exact_returning_options(is_custom_type_terminated)
+          maybe_auto_implementation_of_parse_exact_returning_options(
+            is_parse_returning_options_defined && !is_parse_exact_returning_options_defined
+          )
         )
 
       end
@@ -85,10 +88,6 @@ defmodule BinStructCustomType do
 
   end
 
-  defp is_custom_type_terminated(module) do
-    Module.defines?(module, {:parse_returning_options, 3})
-  end
-
 
   defp ensure_custom_type_has_required_function_defined(module) do
 
@@ -97,11 +96,7 @@ defmodule BinStructCustomType do
     parse_exact_returning_options = Module.defines?(module, {:parse_exact_returning_options, 3})
 
     if !parse_returning_options && !parse_exact_returning_options  do
-      raise "Custom type required to define either parse_returning_options/3 or parse_exact_returning_options/3"
-    end
-
-    if parse_returning_options && parse_exact_returning_options  do
-      raise "Custom type required to define either parse_returning_options/3 or parse_exact_returning_options/3, not both"
+      raise "Custom type required to define either parse_returning_options/3 or parse_exact_returning_options/3 or both"
     end
 
     if !Module.defines?(module, {:dump_binary, 2}) do
