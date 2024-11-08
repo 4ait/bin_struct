@@ -9,8 +9,7 @@ defmodule BinStruct.MixProject do
       start_permanent: Mix.env() == :prod,
       elixirc_paths: ["lib"] |> maybe_add_test_elixirc_path(),
       deps: deps(),
-      erlc_paths: maybe_add_test_erlc_path([]),
-      #compilers: [:unused] ++ Mix.compilers(),
+      erlc_paths: maybe_add_test_erlc_path([])
     ]
   end
 
@@ -52,7 +51,6 @@ defmodule BinStruct.MixProject do
       {:libgraph, "~> 0.16.0"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:benchee, "~> 1.3", only: :dev},
-      {:mix_unused, "~> 0.3.0"}
     ]
   end
 end
