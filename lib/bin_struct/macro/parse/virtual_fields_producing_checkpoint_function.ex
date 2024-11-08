@@ -4,7 +4,6 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.Dependencies.CallbacksDependencies
-  alias BinStruct.Macro.Dependencies.DeconstructionOfOnOptionDependencies
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Bind
@@ -13,8 +12,34 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
 
   def receiving_arguments_bindings(%VirtualFieldProducingCheckpoint{} = checkpoint, registered_callbacks_map, context) do
 
-    receiving_dependencies(checkpoint, registered_callbacks_map)
-    |> BindingsToOnFieldDependencies.bindings(context)
+    %VirtualFieldProducingCheckpoint{ virtual_fields: virtual_fields } = checkpoint
+
+    read_by_callbacks =
+      Enum.map(
+        virtual_fields,
+        fn virtual_field ->
+
+          %VirtualField{ opts: opts } = virtual_field
+
+          read_by = Keyword.fetch!(opts, :read_by)
+
+          RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, read_by)
+
+        end
+      )
+
+    dependencies = CallbacksDependencies.dependencies(read_by_callbacks)
+
+    receiving_dependencies =
+      Enum.reduce(
+        virtual_fields,
+        dependencies,
+        fn virtual_field, dependencies_acc ->
+          ExcludeDependenciesOnField.exclude_dependencies_on_field(dependencies_acc, virtual_field)
+        end
+      )
+
+    BindingsToOnFieldDependencies.bindings(receiving_dependencies, context)
 
   end
 
@@ -35,47 +60,12 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
 
   end
 
-  def receiving_dependencies(%VirtualFieldProducingCheckpoint{} = checkpoint, registered_callbacks_map) do
-
-    %VirtualFieldProducingCheckpoint{ virtual_fields: virtual_fields } = checkpoint
-
-    read_by_callbacks =
-      Enum.map(
-        virtual_fields,
-        fn virtual_field ->
-
-          %VirtualField{ opts: opts } = virtual_field
-
-          read_by = Keyword.fetch!(opts, :read_by)
-
-          RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, read_by)
-
-        end
-      )
-
-    dependencies = CallbacksDependencies.dependencies(read_by_callbacks)
-
-    Enum.reduce(
-      virtual_fields,
-      dependencies,
-      fn virtual_field, dependencies_acc ->
-        ExcludeDependenciesOnField.exclude_dependencies_on_field(dependencies_acc, virtual_field)
-      end
-    )
-
-
-  end
-
   def virtual_fields_producing_checkpoint_function(
         %VirtualFieldProducingCheckpoint{} = checkpoint,
         function_name,
         registered_callbacks_map,
         _env
       ) do
-
-
-
-    receiving_dependencies = receiving_dependencies(checkpoint, registered_callbacks_map)
 
     receiving_arguments_bindings = receiving_arguments_bindings(checkpoint, registered_callbacks_map, __MODULE__)
 
@@ -109,11 +99,7 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
 
     quote do
 
-      defp unquote(function_name)(unquote_splicing(receiving_arguments_bindings), options) do
-
-        unquote(
-          DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(receiving_dependencies, __MODULE__)
-        )
+      defp unquote(function_name)(unquote_splicing(receiving_arguments_bindings)) do
 
         unquote_splicing(read_by_calls)
 

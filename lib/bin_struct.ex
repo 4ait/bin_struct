@@ -109,6 +109,9 @@ defmodule BinStruct do
 
     registered_callbacks_map = BinStruct.Macro.Structs.RegisteredCallbacksMap.new(registered_callbacks, env)
 
+    virtual_fields = fields -- non_virtual_fields
+    validate_read_by_not_using_option_arguments(virtual_fields, registered_callbacks_map)
+
     is_bin_struct_terminated =
       BinStruct.Macro.Termination.is_current_bin_struct_terminated(
         non_virtual_fields,
@@ -281,6 +284,46 @@ defmodule BinStruct do
         )
 
       end
+
+  end
+
+  defp validate_read_by_not_using_option_arguments(virtual_fields, registered_callbacks_map) do
+
+
+    Enum.each(
+      virtual_fields,
+      fn virtual_field ->
+
+        %BinStruct.Macro.Structs.VirtualField{opts: opts} = virtual_field
+
+        case opts[:read_by] do
+          read_by when not is_nil(read_by) ->
+
+            registered_read_by_callback =
+              BinStruct.Macro.Structs.RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, read_by)
+
+            %BinStruct.Macro.Structs.RegisteredCallback{arguments: arguments} = registered_read_by_callback
+
+            has_option_argument =
+              Enum.any?(arguments, fn argument ->
+
+                case argument do
+                  %BinStruct.Macro.Structs.RegisteredCallbackOptionArgument{} -> true
+                  _ -> false
+                end
+
+              end)
+
+            if has_option_argument do
+              raise "read_by callback used to construct virtual fields can't relay on option argument type, options is available only in parse context"
+            end
+
+          _ -> :ok
+
+        end
+
+      end
+    )
 
   end
 

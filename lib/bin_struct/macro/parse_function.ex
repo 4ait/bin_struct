@@ -157,8 +157,7 @@ defmodule BinStruct.Macro.ParseFunction do
                 { unquote_splicing(output_bindings) } <-
 
                   unquote(virtual_fields_producing_checkpoint_function_name(index))(
-                    unquote_splicing(receiving_arguments_bindings),
-                    options
+                    unquote_splicing(receiving_arguments_bindings)
                   )
 
               end
