@@ -20,7 +20,7 @@ defmodule BinStruct.Macro.Structs.FieldsMap do
 
     case fields_map do
       %{ ^field_name => field } -> field
-      raise "Field name: #{inspect(field_name)} was requested, but not exists"
+      _ -> raise "Field name: #{inspect(field_name)} was requested, but not exists"
     end
 
   end
