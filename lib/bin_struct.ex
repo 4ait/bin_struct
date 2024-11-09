@@ -202,11 +202,15 @@ defmodule BinStruct do
 
       end
 
+
+     decode_field_function = BinStruct.Macro.DecodeFieldFunction.decode_field_function_implemented_via_decode_all(env)
+
      result_quote =
         quote do
 
           defstruct unquote(struct_fields)
 
+          unquote(decode_field_function)
           unquote(new_function)
           unquote(dump_binary_function)
           unquote(dump_io_data_function)
