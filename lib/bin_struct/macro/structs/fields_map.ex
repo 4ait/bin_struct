@@ -18,9 +18,10 @@ defmodule BinStruct.Macro.Structs.FieldsMap do
 
     %{ fields_map: fields_map } = self
 
-    %{ ^field_name => field } = fields_map
-
-    field
+    case fields_map do
+      %{ ^field_name => field } -> field
+      raise "Field name: #{inspect(field_name)} was requested, but not exists"
+    end
 
   end
 
