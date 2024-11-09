@@ -11,7 +11,7 @@ defmodule BinStruct.Macro.NewFunction do
   alias BinStruct.Macro.NewFunctionBuilderCalls
 
 
-  defp default_value_initialization(field) do
+  defp default_value_initialization(field, env) do
 
     %{ name: name, type: type, opts: opts } =
       case field do
@@ -57,9 +57,11 @@ defmodule BinStruct.Macro.NewFunction do
              has_default_option ->
 
                 default = opts[:default]
-                default_escaped = Macro.escape(default)
+
+                { default_escaped, _binding } = Code.eval_quoted(default, [], env)
 
                { :default, default_escaped }
+
              is_static_value ->
                { :static_value, static_value_info } = type
                { :static_value, static_value_info }
@@ -173,7 +175,7 @@ defmodule BinStruct.Macro.NewFunction do
   end
 
 
-  def new_function(fields, %RegisteredCallbacksMap{} = registered_callbacks_map) do
+  def new_function(fields, %RegisteredCallbacksMap{} = registered_callbacks_map, env) do
 
     non_virtual_fields = NonVirtualFields.skip_virtual_fields(fields)
 
@@ -196,7 +198,9 @@ defmodule BinStruct.Macro.NewFunction do
     default_values_initialization =
       Enum.map(
         fields,
-        &default_value_initialization/1
+        fn field ->
+          default_value_initialization(field, env)
+        end
       )
       |> Enum.reject(&is_nil/1)
 

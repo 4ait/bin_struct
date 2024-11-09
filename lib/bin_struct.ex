@@ -124,12 +124,6 @@ defmodule BinStruct do
         env
       )
 
-    dump_io_data_function =
-      BinStruct.Macro.DumpIoDataFunction.dump_io_data(
-        non_virtual_fields,
-        env
-      )
-
     parse_functions =
       BinStruct.Macro.ParseFunction.parse_function(
         non_virtual_fields,
@@ -141,7 +135,7 @@ defmodule BinStruct do
 
     decode_function = BinStruct.Macro.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
 
-    new_function = BinStruct.Macro.NewFunction.new_function(fields, registered_callbacks_map)
+    new_function = BinStruct.Macro.NewFunction.new_function(fields, registered_callbacks_map, env)
 
     size_function =
       BinStruct.Macro.SizeFunction.size_function(
@@ -213,7 +207,6 @@ defmodule BinStruct do
           unquote(decode_field_function)
           unquote(new_function)
           unquote(dump_binary_function)
-          unquote(dump_io_data_function)
           unquote(options_default_values_function)
           unquote_splicing(parse_functions)
           unquote_splicing(option_functions)

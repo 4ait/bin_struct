@@ -30,7 +30,7 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
       { :ok, decoded_asn1, "" } ->
 
-        unmanaged_format_with_binary = { decoded_asn1, bin }
+        unmanaged_format_with_binary = to_unmanaged(decoded_asn1, bin)
 
         { :ok, unmanaged_format_with_binary, "", opts}
 
@@ -44,7 +44,7 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
         << bytes_parsed::size(parsed_bytes_count)-bytes, _rest::binary >> = bin
 
-        unmanaged_format_with_binary = { decoded_asn1, bytes_parsed  }
+        unmanaged_format_with_binary = to_unmanaged(decoded_asn1, bytes_parsed)
 
         { :ok, unmanaged_format_with_binary, rest, opts }
 
@@ -55,17 +55,17 @@ defmodule BinStruct.BuiltIn.Asn1 do
   end
 
 
-  def size(data, _custom_type_args) do
+  def size(unmanaged, _custom_type_args) do
 
-    { _elixir_term, encoded_binary } = data
+    { :__BinStructAsn1__, _elixir_term, encoded_binary } = unmanaged
 
     byte_size(encoded_binary)
 
   end
 
-  def dump_binary(data, _custom_type_args) do
+  def dump_binary(unmanaged, _custom_type_args) do
 
-    { _elixir_term, encoded_binary } = data
+    { :__BinStructAsn1__, _elixir_term, encoded_binary } = unmanaged
 
     encoded_binary
 
@@ -79,7 +79,7 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
   def from_unmanaged_to_managed(unmanaged, _custom_type_args) do
 
-    { elixir_term, _encoded_binary } = unmanaged
+    { :__BinStructAsn1__, elixir_term, _encoded_binary } = unmanaged
 
     elixir_term
 
@@ -87,25 +87,19 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
   def from_managed_to_unmanaged(managed, custom_type_args) do
 
-
     %{
       asn1_module: asn1_module,
       asn1_type: asn1_type
     } = custom_type_args
 
-    case managed do
+    { :ok, encoded_binary } = asn1_module.encode(asn1_type, managed)
 
-      { elixir_term, encoded_binary } -> { elixir_term, encoded_binary }
+    to_unmanaged(managed, encoded_binary)
 
-      elixir_term ->
+  end
 
-        { :ok, encoded_binary } = asn1_module.encode(asn1_type, elixir_term)
-
-        { elixir_term, encoded_binary }
-
-
-    end
-
+  defp to_unmanaged(asn1, bin) do
+    { :__BinStructAsn1__, asn1, bin }
   end
 
 end
