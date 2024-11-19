@@ -22,7 +22,6 @@ defmodule BinStruct.BuiltIn.TerminatedBinary do
     } = custom_type_args
 
     case parse_dynamic_terminated(bin, termination) do
-
       { :ok, parsed, rest } -> { :ok, parsed, rest, opts  }
       :not_enough_bytes -> :not_enough_bytes
     end

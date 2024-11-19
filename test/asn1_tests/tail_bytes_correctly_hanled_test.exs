@@ -15,7 +15,7 @@ defmodule BinStructTest.Asn1Tests.TailedBytesCorrectlyHandledTest do
 
   test "bytes tail correctly returned after asn1 parse" do
 
-    asn1_data = 1
+    asn1_data = %{ a: 1, b: 2 }
 
     struct = BinStructWithAsn1.new(asn1: asn1_data)
 

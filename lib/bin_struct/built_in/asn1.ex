@@ -48,7 +48,12 @@ defmodule BinStruct.BuiltIn.Asn1 do
 
         { :ok, unmanaged_format_with_binary, rest, opts }
 
-      { :error, error } -> { :error, error }
+      { :error, error } ->
+
+        case error do
+          { :asn1, {  { :badmatch, _ }, _ } } -> :not_enough_bytes
+          _ -> { :wrong_data, error }
+        end
 
     end
 

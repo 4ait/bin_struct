@@ -110,6 +110,7 @@ defmodule BinStruct do
     registered_callbacks_map = BinStruct.Macro.Structs.RegisteredCallbacksMap.new(registered_callbacks, env)
 
     virtual_fields = fields -- non_virtual_fields
+
     validate_read_by_not_using_option_arguments(virtual_fields, registered_callbacks_map)
 
     is_bin_struct_terminated =

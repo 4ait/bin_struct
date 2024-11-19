@@ -1,5 +1,8 @@
 TEST-ASN1 DEFINITIONS AUTOMATIC TAGS ::= BEGIN
 
-SimpleType ::= INTEGER
+SimpleType ::= SEQUENCE {
+    a INTEGER,
+    b INTEGER
+}
 
 END
