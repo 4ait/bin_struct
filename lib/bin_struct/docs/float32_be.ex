@@ -1,4 +1,4 @@
-defmodule BinStruct.Types.Float32Be do
+defmodule BinStruct.Docs.Float32Be do
   @moduledoc """
 
     Here’s an example:

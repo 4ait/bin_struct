@@ -157,12 +157,16 @@ defmodule BinStructCustomType do
       raise "Custom type required to define either parse_returning_options/3 or parse_exact_returning_options/3 or both"
     end
 
-    if !Module.defines?(module, {:dump_binary, 2}) do
-      raise "Custom type required to define dump_binary/2"
-    end
-
     if !Module.defines?(module, {:size, 2}) do
       raise "Custom type required to define size/2"
+    end
+
+    if !Module.defines?(module, {:known_total_size_bytes, 1}) do
+      raise "Custom type required to define known_total_size_bytes/2"
+    end
+
+    if !Module.defines?(module, {:dump_binary, 2}) do
+      raise "Custom type required to define dump_binary/2"
     end
 
     if !Module.defines?(module, {:from_unmanaged_to_managed, 2}) do
@@ -173,9 +177,6 @@ defmodule BinStructCustomType do
       raise "Custom type required to define from_managed_to_unmanaged/2"
     end
 
-    if !Module.defines?(module, {:known_total_size_bytes, 1}) do
-      raise "Custom type required to define known_total_size_bytes/2"
-    end
 
 
   end

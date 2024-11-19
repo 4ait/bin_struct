@@ -1,4 +1,4 @@
-defmodule BinStruct.Types.BinStructCustomType do
+defmodule BinStruct.Docs.BinStructCustomType do
 
   @moduledoc """
 
@@ -8,11 +8,17 @@ defmodule BinStruct.Types.BinStructCustomType do
 
   The only currently limitation it can't be used directly inside variant_of (variant_of dispatching relays on elixir struct).
 
-
   Required functions to be defined by custom type:
 
+      either parse_returning_options/3 or parse_exact_returning_options/3
       size/2
+      known_total_size_bytes/2
+      dump_binary/2
+      from_unmanaged_to_managed/2
+      from_managed_to_unmanaged/2
 
+  Optional functions to be defined by custom type:
+      init_args/1
 
   Here’s an example:
 
@@ -20,7 +26,7 @@ defmodule BinStruct.Types.BinStructCustomType do
 
     ```
 
-      defmodule SimpleCustomType do
+      defmodule SimpleCustomTypeTenBytesLong do
 
         use BinStructCustomType
 
@@ -34,8 +40,10 @@ defmodule BinStruct.Types.BinStructCustomType do
         end
 
         def size(_data, _custom_type_args), do: 10
-        def dump_binary(data, _custom_type_args), do: data
         def known_total_size_bytes(_custom_type_args), do: 10
+        def dump_binary(data, _custom_type_args), do: data
+        def from_unmanaged_to_managed(unmanaged, _custom_type_args), do: unmanaged
+        def from_managed_to_unmanaged(managed, _custom_type_args), do: managed
 
       end
 

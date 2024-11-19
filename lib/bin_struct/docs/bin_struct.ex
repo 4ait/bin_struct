@@ -1,4 +1,4 @@
-defmodule BinStruct.Types.BinStruct do
+defmodule BinStruct.Docs.BinStruct do
 
   @moduledoc """
 
