@@ -9,7 +9,8 @@ defmodule BinStruct.MixProject do
       start_permanent: Mix.env() == :prod,
       elixirc_paths: ["lib"] |> maybe_add_test_elixirc_path(),
       deps: deps(),
-      erlc_paths: maybe_add_test_erlc_path([])
+      erlc_paths: maybe_add_test_erlc_path([]),
+      package: package(),
     ]
   end
 
@@ -38,10 +39,10 @@ defmodule BinStruct.MixProject do
 
   end
 
-  defp package do
+  defp package() do
     [
       licenses: ["MIT"],
-      maintainers: ["Riddt"],
+      maintainers: ["Ridtt"],
       links: %{
         "GitHub" => "https://github.com/4ait/bin_struct"
       }
