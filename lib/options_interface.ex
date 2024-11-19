@@ -6,49 +6,30 @@ defmodule BinStructOptionsInterface do
 
   defmacro __using__(_opts) do
 
+    Module.register_attribute(__CALLER__.module, :options, accumulate: true)
+
     quote do
       import BinStructOptionsInterface
+      @before_compile BinStructOptionsInterface
+
     end
 
   end
 
-  defmacro register_option(_name, _parameters \\ []) do
-      raise "should not be called directly, wrap with register_options_interface block"
+  defmacro register_option(name, parameters \\ []) do
+
+    raw_registered_option = { name, parameters }
+
+    Module.put_attribute(__CALLER__.module, :options, raw_registered_option)
   end
 
-  defp remap_register_option_call_to_raw_option(register_option_call) do
+  defmacro __before_compile__(env) do
 
-    { :register_option, _, args } = register_option_call
-
-    case args do
-      [ name ] -> { name, [] }
-      [ name, parameters ] -> { name, parameters }
-    end
-
-  end
-
-  defmacro register_options_interface([do: block]) do
-
-    env = __CALLER__
-
-    raw_options =
-      case block do
-        { :__block__, _meta, register_option_calls } ->
-
-            Enum.map(
-              register_option_calls,
-              fn register_option_call  ->
-                remap_register_option_call_to_raw_option(register_option_call)
-              end
-            )
-
-        { :register_option, _, _ } = register_option_call -> [ remap_register_option_call_to_raw_option(register_option_call) ]
-      end
-
+    raw_registered_options = Module.get_attribute(env.module, :options) |> Enum.reverse()
 
     registered_options =
       Enum.map(
-        raw_options,
+        raw_registered_options,
         fn raw_option ->
           RemapRegisteredOption.remap_raw_registered_option(raw_option, env)
         end
@@ -75,18 +56,16 @@ defmodule BinStructOptionsInterface do
 
     option_functions =
       Enum.map(
-        raw_options,
+        raw_registered_options,
         fn { name, parameters } ->
           OptionFunction.option_function(name, parameters, env)
         end
-     )
+      )
 
 
     result_quote =
       quote do
-
         unquote(registered_options_map_access_function)
-
         unquote_splicing(option_functions)
       end
 

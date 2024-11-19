@@ -6,9 +6,7 @@ defmodule BinStructTest.OptionsTests.ImplementingMultipleOptionInterfacesTest do
 
     use BinStructOptionsInterface
 
-    register_options_interface do
-      register_option :o1
-    end
+    register_option :o1
 
   end
 
@@ -16,9 +14,7 @@ defmodule BinStructTest.OptionsTests.ImplementingMultipleOptionInterfacesTest do
 
     use BinStructOptionsInterface
 
-    register_options_interface do
-      register_option :o2
-    end
+    register_option :o2
 
   end
 
@@ -26,9 +22,7 @@ defmodule BinStructTest.OptionsTests.ImplementingMultipleOptionInterfacesTest do
 
     use BinStructOptionsInterface
 
-    register_options_interface do
-      register_option :o3
-    end
+    register_option :o3
 
   end
 

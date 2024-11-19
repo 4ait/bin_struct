@@ -15,7 +15,7 @@ defmodule BinStructTest.Asn1Tests.Asn1Test do
 
   test "struct with asn1 field works" do
 
-    asn1_data = 1
+    asn1_data = %{ a: 1, b: 2 }
 
     struct = BinStructWithAsn1.new(asn1: asn1_data)
 

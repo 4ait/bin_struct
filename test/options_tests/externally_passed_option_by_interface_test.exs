@@ -6,9 +6,7 @@ defmodule BinStructTest.OptionsTests.ExternallyPassedOptionByInterfaceTest do
 
     use BinStructOptionsInterface
 
-    register_options_interface do
-      register_option :length
-    end
+    register_option :length
 
   end
 
