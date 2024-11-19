@@ -1,13 +1,29 @@
 defmodule BinStructCustomType do
 
+  alias BinStruct.Macro.OptionFunction
+  alias BinStruct.Macro.Structs.RegisteredOptionsMap
+  alias BinStruct.Macro.Preprocess.RemapRegisteredOption
 
   defmacro __using__(_opts) do
 
+    Module.register_attribute(__CALLER__.module, :options, accumulate: true)
+
     quote do
+      import BinStructCustomType
       @before_compile BinStructCustomType
     end
 
   end
+
+
+  defmacro register_option(name, parameters \\ []) do
+
+    raw_registered_option = { name, parameters }
+
+    Module.put_attribute(__CALLER__.module, :options, raw_registered_option)
+  end
+
+
 
   defp maybe_auto_implementation_of_parse_exact_returning_options(is_custom_type_terminated) do
 
@@ -38,8 +54,6 @@ defmodule BinStructCustomType do
 
   end
 
-
-
   defmacro __before_compile__(env) do
 
 
@@ -48,10 +62,54 @@ defmodule BinStructCustomType do
     is_parse_returning_options_defined = Module.defines?(env.module, {:parse_returning_options, 3})
     is_parse_exact_returning_options_defined = Module.defines?(env.module, {:parse_exact_returning_options, 3})
 
+    raw_registered_options = Module.get_attribute(env.module, :options) |> Enum.reverse()
+
+    registered_options =
+      Enum.map(
+        raw_registered_options,
+        fn raw_option ->
+          RemapRegisteredOption.remap_raw_registered_option(raw_option, env)
+        end
+      )
+
+    registered_options_map =
+      RegisteredOptionsMap.new(
+        registered_options,
+        env
+      )
+
+    option_functions =
+      Enum.map(
+        raw_registered_options,
+        fn { name, parameters } ->
+          OptionFunction.option_function(name, parameters, env)
+        end
+      )
+
+    registered_options_map_access_function =
+
+      quote do
+        def __registered_options_map__() do
+
+          unquote(
+            Macro.escape(registered_options_map)
+          )
+
+        end
+
+      end
+
+    options_default_values_function =
+      BinStruct.Macro.AllDefaultOptionsFunction.default_options_function(registered_options, env)
+
     result_quote =
       quote do
 
-        def __default_options__(), do: %{}
+        unquote(registered_options_map_access_function)
+        unquote_splicing(option_functions)
+
+        unquote(options_default_values_function)
+
         def __module_type__(), do: :bin_struct_custom_type
 
         unquote_splicing(

@@ -151,7 +151,7 @@ defmodule BinStruct do
       )
 
     options_default_values_function =
-      BinStruct.Macro.DefaultOptionsFunction.default_options_function(registered_callbacks, children_bin_structs, env)
+      BinStruct.Macro.InUseOnlyDefaultOptionsFunction.default_options_function(registered_callbacks, children_bin_structs, env)
 
     option_functions =
       Enum.map(

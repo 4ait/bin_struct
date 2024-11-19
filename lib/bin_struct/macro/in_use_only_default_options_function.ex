@@ -1,4 +1,4 @@
-defmodule BinStruct.Macro.DefaultOptionsFunction do
+defmodule BinStruct.Macro.InUseOnlyDefaultOptionsFunction do
 
   alias BinStruct.Macro.Structs.RegisteredOption
   alias BinStruct.Macro.Structs.RegisteredCallback
