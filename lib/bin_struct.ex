@@ -178,25 +178,53 @@ defmodule BinStruct do
         end
       ) |> Keyword.new()
 
+    define_receive_send_tcp = Application.get_env(:bin_struct, :define_receive_send_tcp, true)
+    define_receive_send_tls = Application.get_env(:bin_struct, :define_receive_send_tls, true)
+
+    maybe_send = [
+
+      (if define_receive_send_tcp do
+        BinStruct.Macro.SendFunctions.tcp_send()
+      end),
+
+      (if define_receive_send_tls do
+         BinStruct.Macro.SendFunctions.tls_send()
+       end)
+
+    ] |> Enum.reject(&is_nil/1)
+
     maybe_receive =
+
       case { is_bin_struct_terminated, known_total_size_bytes } do
 
         { _is_bin_struct_terminated = false, _known_total_size_bytes } -> []
 
         { _is_bin_struct_terminated = true, known_total_size_bytes } when is_integer(known_total_size_bytes) ->
+
           [
-            BinStruct.Macro.ReceiveFunctions.tpc_receive_function_known_size(known_total_size_bytes),
-            BinStruct.Macro.ReceiveFunctions.tls_receive_function_known_size(known_total_size_bytes)
-          ]
+            (if define_receive_send_tcp do
+              BinStruct.Macro.ReceiveFunctions.tpc_receive_function_known_size(known_total_size_bytes)
+            end),
+
+            (if define_receive_send_tls do
+               BinStruct.Macro.ReceiveFunctions.tls_receive_function_known_size(known_total_size_bytes)
+             end)
+          ] |> Enum.reject(&is_nil/1)
 
         { _is_bin_struct_terminated = true, _known_total_size_bytes = :unknown } ->
+
           [
-            BinStruct.Macro.ReceiveFunctions.tpc_receive_function_unknown_size(),
-            BinStruct.Macro.ReceiveFunctions.tls_receive_function_unknown_size()
-          ]
+            (if define_receive_send_tcp do
+               BinStruct.Macro.ReceiveFunctions.tpc_receive_function_unknown_size()
+             end),
+
+            (if define_receive_send_tls do
+               BinStruct.Macro.ReceiveFunctions.tls_receive_function_unknown_size()
+             end)
+
+          ] |> Enum.reject(&is_nil/1)
 
       end
-
 
      decode_field_function = BinStruct.Macro.DecodeFieldFunction.decode_field_function_implemented_via_decode_all(env)
 
@@ -223,11 +251,7 @@ defmodule BinStruct do
           )
 
           unquote_splicing(maybe_receive)
-
-          unquote_splicing([
-            BinStruct.Macro.SendFunctions.tcp_send(),
-            BinStruct.Macro.SendFunctions.tls_send()
-          ])
+          unquote_splicing(maybe_send)
 
           def parse_exact_returning_options(bin, options \\ nil) do
 
