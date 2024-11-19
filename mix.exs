@@ -38,6 +38,16 @@ defmodule BinStruct.MixProject do
 
   end
 
+  defp package do
+    [
+      licenses: ["MIT"],
+      maintainers: ["Riddt"],
+      links: %{
+        "GitHub" => "https://github.com/4ait/bin_struct"
+      }
+    ]
+  end
+
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
