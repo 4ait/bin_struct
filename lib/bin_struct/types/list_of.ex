@@ -88,7 +88,7 @@ defmodule BinStruct.Types.ListOf do
       You can parse as much items such items as it in finite bytes source using parse_exact/2
 
 
-    ## With manual selection upon dynamic criteria
+  ## With manual selection upon dynamic criteria
 
 
       We can restrict example from "Without any bounds criteria" even future using take_while_by callback to any dynamic criteria
@@ -130,7 +130,10 @@ defmodule BinStruct.Types.ListOf do
 
     ```
 
-    Notice callback takes field itself to which he applied,
+
+    Now struct can be parsed from infinity bytestream (parse/2 function will be available)
+
+  Notice callback takes field itself to which he applied,
     which is normally not possible and its unique behaviour of take_while_by callback.
 
     Also notice items are reversed, this is expected to elixir/erlang linked list implementation nature as it more performant
@@ -140,7 +143,7 @@ defmodule BinStruct.Types.ListOf do
     type conversion for any item will acquire only once for each item of each type conversion requested
 
 
-   ## Future exploring
+  ## Future exploring
 
       Most detailed behaviours can be found in test modules in BinStructTest.ListOfTests.*
 
