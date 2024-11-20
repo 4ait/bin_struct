@@ -133,13 +133,13 @@ defmodule BinStruct.Types.ListOf do
 
     Now struct can be parsed from infinity bytestream (parse/2 function will be available)
 
-  Notice callback takes field itself to which he applied,
+    Notice callback takes field itself to which he applied,
     which is normally not possible and its unique behaviour of take_while_by callback.
 
     Also notice items are reversed, this is expected to elixir/erlang linked list implementation nature as it more performant
     to both produce and to read.
 
-    Type conversions are specially optimized to this callback,
+    Type conversions are specially optimized for this callback,
     type conversion for any item will acquire only once for each item of each type conversion requested
 
 
