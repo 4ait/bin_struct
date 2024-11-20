@@ -1,6 +1,5 @@
 defmodule BinStruct.MacroDebug do
 
-
   def code(ast) do
 
     Macro.to_string(ast)

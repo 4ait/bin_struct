@@ -1,5 +1,21 @@
 defmodule BinStruct.BuiltIn.TerminatedBinary do
 
+  @moduledoc """
+
+  Terminated binary implemented as BinStructCustomType.
+
+   ```
+      defmodule Struct do
+        use BinStruct
+
+        alias BinStruct.BuiltIn.TerminatedBinary
+
+        field :terminated_binary, { TerminatedBinary, termination: <<0, 0>> }
+      end
+    ```
+
+  """
+
   use BinStructCustomType
 
   def init_args(custom_type_args) do
