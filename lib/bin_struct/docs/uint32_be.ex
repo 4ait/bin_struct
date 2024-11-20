@@ -1,3 +1,14 @@
 defmodule BinStruct.Docs.Uint32Be do
-  @moduledoc false
+
+  @moduledoc """
+
+    ```
+      defmodule Struct do
+        use BinStruct
+        field :value, :uint32_be
+      end
+    ```
+
+  """
+
 end

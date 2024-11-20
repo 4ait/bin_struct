@@ -26,21 +26,21 @@ defmodule BinStruct.Docs.BinStructCustomType do
 
     ```
 
-      defmodule SimpleCustomTypeTenBytesLong do
+      defmodule SimpleCustomTypeTwoBytesLong do
 
         use BinStructCustomType
 
         def parse_returning_options(bin, _custom_type_args, opts) do
 
           case bin do
-            <<data::10-bytes, rest::binary>> -> { :ok, data, rest, opts }
+            <<data::2-bytes, rest::binary>> -> { :ok, data, rest, opts }
             _ -> :not_enough_bytes
           end
 
         end
 
-        def size(_data, _custom_type_args), do: 10
-        def known_total_size_bytes(_custom_type_args), do: 10
+        def size(_data, _custom_type_args), do: 2
+        def known_total_size_bytes(_custom_type_args), do: 2
         def dump_binary(data, _custom_type_args), do: data
         def from_unmanaged_to_managed(unmanaged, _custom_type_args), do: unmanaged
         def from_managed_to_unmanaged(managed, _custom_type_args), do: managed

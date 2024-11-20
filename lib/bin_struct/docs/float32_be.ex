@@ -1,7 +1,6 @@
 defmodule BinStruct.Docs.Float32Be do
-  @moduledoc """
 
-    Here’s an example:
+  @moduledoc """
 
     ```
       defmodule Struct do
@@ -11,4 +10,5 @@ defmodule BinStruct.Docs.Float32Be do
     ```
 
   """
+
 end

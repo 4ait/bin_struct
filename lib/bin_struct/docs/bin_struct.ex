@@ -7,7 +7,6 @@ defmodule BinStruct.Docs.BinStruct do
     Here’s an example:
 
     ```
-
       defmodule Child do
         use BinStruct
       end
