@@ -11,4 +11,5 @@ defmodule BinStruct.Types.Int64Be do
 
   """
 
+
 end
