@@ -2,7 +2,7 @@ defmodule BinStruct.Types.Bool do
 
   @moduledoc """
 
-  ##  1 byte
+  ## 1 byte
 
     ```
       defmodule Struct do
