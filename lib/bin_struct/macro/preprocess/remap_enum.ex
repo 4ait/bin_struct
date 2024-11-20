@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.RemapEnum do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Preprocess.RemapType
 
   def remap_enum({:enum, enum_info_ast}, opts, env) do

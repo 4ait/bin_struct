@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.OptionFunction do
 
+  @moduledoc false
+
   def option_function(name, _parameters, _env) do
 
     function_name = :"option_#{name}"

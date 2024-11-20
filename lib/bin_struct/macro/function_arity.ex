@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.FunctionArity do
 
+  @moduledoc false
+
   def function_arity(function, _env) do
 
     case function do

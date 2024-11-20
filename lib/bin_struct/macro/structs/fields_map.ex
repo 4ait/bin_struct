@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Structs.FieldsMap do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.FieldsMap
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField

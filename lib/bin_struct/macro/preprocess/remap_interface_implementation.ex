@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.RemapInterfaceImplementation do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.InterfaceImplementation
   alias BinStruct.Macro.Preprocess.RemapCallback
 

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUntilEndByParse do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Parse.Validation
   alias BinStruct.Macro.Parse.WrapWithOptionalBy

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.BitSizeConverter do
 
+  @moduledoc false
+
   def bit_size_to_byte_size(size_in_bits) do
 
     case size_in_bits do

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.TypeConverters.EnumTypeConverter do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Common
   alias BinStruct.Macro.TypeConverterToManaged
   alias BinStruct.Macro.TypeConverterToUnmanaged

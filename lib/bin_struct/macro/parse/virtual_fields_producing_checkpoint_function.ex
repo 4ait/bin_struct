@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
 
+  @moduledoc false
 
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap

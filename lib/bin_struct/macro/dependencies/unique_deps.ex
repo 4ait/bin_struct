@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Dependencies.UniqueDeps do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.DependencyOnOption
   alias BinStruct.Macro.Structs.RegisteredOption
   alias BinStruct.Macro.Structs.DependencyOnField

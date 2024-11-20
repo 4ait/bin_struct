@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint
   alias BinStruct.Macro.Structs.VirtualField
 

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.OptionalNilCheckExpression do
 
+  @moduledoc false
+
   def maybe_wrap_optional(output, input, is_optional) do
 
     if is_optional do

@@ -1,14 +1,16 @@
 defmodule BinStruct.Macro.Parse.ParseTopologyNodes.InterfaceImplementationNode do
 
-    alias BinStruct.Macro.Parse.ParseTopologyNodes.InterfaceImplementationNode
-    alias BinStruct.Macro.Structs.InterfaceImplementation
+  @moduledoc false
 
-    @type t :: %InterfaceImplementationNode {
-                 interface_implementation: InterfaceImplementation.t()
-               }
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.InterfaceImplementationNode
+  alias BinStruct.Macro.Structs.InterfaceImplementation
 
-    defstruct [
-      :interface_implementation
-    ]
+  @type t :: %InterfaceImplementationNode {
+               interface_implementation: InterfaceImplementation.t()
+             }
+
+  defstruct [
+    :interface_implementation
+  ]
 
 end

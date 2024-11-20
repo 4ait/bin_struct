@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.Validation do
 
+  @moduledoc false
+
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap

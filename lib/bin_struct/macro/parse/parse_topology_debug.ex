@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.ParseTopologyDebug do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Parse.ParseTopologyNodes.ParseNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode

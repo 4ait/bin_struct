@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.TypeConverters.StaticValueTypeConverter do
 
+  @moduledoc false
+
   def from_managed_to_unmanaged_static_value({ :static_value, static_value_info }) do
 
     %{ value: value } = static_value_info

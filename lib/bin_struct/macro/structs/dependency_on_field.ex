@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Structs.DependencyOnField do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.DependencyOnField
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField

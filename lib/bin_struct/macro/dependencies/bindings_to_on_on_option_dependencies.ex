@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Dependencies.BindingsToOnOptionDependencies do
 
+  @moduledoc false
 
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.DependencyOnOption

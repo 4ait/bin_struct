@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.AllFieldsSize do
 
+  @moduledoc false
+
   alias BinStruct.Macro.FieldSize
   alias BinStruct.Macro.BitSizeConverter
 

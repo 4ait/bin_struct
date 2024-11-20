@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.FunctionName do
 
+  @moduledoc false
+
   def function_name(function, _env) do
 
     case function do

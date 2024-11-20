@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.TypeConverterToBinary do
 
+  @moduledoc false
+
   alias BinStruct.Macro.TypeConverters.FlagsTypeConverter
   alias BinStruct.Macro.TypeConverters.EnumTypeConverter
   alias BinStruct.Macro.TypeConverters.ListOfTypeConverter

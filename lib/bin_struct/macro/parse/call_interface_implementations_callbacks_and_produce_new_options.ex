@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.CallInterfaceImplementationsCallbacksAndProduceNewOptions do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Parse.CallInterfaceImplementationsCallbacks
 
   def call_interface_implementations_callbacks_and_produce_new_options(interface_implementations_callbacks, registered_callbacks_map, context) do

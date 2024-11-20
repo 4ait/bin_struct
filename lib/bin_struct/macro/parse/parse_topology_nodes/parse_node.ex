@@ -1,16 +1,17 @@
 defmodule BinStruct.Macro.Parse.ParseTopologyNodes.ParseNode do
 
-    alias BinStruct.Macro.Parse.ParseTopologyNodes.ParseNode
-    alias BinStruct.Macro.Structs.Field
+  @moduledoc false
 
-    @type t :: %ParseNode {
-                 field: Field.t(),
-               }
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.ParseNode
+  alias BinStruct.Macro.Structs.Field
 
-    defstruct [
-      :field
-    ]
+  @type t :: %ParseNode {
+               field: Field.t(),
+             }
 
+  defstruct [
+    :field
+  ]
 
 
 end

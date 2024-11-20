@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWhileByCallbackByItemSize do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Parse.Validation

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.TypeConverters.FlagsTypeConverter do
 
+  @moduledoc false
+
   def from_managed_to_unmanaged_flags( { :flags, flags_info }, quoted) do
 
     #quoted is array of atom names and we should produce binary

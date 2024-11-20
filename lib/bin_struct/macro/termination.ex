@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Termination do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.Field
 
   def is_current_bin_struct_terminated(_no_fields = [], _env), do: true

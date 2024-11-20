@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.CheckpointOptionalByOfKnownSize do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
   alias BinStruct.Macro.Parse.CheckpointKnownSize
   alias BinStruct.Macro.Dependencies.DeconstructionOfOnOptionDependencies

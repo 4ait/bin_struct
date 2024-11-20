@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Structs.RegisteredCallback do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument

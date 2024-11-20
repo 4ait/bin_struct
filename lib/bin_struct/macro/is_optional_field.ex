@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.IsOptionalField do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.Field
 
   def is_optional_field( %Field{ opts: opts } ) do

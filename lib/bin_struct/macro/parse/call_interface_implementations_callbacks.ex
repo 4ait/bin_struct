@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.CallInterfaceImplementationsCallbacks do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.InterfaceImplementation
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap

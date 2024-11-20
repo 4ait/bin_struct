@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.TypeConverters.ModuleTypeConverter do
 
+  @moduledoc false
+
   def from_managed_to_unmanaged_module( { :module, module_info }, quoted) do
 
     case module_info do

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.ChildrenBinStructs do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.Field
 
   def children_bin_structs(fields, _env) do

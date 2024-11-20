@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Parse.ParseCheckpointFunction do
 
+  @moduledoc false
 
   alias BinStruct.Macro.FieldSize
   alias BinStruct.Macro.Structs.Field

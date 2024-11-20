@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Structs.Callback do
 
+  @moduledoc false
 
   alias BinStruct.Macro.Structs.Callback
 

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.NewFunction do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap

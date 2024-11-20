@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Preprocess.RemapStaticValue do
 
+  @moduledoc false
 
   def remap_static_value(static_value, opts, env) do
 

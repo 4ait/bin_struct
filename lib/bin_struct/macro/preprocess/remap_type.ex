@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.RemapType do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Preprocess.RemapListOf
   alias BinStruct.Macro.Preprocess.RemapEnum
   alias BinStruct.Macro.Preprocess.RemapFlags

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.IsPrimitiveType do
 
+  @moduledoc false
+
   alias BinStruct.Macro.FieldSize
 
   def is_primitive_type(type) do

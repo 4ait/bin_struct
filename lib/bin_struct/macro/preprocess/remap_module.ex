@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.RemapModule do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Preprocess.RemapCustomTypeArgs
 
   def remap_module(module, _opts, custom_type_args, env) do

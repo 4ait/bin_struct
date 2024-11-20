@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.DecodeFunctionReadByCalls do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap

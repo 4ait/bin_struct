@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.DecodeFieldFunction do
 
+  @moduledoc false
+
   def decode_field_function_implemented_via_decode_all(_env) do
 
     quote do

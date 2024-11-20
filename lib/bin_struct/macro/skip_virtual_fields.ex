@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.NonVirtualFields do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
 

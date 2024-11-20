@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Parse.CollapseOptionsIntoMap do
 
+  @moduledoc false
 
   def define_functions() do
 

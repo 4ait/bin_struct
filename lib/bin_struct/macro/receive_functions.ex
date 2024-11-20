@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.ReceiveFunctions do
 
+  @moduledoc false
+
   def tpc_receive_function_known_size(known_size_bytes) do
 
     quote do

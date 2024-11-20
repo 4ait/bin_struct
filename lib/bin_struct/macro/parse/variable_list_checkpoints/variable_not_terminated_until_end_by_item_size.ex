@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUntilEndByItemSize do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Parse.ListOfBoundaryConstraintFunctionCall
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Parse.Validation

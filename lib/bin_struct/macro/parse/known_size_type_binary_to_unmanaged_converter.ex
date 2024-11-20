@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
 
+  @moduledoc false
+
   def convert_known_size_type_binary_to_unmanaged(binary_access_bind, type, opts, context) do
 
     options_access = { :options, [], context }

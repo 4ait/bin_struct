@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.TypeConverters.ListOfTypeConverter do
 
+  @moduledoc false
+
   alias BinStruct.Macro.TypeConverterToUnmanaged
   alias BinStruct.Macro.TypeConverterToBinary
 

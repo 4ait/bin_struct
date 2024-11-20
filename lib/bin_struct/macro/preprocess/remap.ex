@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.Remap do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Preprocess.RemapType
   alias BinStruct.Macro.Preprocess.RemapCallbackOptions
   alias BinStruct.Macro.Preprocess.RemapRegisteredCallback

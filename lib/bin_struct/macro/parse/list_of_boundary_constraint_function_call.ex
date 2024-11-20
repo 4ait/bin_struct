@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.ListOfBoundaryConstraintFunctionCall do
 
+  @moduledoc false
+
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
   

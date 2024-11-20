@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.RemapRegisteredCallback do
 
+  @moduledoc false
+
   require Logger
 
   alias BinStruct.Macro.FunctionName

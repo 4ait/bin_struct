@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.TypeConverters.VariantOfTypeConverter do
 
+  @moduledoc false
+
   alias BinStruct.Macro.TypeConverterToBinary
 
   def from_managed_to_unmanaged_variant_of({ :variant_of, _variants }, quoted) do

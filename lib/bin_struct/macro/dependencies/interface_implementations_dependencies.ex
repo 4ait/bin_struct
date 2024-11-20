@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Dependencies.InterfaceImplementationDependencies do
 
+  @moduledoc false
 
   alias BinStruct.Macro.Dependencies.CallbacksDependencies
   alias BinStruct.Macro.Dependencies.UniqueDeps

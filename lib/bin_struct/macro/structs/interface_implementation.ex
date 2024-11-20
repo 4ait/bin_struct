@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Structs.InterfaceImplementation do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.InterfaceImplementation
   alias BinStruct.Macro.Structs.Callback
 

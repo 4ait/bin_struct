@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Dependencies.ParseDependencies do
 
+  @moduledoc false
 
   alias BinStruct.Macro.CallbacksOnField
   alias BinStruct.Macro.Dependencies.CallbacksDependencies

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.RemapRegisteredOption do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.RegisteredOption
 
   def remap_raw_registered_option(raw_registered_option, env) do

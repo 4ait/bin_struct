@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.RemapFlags do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Preprocess.RemapType
 
   def remap_flags({:flags, flags_info_ast}, opts, env) do

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Structs.VirtualField do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.VirtualField
 
   @type t :: %VirtualField {

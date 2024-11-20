@@ -1,7 +1,8 @@
 defmodule BinStruct.Macro.Parse.Result do
 
-  alias BinStruct.Macro.Bind
+  @moduledoc false
 
+  alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.Field
 
   def return_ok_tuple(fields, context) do

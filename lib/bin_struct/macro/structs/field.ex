@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Structs.Field do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.Field
 
   @type t :: %Field {

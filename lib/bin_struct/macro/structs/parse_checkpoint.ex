@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Structs.ParseCheckpoint do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.ParseCheckpoint
   alias BinStruct.Macro.Structs.Field
 

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.BinaryMatchPatternKnownSize do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.FieldSize
   alias BinStruct.Macro.Bind

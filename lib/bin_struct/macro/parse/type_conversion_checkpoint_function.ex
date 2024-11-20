@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.TypeConversionCheckpointFunction do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField

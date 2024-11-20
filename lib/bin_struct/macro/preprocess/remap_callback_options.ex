@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.RemapCallbackOptions do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Preprocess.RemapCallback
 
   def remap_callback_options(opts, env) do

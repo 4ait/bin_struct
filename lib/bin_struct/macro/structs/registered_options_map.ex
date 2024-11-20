@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Structs.RegisteredOptionsMap do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.RegisteredOptionsMap
   alias BinStruct.Macro.Structs.RegisteredOption
 

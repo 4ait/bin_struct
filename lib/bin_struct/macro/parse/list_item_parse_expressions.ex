@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
 
+  @moduledoc false
+
   alias BinStruct.Macro.IsPrimitiveType
 
   def parse_expression(item_type, item_binary_bind, options_bind) do

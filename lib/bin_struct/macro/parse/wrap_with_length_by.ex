@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.WrapWithLengthBy do
 
+  @moduledoc false
+
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
 

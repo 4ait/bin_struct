@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.TakeWhileByDependencyOnSelfInfo do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.DependencyOnField
   alias BinStruct.TypeConversion.TypeConversionManaged

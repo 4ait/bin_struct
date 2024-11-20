@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.RegisteredCallbackFunctionCall do
 
+  @moduledoc false
+
   alias BinStruct.Macro.FunctionCall
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.RegisteredCallbackArgumentsBinding

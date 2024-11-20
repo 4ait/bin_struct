@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.ParseTopologySortBasedOnNodePriority do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Parse.ParseTopologyNodes.ParseNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode

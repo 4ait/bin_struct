@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.FunctionCall do
 
+  @moduledoc false
+
   def function_call(function, args) do
 
     case function do

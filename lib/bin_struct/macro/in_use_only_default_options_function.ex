@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.InUseOnlyDefaultOptionsFunction do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.RegisteredOption
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument

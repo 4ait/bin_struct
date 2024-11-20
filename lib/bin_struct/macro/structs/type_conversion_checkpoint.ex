@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Structs.TypeConversionCheckpoint do
 
+  @moduledoc false
 
   alias BinStruct.Macro.Structs.TypeConversionCheckpoint
 

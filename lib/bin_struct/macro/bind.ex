@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Bind do
 
+  @moduledoc false
+
   def bind_binary_value(name, context), do: { String.to_atom("b_val_#{name}"), [], context }
   def bind_unmanaged_value(name, context), do: { String.to_atom("um_val_#{name}"), [], context }
   def bind_managed_value(name, context), do: { String.to_atom("m_val_#{name}"), [], context }

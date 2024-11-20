@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.FieldSize do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.Field
 
   def field_size_bits(%Field{} = field) do

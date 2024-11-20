@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Preprocess.RemapListOf do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Preprocess.RemapType
   alias BinStruct.Macro.FieldSize
   alias BinStruct.Macro.Termination

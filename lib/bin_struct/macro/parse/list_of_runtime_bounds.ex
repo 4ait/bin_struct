@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.ListOfRuntimeBounds do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Parse.ListOfBoundaryConstraintFunctionCall
 
   def get_runtime_bounds(%{

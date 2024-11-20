@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.SendFunctions do
 
+  @moduledoc false
 
   def tcp_send() do
 

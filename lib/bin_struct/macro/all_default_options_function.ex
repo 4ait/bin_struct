@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.AllDefaultOptionsFunction do
 
+  @moduledoc false
+
   alias BinStruct.Macro.Structs.RegisteredOption
 
   def default_options_function(registered_options, _env) do

@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.DependenciesTopology do
 
+  @moduledoc false
+
   def find_dependencies_topology(nodes_with_dependencies) do
 
    flat_tree = normalize_flatten(nodes_with_dependencies)
