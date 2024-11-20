@@ -1,11 +1,11 @@
-defmodule BinStruct.Docs.Int16Be do
+defmodule BinStruct.Types.Int8 do
 
   @moduledoc """
 
     ```
       defmodule Struct do
         use BinStruct
-        field :value, :int16_be
+        field :value, :int8
       end
     ```
 

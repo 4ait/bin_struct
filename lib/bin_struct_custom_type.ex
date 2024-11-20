@@ -67,13 +67,19 @@ defmodule BinStructCustomType do
   end
 
 
+  @doc """
+
+  ## Examples
+
+      iex> MyApp.Hello.world(:john)
+      :ok
+
+  """
+
   defmacro register_option(name, parameters \\ []) do
-
     raw_registered_option = { name, parameters }
-
     Module.put_attribute(__CALLER__.module, :options, raw_registered_option)
   end
-
 
 
   defp maybe_auto_implementation_of_parse_exact_returning_options(is_custom_type_terminated) do
@@ -171,7 +177,7 @@ defmodule BinStructCustomType do
 
       end
 
-    module_code = BinStruct.MacroDebug.code(result_quote)
+    module_code = BinStruct.Macro.MacroDebug.code(result_quote)
 
     quote do
 

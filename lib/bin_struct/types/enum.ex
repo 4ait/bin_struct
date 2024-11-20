@@ -1,4 +1,5 @@
-defmodule BinStruct.Docs.Enum do
+defmodule BinStruct.Types.Enum do
+
   @moduledoc """
 
     Enum can be declared as any internal type.

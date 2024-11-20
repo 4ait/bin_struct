@@ -1,4 +1,6 @@
-defmodule BinStruct.MacroDebug do
+defmodule BinStruct.Macro.MacroDebug do
+
+  @moduledoc false
 
   def code(ast) do
 

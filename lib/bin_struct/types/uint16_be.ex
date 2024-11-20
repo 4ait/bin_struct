@@ -1,4 +1,4 @@
-defmodule BinStruct.Docs.Uint16Be do
+defmodule BinStruct.Types.Uint16Be do
 
   @moduledoc """
 

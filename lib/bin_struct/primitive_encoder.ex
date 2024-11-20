@@ -1,5 +1,15 @@
 defmodule BinStruct.PrimitiveEncoder do
 
+  @moduledoc """
+
+    Useful in registered_callbacks when library can't achieve automatic type conversion.
+
+    ```
+      <<1>> = BinStruct.PrimitiveEncoder.uint8(1)
+    ```
+
+  """
+
   def uint8(value), do: <<value::8-unsigned>>
   def uint16_le(value), do: <<value::16-little-unsigned>>
   def uint16_be(value), do: <<value::16-big-unsigned>>

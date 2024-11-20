@@ -1,8 +1,8 @@
-defmodule BinStruct.Docs.Bool do
+defmodule BinStruct.Types.Bool do
 
   @moduledoc """
 
-    1 byte:
+  ##  1 byte
 
     ```
       defmodule Struct do
@@ -11,7 +11,7 @@ defmodule BinStruct.Docs.Bool do
       end
     ```
 
-    Bits:
+  ##  Variable bit size
 
     ```
       defmodule Struct do

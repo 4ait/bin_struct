@@ -2,6 +2,19 @@ defmodule BinStruct do
 
   @moduledoc """
 
+    BinStruct is main builder block for this library.
+
+    Generated functions you can use:
+
+      dump_binary/1
+      size/1
+
+      parse/2
+        optionally will be generated if BinStruct is terminated (have rules defined to be parsed into finite struct from infinity bytestream)
+
+      parse_exact/2
+      decode/2
+
     BinStruct itself is valid type for field, allowing nesting
 
     Here’s an example:
@@ -39,6 +52,15 @@ defmodule BinStruct do
 
   end
 
+  @doc """
+
+  ## Examples
+
+      iex> MyApp.Hello.world(:john)
+      :ok
+
+  """
+
   defmacro virtual(name, type, opts \\ []) do
 
     raw_virtual_field = { :virtual_field, name, type, opts }
@@ -46,6 +68,15 @@ defmodule BinStruct do
     Module.put_attribute(__CALLER__.module, :fields, raw_virtual_field)
 
   end
+
+  @doc """
+
+  ## Examples
+
+      iex> MyApp.Hello.world(:john)
+      :ok
+
+  """
 
   defmacro field(name, type, opts \\ []) do
 
@@ -55,12 +86,30 @@ defmodule BinStruct do
 
   end
 
+  @doc """
+
+  ## Examples
+
+      iex> MyApp.Hello.world(:john)
+      :ok
+
+  """
+
   defmacro register_option(name, parameters \\ []) do
 
     raw_registered_option = { name, parameters }
 
     Module.put_attribute(__CALLER__.module, :options, raw_registered_option)
   end
+
+  @doc """
+
+  ## Examples
+
+      iex> MyApp.Hello.world(:john)
+      :ok
+
+  """
 
   defmacro register_callback(function, args \\ []) do
 
@@ -70,7 +119,25 @@ defmodule BinStruct do
   end
 
 
-  defmacro define_is_bin_struct_terminated(is_bin_struct_terminated) do
+  @doc """
+
+  ## Examples
+
+      iex> MyApp.Hello.world(:john)
+      :ok
+
+  """
+
+  defmacro impl_interface(interface, callback) do
+
+    raw_interface_implementation = { interface, callback }
+
+    Module.put_attribute(__CALLER__.module, :interface_implementations, raw_interface_implementation)
+
+  end
+
+
+  defp is_bin_struct_terminated_function(is_bin_struct_terminated) do
 
     quote do
 
@@ -82,7 +149,7 @@ defmodule BinStruct do
 
   end
 
-  defmacro define_known_total_size_bytes(known_total_size_bytes) do
+  defp known_total_size_bytes_function(known_total_size_bytes) do
 
     quote do
 
@@ -94,14 +161,6 @@ defmodule BinStruct do
 
   end
 
-
-  defmacro impl_interface(interface, callback) do
-
-    raw_interface_implementation = { interface, callback }
-
-    Module.put_attribute(__CALLER__.module, :interface_implementations, raw_interface_implementation)
-
-  end
 
   defmacro __before_compile__(env) do
 
@@ -259,8 +318,13 @@ defmodule BinStruct do
           unquote(decode_function)
           unquote(size_function)
 
-          define_known_total_size_bytes(unquote(known_total_size_bytes))
-          define_is_bin_struct_terminated(unquote(is_bin_struct_terminated))
+          unquote(
+            known_total_size_bytes_function(known_total_size_bytes)
+          )
+
+          unquote(
+            is_bin_struct_terminated_function(is_bin_struct_terminated)
+          )
 
           unquote_splicing(
             BinStruct.Macro.Parse.CollapseOptionsIntoMap.define_functions()
@@ -295,10 +359,10 @@ defmodule BinStruct do
 
       end
 
-     module_code = BinStruct.MacroDebug.code(result_quote)
+     module_code = BinStruct.Macro.MacroDebug.code(result_quote)
 
      #if env.module == Exp.StructWithItems do
-      #BinStruct.MacroDebug.puts_code(result_quote)
+      #BinStruct.Macro.MacroDebug.puts_code(result_quote)
      #end
 
       quote do

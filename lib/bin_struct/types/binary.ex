@@ -1,8 +1,8 @@
-defmodule BinStruct.Docs.Binary do
+defmodule BinStruct.Types.Binary do
 
   @moduledoc """
 
-    Non terminated:
+  ## Non terminated:
 
     ```
       defmodule Struct do
@@ -11,7 +11,7 @@ defmodule BinStruct.Docs.Binary do
       end
     ```
 
-    Known length:
+  ## Known length:
 
     ```
       defmodule Struct do
@@ -20,7 +20,7 @@ defmodule BinStruct.Docs.Binary do
       end
     ```
 
-    Dynamic length:
+  ##  Dynamic length:
 
     ```
       defmodule Struct do

@@ -1,5 +1,22 @@
 defmodule BinStruct.FlagsWriter do
 
+  @moduledoc """
+
+    Useful in registered_callbacks when library can't achieve automatic type conversion.
+
+    ```
+
+      flags = [
+        { 0x01, :flag_a },
+        { 0x02, :flag_b }
+      ]
+
+      1 = BinStruct.FlagsWriter.write_flags_to_integer(flags, [ :flag_a ])
+
+    ```
+
+  """
+
   def write_flags_to_integer(flags_def, set_flags) do
     do_write_flags_to_integer(flags_def, set_flags, 0)
   end

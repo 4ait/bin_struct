@@ -2,8 +2,6 @@ defmodule BinStructOptionsInterface do
 
   @moduledoc """
 
-  ## Basic Example
-
     ```
 
       defmodule SharedOptions do
@@ -35,6 +33,15 @@ defmodule BinStructOptionsInterface do
     end
 
   end
+
+  @doc """
+
+  ## Examples
+
+      iex> MyApp.Hello.world(:john)
+      :ok
+
+  """
 
   defmacro register_option(name, parameters \\ []) do
 
@@ -90,7 +97,7 @@ defmodule BinStructOptionsInterface do
       end
 
 
-    module_code = BinStruct.MacroDebug.code(result_quote)
+    module_code = BinStruct.Macro.MacroDebug.code(result_quote)
 
     quote do
 
