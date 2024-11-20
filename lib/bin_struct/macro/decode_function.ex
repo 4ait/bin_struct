@@ -1,14 +1,11 @@
 defmodule BinStruct.Macro.DecodeFunction do
 
-
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
   alias BinStruct.Macro.NonVirtualFields
   alias BinStruct.Macro.IsOptionalField
-
   alias BinStruct.Macro.TypeConverterToManaged
-
   alias BinStruct.Macro.DecodeFunctionReadByCalls
 
   #assuming we have managed type, such type to work people expect most comfortable to work this

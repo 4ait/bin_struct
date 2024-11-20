@@ -5,7 +5,6 @@ defmodule BinStruct.Macro.SizeFunction do
   alias BinStruct.Macro.BitSizeConverter
   alias BinStruct.Macro.Structs.Field
 
-
   def size_function(fields_and_packs, _env) do
 
     { known_size_fields_and_packs, unknown_size_fields } = split_known_size_and_unknown_size_fields_and_packs(fields_and_packs)

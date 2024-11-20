@@ -1,9 +1,7 @@
 defmodule BinStruct.Macro.RegisteredCallbackFunctionCall do
 
   alias BinStruct.Macro.FunctionCall
-
   alias BinStruct.Macro.Structs.RegisteredCallback
-
   alias BinStruct.Macro.RegisteredCallbackArgumentsBinding
 
   def registered_callback_function_call(

@@ -1,6 +1,5 @@
 defmodule BinStruct.Macro.DecodeFunctionReadByCalls do
 
-
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.RegisteredCallback
   alias BinStruct.Macro.Structs.RegisteredCallbacksMap
@@ -9,19 +8,15 @@ defmodule BinStruct.Macro.DecodeFunctionReadByCalls do
   alias BinStruct.Macro.Structs.DependencyOnOption
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
-
   alias BinStruct.TypeConversion.TypeConversionBinary
   alias BinStruct.TypeConversion.TypeConversionUnmanaged
   alias BinStruct.TypeConversion.TypeConversionManaged
   alias BinStruct.TypeConversion.TypeConversionUnspecified
-
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
   alias BinStruct.Macro.DependenciesTopology
-
   alias BinStruct.Macro.TypeConverterToBinary
-
   alias BinStruct.Macro.IsOptionalField
   alias BinStruct.Macro.OptionalNilCheckExpression
 
