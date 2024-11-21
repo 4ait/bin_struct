@@ -43,8 +43,6 @@ defmodule BinStruct.Macro.Preprocess.RemapType do
         :bool -> { :bool, %{ bit_size: 8 } }
 
         :uint when is_integer(bits) and bits < 9 -> { :uint, %{ bit_size: bits, endianness: :none } }
-
-        :uint when is_integer(bits) and bits < 9 -> { :uint, %{ bit_size: bits, endianness: :none } }
         :int  when is_integer(bits) and bits < 9 -> { :int, %{ bit_size: bits, endianness: :none } }
 
         :uint_be when is_integer(bits) -> { :uint, %{ bit_size: bits, endianness: :big } }
