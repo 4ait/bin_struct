@@ -2,6 +2,13 @@ defmodule BinStruct.Types.StaticValue do
 
   @moduledoc """
 
+
+  Static values are useful in case of clear declaration and validation in general
+  but super useful for dispatching variants dynamically. This behaviour will be explained more detail in variant_of docs section.
+
+  You don't need to pass static values when creating new struct and they are validated upon parsing.
+  Static values are not stored in any way but always inlined instead.
+
   ## Inline bytes
 
     ```
@@ -20,7 +27,7 @@ defmodule BinStruct.Types.StaticValue do
 
     ```
 
-  ## Inline String.t()
+  ## Inline String.t
 
     ```
 
