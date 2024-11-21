@@ -30,6 +30,79 @@ defmodule BinStruct do
       end
     ```
 
+
+    ## How to implement your protocol wrapping struct using higher order macro
+
+    Best way to implement wrapper is by creating  higher order macro which will create BinStruct for you
+
+    ```
+
+      defmodule PacketProtocolHeader do
+        use BinStruct
+        field :version, <<0>>
+        field :length, :uint32_be
+      end
+
+      defmodule Packet do
+
+        defmacro content(content_field_name, content_field_type, content_field_opts \\ []) do
+
+            quote do
+
+                use BinStruct
+
+                register_callback &header_builder/1,
+                                  [ { unquote(content_field_name), :field } ]
+
+                register_callback &content_length/1,
+                                  header: :field
+
+                field :header, PacketProtocolHeader, builder: &header_builder/1
+
+                field unquote(content_field_name), unquote(content_field_type),
+                      unquote_splicing( content_field_opts),
+                      length_by: &content_length/1
+
+                defp header_builder(content) do
+
+                  PacketProtocolHeader.new(%{
+                    length: unquote(content_field_type).size(content)
+                  })
+
+                end
+
+                defp content_length(header) do
+                  %{ length: length } = PacketProtocolHeader.decode(header)
+                  length
+                end
+
+              end
+
+        end
+
+      end
+    ```
+
+    And use it like:
+
+    ```
+
+      defmodule StructInsidePacket do
+        use BinStruct
+        field :data, :binary
+      end
+
+      defmodule StructInsidePacket.Packet do
+        use Packet
+        content :content, StructInsidePacket
+      end
+
+      StructInsidePacket.Packet.new(
+        content: StructInsidePacket.new(data: "123")
+      )
+
+    ```
+
   """
 
 
