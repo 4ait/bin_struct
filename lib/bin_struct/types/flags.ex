@@ -32,10 +32,10 @@ defmodule BinStruct.Types.Flags do
 
     ```
 
-    I found it's counterintuitively but preferred way to define enums using mask, not position.
+    I found it's counterintuitively but preferred way to define flags using mask, not position.
     You can change endianness from little to big and it will be work the same, automatically reversing all positions.
 
-    Below is to remember list of supported masks for developers. Library checks its valid mask,
+    Below is list of supported masks for developers to copy and paste from. Library checks its valid mask,
     (covering only 1 bit and never overlaps) so don't worry you will not be able to mistaken it.
 
     ```
