@@ -12,7 +12,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
            false -> 0
          end
 
-       <<integer_value::size(unquote(bit_size))-integer-big-unsigned>>
+       <<integer_value::unquote(bit_size)-integer-big-unsigned>>
      end
 
    end
@@ -154,7 +154,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_managed_to_unmanaged_uint_variable_bit_size_none(value_quoted, bit_size)  do
 
      quote do
-       <<unquote(value_quoted)::size(unquote(bit_size))-unsigned>>
+       <<unquote(value_quoted)::unquote(bit_size)-unsigned>>
      end
 
    end
@@ -162,7 +162,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_managed_to_unmanaged_uint_variable_bit_size_be(value_quoted, bit_size)  do
 
      quote do
-       <<unquote(value_quoted)::size(unquote(bit_size))-big-unsigned>>
+       <<unquote(value_quoted)::unquote(bit_size)-big-unsigned>>
      end
 
    end
@@ -170,7 +170,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_managed_to_unmanaged_uint_variable_bit_size_le(value_quoted, bit_size)  do
 
      quote do
-       <<unquote(value_quoted)::size(unquote(bit_size))-little-unsigned>>
+       <<unquote(value_quoted)::unquote(bit_size)-little-unsigned>>
      end
 
    end
@@ -178,14 +178,14 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_managed_to_unmanaged_int_variable_bit_size_none(value_quoted, bit_size)  do
 
      quote do
-       <<unquote(value_quoted)::size(unquote(bit_size))-signed>>
+       <<unquote(value_quoted)::unquote(bit_size)-signed>>
      end
    end
 
    def from_managed_to_unmanaged_int_variable_bit_size_be(value_quoted, bit_size)  do
 
      quote do
-       <<unquote(value_quoted)::size(unquote(bit_size))-big-signed>>
+       <<unquote(value_quoted)::unquote(bit_size)-big-signed>>
      end
 
    end
@@ -193,7 +193,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_managed_to_unmanaged_int_variable_bit_size_le(value_quoted, bit_size)  do
 
      quote do
-       <<unquote(value_quoted)::size(unquote(bit_size))-little-signed>>
+       <<unquote(value_quoted)::unquote(bit_size)-little-signed>>
      end
 
    end
@@ -202,7 +202,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
 
      quote do
 
-       <<integer_value::size(unquote(bit_size))-integer-big-unsigned>> = unquote(quoted_unmanaged_value)
+       <<integer_value::unquote(bit_size)-integer-big-unsigned>> = unquote(quoted_unmanaged_value)
        integer_value > 0
 
      end
@@ -381,7 +381,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_unmanaged_to_managed_uint_variable_bit_size_none(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
 
      quote do
-       <<value::size(unquote(bit_size))-unsigned>> = unquote(quoted_unmanaged_value)
+       <<value::unquote(bit_size)-unsigned>> = unquote(quoted_unmanaged_value)
        value
      end
 
@@ -390,7 +390,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_unmanaged_to_managed_uint_variable_bit_size_be(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
 
      quote do
-       <<value::size(bit_size)-big-unsigned>>  = unquote(quoted_unmanaged_value)
+       <<value::unquote(bit_size)-big-unsigned>>  = unquote(quoted_unmanaged_value)
        value
      end
 
@@ -399,7 +399,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_unmanaged_to_managed_uint_variable_bit_size_le(quoted_unmanaged_value, bit_size) when is_integer(bit_size)do
 
      quote do
-       <<value::size(bit_size)-little-unsigned>> = unquote(quoted_unmanaged_value)
+       <<value::unquote(bit_size)-little-unsigned>> = unquote(quoted_unmanaged_value)
        value
      end
 
@@ -408,7 +408,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_unmanaged_to_managed_int_variable_bit_size_none(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
 
      quote do
-       <<value::size(bit_size)>> = unquote(quoted_unmanaged_value)
+       <<value::unquote(bit_size)>> = unquote(quoted_unmanaged_value)
        value
      end
 
@@ -417,7 +417,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_unmanaged_to_managed_int_variable_bit_size_be(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
 
      quote do
-       <<value::size(bit_size)-big-signed>> = unquote(quoted_unmanaged_value)
+       <<value::unquote(bit_size)-big-signed>> = unquote(quoted_unmanaged_value)
        value
      end
 
@@ -426,7 +426,7 @@ defmodule BinStruct.Macro.TypeConverters.PrimitiveTypeConverter do
    def from_unmanaged_to_managed_int_variable_bit_size_le(quoted_unmanaged_value, bit_size) when is_integer(bit_size) do
 
      quote do
-       <<value::size(bit_size)-little-signed>> = unquote(quoted_unmanaged_value)
+       <<value::unquote(bit_size)-little-signed>> = unquote(quoted_unmanaged_value)
        value
      end
 

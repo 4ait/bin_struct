@@ -1,12 +1,14 @@
-defmodule BinStruct.Types.Uint16Be do
+defmodule BinStruct.Types.UintBe do
 
   @moduledoc """
+
+  ## Variable bit size
 
     ```
 
       iex> defmodule Struct do
       ...>   use BinStruct
-      ...>   field :value, :uint16_be
+      ...>   field :value, :uint_be, bits: 24
       ...> end
       ...>
       ...> Struct.new(value: 1)

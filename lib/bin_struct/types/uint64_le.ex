@@ -1,4 +1,4 @@
-defmodule BinStruct.Types.Uint16Be do
+defmodule BinStruct.Types.Uint64Le do
 
   @moduledoc """
 
@@ -6,7 +6,7 @@ defmodule BinStruct.Types.Uint16Be do
 
       iex> defmodule Struct do
       ...>   use BinStruct
-      ...>   field :value, :uint16_be
+      ...>   field :value, :uint64_le
       ...> end
       ...>
       ...> Struct.new(value: 1)

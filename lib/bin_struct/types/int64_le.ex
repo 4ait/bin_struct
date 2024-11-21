@@ -1,4 +1,4 @@
-defmodule BinStruct.Types.Uint16Be do
+defmodule BinStruct.Types.Int64Le do
 
   @moduledoc """
 
@@ -6,18 +6,19 @@ defmodule BinStruct.Types.Uint16Be do
 
       iex> defmodule Struct do
       ...>   use BinStruct
-      ...>   field :value, :uint16_be
+      ...>   field :value, :int64_le
       ...> end
       ...>
-      ...> Struct.new(value: 1)
+      ...> Struct.new(value: -1)
       ...> |> Struct.dump_binary()
       ...> |> Struct.parse()
       ...> |> then(fn {:ok, struct, _rest } -> struct end)
       ...> |> Struct.decode()
-      %{ value: 1 }
+      %{ value: -1 }
 
     ```
 
   """
+
 
 end
