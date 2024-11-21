@@ -2,11 +2,11 @@ defmodule BinStruct.Macro.ReceiveFunctions do
 
   @moduledoc false
 
-  def tpc_receive_function_known_size(known_size_bytes) do
+  def tpc_receive_function_known_size(known_size_bytes, enable_log_tcp) do
 
     quote do
 
-      unquote(try_parse_from_tcp_data_function())
+      unquote(try_parse_from_tcp_data_function(enable_log_tcp))
 
       def tcp_receive(tcp_socket, buffer \\ <<>>, options \\ nil) do
 
@@ -42,11 +42,11 @@ defmodule BinStruct.Macro.ReceiveFunctions do
 
   end
 
-  def tpc_receive_function_unknown_size() do
+  def tpc_receive_function_unknown_size(enable_log_tcp) do
 
     quote do
 
-      unquote(try_parse_from_tcp_data_function())
+      unquote(try_parse_from_tcp_data_function(enable_log_tcp))
 
       def tcp_receive(tcp_socket, buffer \\ <<>>, options \\ nil) do
 
@@ -90,11 +90,11 @@ defmodule BinStruct.Macro.ReceiveFunctions do
 
   end
 
-  def tls_receive_function_known_size(known_size_bytes) do
+  def tls_receive_function_known_size(known_size_bytes, enable_log_tls) do
 
     quote do
 
-      unquote(try_parse_from_tls_data_function())
+      unquote(try_parse_from_tls_data_function(enable_log_tls))
 
       def tls_receive(tcp_socket, buffer \\ <<>>, options \\ nil) do
 
@@ -130,11 +130,11 @@ defmodule BinStruct.Macro.ReceiveFunctions do
 
   end
 
-  def tls_receive_function_unknown_size() do
+  def tls_receive_function_unknown_size(enable_log_tls) do
 
     quote do
 
-      unquote(try_parse_from_tls_data_function())
+      unquote(try_parse_from_tls_data_function(enable_log_tls))
 
       def tls_receive(tcp_socket, buffer \\ <<>>, options \\ nil) do
 
@@ -179,19 +179,45 @@ defmodule BinStruct.Macro.ReceiveFunctions do
   end
 
 
-  defp try_parse_from_tcp_data_function() do
+  defp try_parse_from_tcp_data_function(enable_log_tcp) do
 
     quote do
 
       defp try_parse_from_tcp_data(bin, options) do
 
-        Logger.debug("Receive TCP #{String.trim_leading("#{__MODULE__}", "Elixir.")}: #{inspect(bin, limit: :infinity)}", ansi_color: :green)
+
+        unquote_splicing(
+          case enable_log_tcp do
+            true ->
+
+              [
+                quote do
+                  Logger.debug("Receive TCP #{String.trim_leading("#{__MODULE__}", "Elixir.")}: #{inspect(bin, limit: :infinity)}", ansi_color: :green)
+                end
+              ]
+
+            false -> []
+          end
+        )
 
         case __MODULE__.parse(bin, options) do
 
           {:ok, struct, rest }  ->
 
-            Logger.debug("Created struct %#{String.trim_leading("#{__MODULE__}", "Elixir.")}{}", ansi_color: :green)
+            unquote_splicing(
+              case enable_log_tcp do
+                true ->
+
+                  [
+                    quote do
+                      Logger.debug("Created struct %#{String.trim_leading("#{__MODULE__}", "Elixir.")}{}", ansi_color: :green)
+                    end
+                  ]
+
+                false -> []
+              end
+            )
+
 
             {:ok, struct, rest }
 
@@ -205,19 +231,46 @@ defmodule BinStruct.Macro.ReceiveFunctions do
 
   end
 
-  defp try_parse_from_tls_data_function() do
+  defp try_parse_from_tls_data_function(enable_log_tls) do
 
     quote do
 
       defp try_parse_from_tls_data(bin, options) do
 
-        Logger.debug("Receive TLS #{String.trim_leading("#{__MODULE__}", "Elixir.")}: #{inspect(bin, limit: :infinity)}", ansi_color: :light_green)
+
+        unquote_splicing(
+          case enable_log_tls do
+            true ->
+
+              [
+                quote do
+                  Logger.debug("Receive TLS #{String.trim_leading("#{__MODULE__}", "Elixir.")}: #{inspect(bin, limit: :infinity)}", ansi_color: :light_green)
+                end
+              ]
+
+            false -> []
+          end
+        )
 
         case __MODULE__.parse(bin, options) do
 
           {:ok, struct, rest } ->
 
-            Logger.debug("Created struct %#{String.trim_leading("#{__MODULE__}", "Elixir.")}{}", ansi_color: :light_green)
+
+            unquote_splicing(
+              case enable_log_tls do
+                true ->
+
+                  [
+                    quote do
+                      Logger.debug("Created struct %#{String.trim_leading("#{__MODULE__}", "Elixir.")}{}", ansi_color: :light_green)
+                    end
+                  ]
+
+                false -> []
+              end
+            )
+
 
             {:ok, struct, rest }
 

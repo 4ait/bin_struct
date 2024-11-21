@@ -255,15 +255,17 @@ defmodule BinStruct do
 
     define_receive_send_tcp = Application.get_env(:bin_struct, :define_receive_send_tcp, true)
     define_receive_send_tls = Application.get_env(:bin_struct, :define_receive_send_tls, true)
+    enable_log_tcp = Application.get_env(:bin_struct, :enable_log_tcp, true)
+    enable_log_tls = Application.get_env(:bin_struct, :enable_log_tls, true)
 
     maybe_send = [
 
       (if define_receive_send_tcp do
-        BinStruct.Macro.SendFunctions.tcp_send()
+        BinStruct.Macro.SendFunctions.tcp_send(enable_log_tcp)
       end),
 
       (if define_receive_send_tls do
-         BinStruct.Macro.SendFunctions.tls_send()
+         BinStruct.Macro.SendFunctions.tls_send(enable_log_tls)
        end)
 
     ] |> Enum.reject(&is_nil/1)
@@ -278,11 +280,11 @@ defmodule BinStruct do
 
           [
             (if define_receive_send_tcp do
-              BinStruct.Macro.ReceiveFunctions.tpc_receive_function_known_size(known_total_size_bytes)
+              BinStruct.Macro.ReceiveFunctions.tpc_receive_function_known_size(known_total_size_bytes, enable_log_tcp)
             end),
 
             (if define_receive_send_tls do
-               BinStruct.Macro.ReceiveFunctions.tls_receive_function_known_size(known_total_size_bytes)
+               BinStruct.Macro.ReceiveFunctions.tls_receive_function_known_size(known_total_size_bytes, enable_log_tls)
              end)
           ] |> Enum.reject(&is_nil/1)
 
@@ -290,11 +292,11 @@ defmodule BinStruct do
 
           [
             (if define_receive_send_tcp do
-               BinStruct.Macro.ReceiveFunctions.tpc_receive_function_unknown_size()
+               BinStruct.Macro.ReceiveFunctions.tpc_receive_function_unknown_size(enable_log_tcp)
              end),
 
             (if define_receive_send_tls do
-               BinStruct.Macro.ReceiveFunctions.tls_receive_function_unknown_size()
+               BinStruct.Macro.ReceiveFunctions.tls_receive_function_unknown_size(enable_log_tls)
              end)
 
           ] |> Enum.reject(&is_nil/1)
