@@ -35,75 +35,79 @@ defmodule BinStruct do
 
     Best way to implement wrapper is by creating  higher order macro which will create BinStruct for you
 
+  ```
+
+      iex> defmodule PacketProtocolHeader do
+      ...>   use BinStruct
+      ...>   field :version, <<0>>
+      ...>   field :length, :uint32_be
+      ...> end
+      ...>
+      ...> defmodule Packet do
+      ...>
+      ...>  defmacro __using__(_opts) do
+      ...>
+      ...>    quote do
+      ...>      import Packet
+      ...>    end
+      ...>
+      ...>  end
+      ...>
+      ...>   defmacro content(content_field_name, content_field_type) do
+      ...>     quote do
+      ...>       use BinStruct
+      ...>
+      ...>       # Register callbacks for dynamic fields
+      ...>       register_callback &header_builder/1,
+      ...>                        [{unquote(content_field_name), :field}]
+      ...>       register_callback &content_length/1, header: :field
+      ...>
+      ...>       # Define the header field
+      ...>       field :header, PacketProtocolHeader, builder: &header_builder/1
+      ...>
+      ...>       # Define the content field with length_by
+      ...>       field unquote(content_field_name), unquote(content_field_type),
+      ...>             length_by: &content_length/1
+      ...>
+      ...>       # Callback to build the header dynamically
+      ...>       defp header_builder(content) do
+      ...>         PacketProtocolHeader.new(%{
+      ...>           length: unquote(content_field_type).size(content)
+      ...>         })
+      ...>       end
+      ...>
+      ...>       # Callback to calculate content length from the header
+      ...>       defp content_length(header) do
+      ...>         %{length: length} = PacketProtocolHeader.decode(header)
+      ...>         length
+      ...>       end
+      ...>     end
+      ...>   end
+      ...> end
+      ...>
+      ...> defmodule StructInsidePacket do
+      ...>   use BinStruct
+      ...>   field :data, :binary
+      ...> end
+      ...>
+      ...> defmodule StructInsidePacket.Packet do
+      ...>   use Packet
+      ...>   content :content, StructInsidePacket
+      ...> end
+      ...>
+      ...> packet = StructInsidePacket.Packet.new(
+      ...>   content: StructInsidePacket.new(data: "123")
+      ...> )
+      ...>
+      ...> binary = StructInsidePacket.Packet.dump_binary(packet)
+      ...> {:ok, packet, _rest} = StructInsidePacket.Packet.parse(binary)
+      ...> %{ content: content } = StructInsidePacket.Packet.decode(packet)
+      ...> StructInsidePacket.decode(content)
+      %{ data: "123" }
+
     ```
 
-      defmodule PacketProtocolHeader do
-        use BinStruct
-        field :version, <<0>>
-        field :length, :uint32_be
-      end
-
-      defmodule Packet do
-
-        defmacro content(content_field_name, content_field_type, content_field_opts \\ []) do
-
-            quote do
-
-                use BinStruct
-
-                register_callback &header_builder/1,
-                                  [ { unquote(content_field_name), :field } ]
-
-                register_callback &content_length/1,
-                                  header: :field
-
-                field :header, PacketProtocolHeader, builder: &header_builder/1
-
-                field unquote(content_field_name), unquote(content_field_type),
-                      unquote_splicing( content_field_opts),
-                      length_by: &content_length/1
-
-                defp header_builder(content) do
-
-                  PacketProtocolHeader.new(%{
-                    length: unquote(content_field_type).size(content)
-                  })
-
-                end
-
-                defp content_length(header) do
-                  %{ length: length } = PacketProtocolHeader.decode(header)
-                  length
-                end
-
-              end
-
-        end
-
-      end
-    ```
-
-    And now you can use it like this:
-
-    ```
-
-      defmodule StructInsidePacket do
-        use BinStruct
-        field :data, :binary
-      end
-
-      defmodule StructInsidePacket.Packet do
-        use Packet
-        content :content, StructInsidePacket
-      end
-
-      StructInsidePacket.Packet.new(
-        content: StructInsidePacket.new(data: "123")
-      )
-
-    ```
-
-    it will set length for content automatically for now, and if your packet has required info for parsing
+    it will set length for content automatically for now, and if your packet has required info to be used inside parsing tree
     you can always later implement some BinStructOptionsInterface for header and this context will be available
     as simple as ..register_callback.., some_option_from_header: { type: :option, interface: PacketProtocolHeader } from any struct in tree
 
@@ -133,9 +137,6 @@ defmodule BinStruct do
 
   ## Examples
 
-      iex> MyApp.Hello.world(:john)
-      :ok
-
   """
 
   defmacro virtual(name, type, opts \\ []) do
@@ -149,9 +150,6 @@ defmodule BinStruct do
   @doc """
 
   ## Examples
-
-      iex> MyApp.Hello.world(:john)
-      :ok
 
   """
 
@@ -167,9 +165,6 @@ defmodule BinStruct do
 
   ## Examples
 
-      iex> MyApp.Hello.world(:john)
-      :ok
-
   """
 
   defmacro register_option(name, parameters \\ []) do
@@ -182,9 +177,6 @@ defmodule BinStruct do
   @doc """
 
   ## Examples
-
-      iex> MyApp.Hello.world(:john)
-      :ok
 
   """
 
@@ -199,9 +191,6 @@ defmodule BinStruct do
   @doc """
 
   ## Examples
-
-      iex> MyApp.Hello.world(:john)
-      :ok
 
   """
 
