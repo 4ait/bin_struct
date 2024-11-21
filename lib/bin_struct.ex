@@ -191,6 +191,13 @@ defmodule BinStruct do
       4. decode/2
       4. new/1
 
+  In additional with configuration it supports for now:
+
+      tls_receive()
+      tls_send()
+      tcp_receive()
+      tcp_send()
+
   """
 
   defmacro field(name, type, opts \\ []) do
