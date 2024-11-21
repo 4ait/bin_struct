@@ -178,6 +178,18 @@ defmodule BinStruct do
 
   ```
 
+  As you can see from example on above parsed structs and newly created are always equal thanks to intermediate type conversion called 'unmanaged'.
+  It's neither binary or managed and you are not suppose to work with it directly, by any type (including custom types) can perform
+  automatic type conversion between 'binary', 'managed' and 'unmanaged' on developer request (using registered_callback api)
+
+  BinStruct will automatically generate set if functions for you:
+
+      1. dump_binary/1
+      2. size/1
+      3. parse/2 will be present if is terminated (have rules defined to be parsed into finite struct from infinity bytestream)
+      4. parse_exact/2
+      4. decode/2
+      4. new/1
 
   """
 
