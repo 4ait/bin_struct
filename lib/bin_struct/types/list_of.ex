@@ -11,18 +11,20 @@ defmodule BinStruct.Types.ListOf do
   Item size will be inferred if possible in case its primitive with known size or module with known_total_size_bytes
 
   ```
-      defmodule ListStruct do
-        use BinStruct
-        field :items, { :list_of, :uint32_be }, count: 2
-      end
-  ```
 
-  ```
-      defmodule ListStruct do
-        use BinStruct
-        field :items, { :list_of, :uint32_be }, length: 8
-      end
-  ```
+      iex> defmodule CompileTimeKnownStruct do
+      ...>   use BinStruct
+      ...>   field :items, { :list_of, :uint32_be }, count: 2
+      ...> end
+      ...>
+      ...> CompileTimeKnownStruct.new(items: [ 1, 2 ])
+      ...> |> CompileTimeKnownStruct.dump_binary()
+      ...> |> CompileTimeKnownStruct.parse()
+      ...> |> then(fn {:ok, struct, _rest } -> struct end)
+      ...> |> CompileTimeKnownStruct.decode()
+      %{ items: [ 1, 2 ] }
+
+    ```
 
 
   ## With runtime known bounds
@@ -31,17 +33,26 @@ defmodule BinStruct.Types.ListOf do
 
   Overhead of dynamic bounds comparing to known in compile time almost negligible
 
+
   ```
-      defmodule ListStruct do
-        use BinStruct
 
-        register_callback &count/0
+      iex> defmodule RuntimeStruct do
+      ...>   use BinStruct
+      ...>
+      ...>   register_callback &count/0
+      ...>
+      ...>   field :items, { :list_of, :uint32_be }, count_by: &count/0
+      ...>
+      ...>   defp count(), do: 2
+      ...> end
+      ...>
+      ...> RuntimeStruct.new(items: [ 1, 2 ])
+      ...> |> RuntimeStruct.dump_binary()
+      ...> |> RuntimeStruct.parse()
+      ...> |> then(fn {:ok, struct, _rest } -> struct end)
+      ...> |> RuntimeStruct.decode()
+      %{ items: [ 1, 2 ] }
 
-        field :items, { :list_of, :uint32_be }, count_by: &count/0
-
-        defp count(), do: 2
-
-      end
   ```
 
   ## With only one criteria known
@@ -52,84 +63,98 @@ defmodule BinStruct.Types.ListOf do
 
   So in case to parse this struct caller (manually called by user or nested in another BinStruct) should provide finite input.
 
-    ```
-      defmodule ListStruct do
-        use BinStruct
-        field :items, { :list_of, :uint32_be }
-      end
+  ```
+
+      iex> defmodule OnlyItemSizeCriteriaStruct do
+      ...>   use BinStruct
+      ...>   field :items, { :list_of, :uint32_be }
+      ...> end
+      ...>
+      ...> OnlyItemSizeCriteriaStruct.new(items: [ 1, 2 ])
+      ...> |> OnlyItemSizeCriteriaStruct.dump_binary()
+      ...> |> OnlyItemSizeCriteriaStruct.parse_exact()
+      ...> |> then(fn {:ok, struct } -> struct end)
+      ...> |> OnlyItemSizeCriteriaStruct.decode()
+      %{ items: [ 1, 2 ] }
+
   ```
 
   ## Without any bounds criteria
 
 
-      It's still possible to parse struct even then we are not know about its size anything, for example
+    It's still possible to parse struct even then we are not know about its size anything, for example
 
     ```
 
-      defmodule Item do
-        use BinStruct
-
-        register_callback &len_by/1, len: :field
-
-        field :len, :uint16_be
-        field :value, :binary, length_by: &len_by/1
-
-        defp len_by(len), do: len
-
-      end
-
-      defmodule ListStruct do
-        use BinStruct
-        field :items, Item
-      end
+        iex> defmodule Item do
+        ...>   use BinStruct
+        ...>
+        ...>   register_callback &len_by/1, len: :field
+        ...>
+        ...>   field :len, :uint16_be
+        ...>   field :value, :binary, length_by: &len_by/1
+        ...>
+        ...>   defp len_by(len), do: len
+        ...> end
+        ...>
+        ...> defmodule WithoutBoundsStruct do
+        ...>   use BinStruct
+        ...>   field :items, { :list_of, Item }
+        ...> end
+        ...>
+        ...> WithoutBoundsStruct.new(items: [ Item.new(len: 1, value: "A"), Item.new(len: 1, value: "B"), Item.new(len: 1, value: "C") ])
+        ...> |> WithoutBoundsStruct.dump_binary()
+        ...> |> WithoutBoundsStruct.parse_exact()
+        ...> |> then(fn {:ok, struct } -> struct end)
+        ...> |> WithoutBoundsStruct.decode()
+        %{ items: [ Item.new(len: 1, value: "A"), Item.new(len: 1, value: "B"), Item.new(len: 1, value: "C") ] }
 
     ```
-
-      You can parse as much items such items as it in finite bytes source using parse_exact/2
 
 
   ## With manual selection upon dynamic criteria
 
 
-      We can restrict example from "Without any bounds criteria" even future using take_while_by callback to any dynamic criteria
+  We can restrict example from "Without any bounds criteria" even future using take_while_by callback to any dynamic criteria
+
+  ```
+
+        iex> defmodule TakeWhileExampleItem do
+        ...>   use BinStruct
+        ...>
+        ...>   register_callback &len_by/1, len: :field
+        ...>
+        ...>   field :len, :uint16_be
+        ...>   field :value, :binary, length_by: &len_by/1
+        ...>
+        ...>   defp len_by(len), do: len
+        ...> end
+        ...>
+        ...> defmodule WithTakeWhileByStruct do
+        ...>   use BinStruct
+        ...>
+        ...>   register_callback &take_while_by/1, items: :field
+        ...>
+        ...>   field :items, { :list_of, TakeWhileExampleItem }, take_while_by: &take_while_by/1
+        ...>
+        ...>   defp take_while_by(items) do
+        ...>
+        ...>    [ current_item | _previous_items ] = items
+        ...>    case TakeWhileExampleItem.decode(current_item) do
+        ...>      %{ value: "C" } -> :halt
+        ...>      _ -> :cont
+        ...>    end
+        ...>   end
+        ...> end
+        ...>
+        ...> WithTakeWhileByStruct.new(items: [ TakeWhileExampleItem.new(len: 1, value: "A"), TakeWhileExampleItem.new(len: 1, value: "B"), TakeWhileExampleItem.new(len: 1, value: "C") ])
+        ...> |> WithTakeWhileByStruct.dump_binary()
+        ...> |> WithTakeWhileByStruct.parse()
+        ...> |> then(fn {:ok, struct, _rest } -> struct end)
+        ...> |> WithTakeWhileByStruct.decode()
+        %{ items: [ TakeWhileExampleItem.new(len: 1, value: "A"), TakeWhileExampleItem.new(len: 1, value: "B"), TakeWhileExampleItem.new(len: 1, value: "C") ] }
 
     ```
-
-      defmodule Item do
-        use BinStruct
-
-        register_callback &len_by/1, len: :field
-
-        field :len, :uint16_be
-        field :value, :binary, length_by: &len_by/1
-
-        defp len_by(len), do: len
-
-      end
-
-      defmodule ListStruct do
-        use BinStruct
-
-        register_callback &take_while_by/1, items: :field
-
-        field :items, Item, take_while_by: &take_while_by/1
-
-
-        defp take_while_by(items) do
-
-          [ current_item | previous_items ] = items
-
-          case Item.decode(current_item) do
-            %{ value: "magic value to stop" } -> :halt
-            _ -> :cont
-          end
-
-        end
-
-      end
-
-    ```
-
 
     Now struct can be parsed from infinity bytestream (parse/2 function will be available)
 
@@ -145,7 +170,7 @@ defmodule BinStruct.Types.ListOf do
 
   ## Future exploring
 
-      Most detailed behaviours can be found in test modules in BinStructTest.ListOfTests.*
+  Most detailed behaviours can be found in test modules in BinStructTest.ListOfTests.*
 
   """
 
