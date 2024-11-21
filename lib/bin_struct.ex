@@ -151,6 +151,34 @@ defmodule BinStruct do
 
   ## Examples
 
+
+  Field is main building block for shape of your binary data you are working with.
+
+  field/3 expected you to pass name and type of your field. Supported types can be found in bin_struct/types.
+  In additional you can pass another BinStruct itself and BinStructCustomType as type.
+
+  ```
+
+   iex> defmodule SimpleChildStruct do
+   ...>  use BinStruct
+   ...>  field :data, :uint8
+   ...> end
+   ...>
+   ...> defmodule SimpleStructWithChild do
+   ...>   use BinStruct
+   ...>   field :child, SimpleChildStruct
+   ...> end
+   ...>
+   ...> SimpleStructWithChild.new(child: SimpleChildStruct.new(data: 1))
+   ...> |> SimpleStructWithChild.dump_binary()
+   ...> |> SimpleStructWithChild.parse()
+   ...> |> then(fn {:ok, struct, _rest } -> struct end)
+   ...> |> SimpleStructWithChild.decode()
+   %{ child: SimpleChildStruct.new(data: 1) }
+
+  ```
+
+
   """
 
   defmacro field(name, type, opts \\ []) do
