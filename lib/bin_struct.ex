@@ -31,7 +31,7 @@ defmodule BinStruct do
     ```
 
 
-    ## How to implement your protocol wrapping struct using higher order macro
+  ## How to implement your protocol wrapping struct using higher order macro
 
     Best way to implement wrapper is by creating  higher order macro which will create BinStruct for you
 
@@ -83,7 +83,7 @@ defmodule BinStruct do
       end
     ```
 
-    And use it like:
+    And now you can use it like this:
 
     ```
 
@@ -102,6 +102,10 @@ defmodule BinStruct do
       )
 
     ```
+
+    it will set length for content automatically for now, and if your packet has required info for parsing
+    you can always later implement some BinStructOptionsInterface for header and this context will be available
+    as simple as ..register_callback.., some_option_from_header: { type: :option, interface: PacketProtocolHeader } from any struct in tree
 
   """
 
