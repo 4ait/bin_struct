@@ -79,3 +79,11 @@ Comprehensive documentation is available online:
 [BinStruct Docs](https://hexdocs.pm/bin_struct)
 
 ---
+
+## Development
+
+there is module_code/0 function for module applied use macro to (BinStruct, BinStructCustomType and BinStructOptionsInterface) 
+which will show for you all generated code.
+
+---
+
