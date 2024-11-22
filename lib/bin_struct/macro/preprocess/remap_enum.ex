@@ -15,12 +15,22 @@ defmodule BinStruct.Macro.Preprocess.RemapEnum do
     values =
       Enum.map(
         enum_values,
-        fn { enum_value, enum_name } ->
+        fn enum_def ->
 
-          %{
-            enum_value: enum_value,
-            enum_name: enum_name
-          }
+          case enum_def do
+
+            { enum_value, enum_name } ->
+              %{
+                enum_value: enum_value,
+                enum_name: enum_name
+              }
+
+            enum_value when is_binary(enum_value) ->
+              %{
+                enum_value: enum_value,
+                enum_name: enum_value
+              }
+          end
 
         end
       )
