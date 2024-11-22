@@ -5,16 +5,17 @@ defmodule BinStruct.Types.VariantOf do
   VariantOf is way to select from two or more variants in runtime.
 
 
-  Dispatching using 2 source of tools:
+  Dispatching performed using below sources:
 
     1. Performing dynamic variant dispatching using static values as source of determination validness at first place
-    2. More complex dispatching available through dynamic callback named validate_by
+    2. Performing dynamic variant dispatching using static values in enum declarations
+    3. More complex dispatching available through dynamic callback named validate_by
 
   BinStruct will select first valid matching variant out of list. In case none is currently can be selected and
   there is not_enough_bytes to check next it will return not_enough_bytes
 
 
-  ## Static dispatch
+  ## Static dispatch static value
 
     ```
 
@@ -39,6 +40,46 @@ defmodule BinStruct.Types.VariantOf do
       ...> |> then(fn {:ok, struct, _rest } -> struct end)
       ...> |> StructWithStaticVariants.decode()
       %{ one_of_other: VariantB.new() }
+
+    ```
+
+
+
+  ## Static enum
+
+    ```
+
+      iex> defmodule KnownVariant do
+      ...>   use BinStruct
+      ...>
+      ...>   field :type, {
+      ...>     :enum,
+      ...>     %{
+      ...>         type: :binary,
+      ...>         values: [
+      ...>           "IHDR",
+      ...>           "IEND",
+      ...>         ]
+      ...>     }
+      ...>    }, length: 4
+      ...> end
+      ...>
+      ...> defmodule UnknownVariant do
+      ...>   use BinStruct
+      ...>   field :type, :binary, length: 4
+      ...> end
+      ...>
+      ...> defmodule StructWithEnumVariants do
+      ...>   use BinStruct
+      ...>   field :one_of_other, { :variant_of, [ KnownVariant, UnknownVariant ] }
+      ...> end
+      ...>
+      ...> StructWithEnumVariants.new(one_of_other: UnknownVariant.new(type: "1234"))
+      ...> |> StructWithEnumVariants.dump_binary()
+      ...> |> StructWithEnumVariants.parse()
+      ...> |> then(fn {:ok, struct, _rest } -> struct end)
+      ...> |> StructWithEnumVariants.decode()
+      %{ one_of_other: UnknownVariant.new(type: "1234") }
 
     ```
 

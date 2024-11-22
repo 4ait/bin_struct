@@ -1,4 +1,4 @@
-defmodule BinStructTest.EnumsTests.DeclaredEnumTest do
+defmodule BinStructTest.EnumsTests.NonExistingEnumValueTest do
 
   use ExUnit.Case
 
