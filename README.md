@@ -87,9 +87,44 @@ Comprehensive documentation is available online:
 
 ---
 
+## Development Notes
+
+I expect developing cycle of this library to be in iterative manner. 
+
+It was not the same long ago then it was firstly developed for running one of our product.
+
+Then it adapted for requirements of another products and so on.
+
+So it's in first place is production grade library, not an experimental one. 
+
+Many can find redundancy in syntax and lack of shortcuts, this is expected. 
+
+General structure will help in future to implement and optimize more features required for more complex products.
+
+---
+
 ## Development
 
-Later..
+There is such tools as
+
+```elixir
+  BinStruct.Macro.MacroDebug.puts_code/1
+```
+
+```elixir
+  BinStruct.Macro.Parse.ParseTopologyDebug.print_topology/2
+```
+
+which may help in complex situations while developing, optimizing or generated code is not compiling.
+
+
+---
+
+## Testing
+
+```sh
+mix test
+```
 
 ---
 
