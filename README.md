@@ -95,7 +95,7 @@ It was not the same long ago then it was firstly developed for running one of ou
 
 Then it adapted for requirements of another products and so on.
 
-So it's in first place is production grade library, not an experimental one. 
+So it's in first place is production grade library, not an abstract or experimental one. 
 
 Many can find redundancy in syntax and lack of shortcuts, this is expected. 
 
@@ -107,16 +107,10 @@ General structure will help in future to implement and optimize more features re
 
 There is such tools as
 
-```elixir
-  BinStruct.Macro.MacroDebug.puts_code/1
-```
-
-```elixir
-  BinStruct.Macro.Parse.ParseTopologyDebug.print_topology/2
-```
+  1. BinStruct.Macro.MacroDebug.puts_code/1
+  2. BinStruct.Macro.Parse.ParseTopologyDebug.print_topology/2
 
 which may help in complex situations while developing, optimizing or generated code is not compiling.
-
 
 ---
 
