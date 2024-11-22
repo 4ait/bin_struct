@@ -177,6 +177,8 @@ defmodule Png do
 
 end
 
+#Automatic length and crc calculating skipped as its out of topic of this example
+#But could be easy added with builder callbacks to make those structures modifiable and serializable after modifications with ease
 
 elixir_png_file_binary = File.read!("examples/Elixir.png")
 
