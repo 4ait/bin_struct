@@ -11,6 +11,7 @@ defmodule BinStruct.MixProject do
       deps: deps(),
       erlc_paths: maybe_add_test_erlc_path([]),
       package: package(),
+      description: description(),
     ]
   end
 
@@ -37,6 +38,10 @@ defmodule BinStruct.MixProject do
       erlc_paths
     end
 
+  end
+
+  defp description() do
+    "BinStruct is a library which provides you rich set of tools for parsing/encoding binaries"
   end
 
   defp package() do

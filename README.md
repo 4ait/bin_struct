@@ -1,10 +1,11 @@
 # BinStruct
 
-BinStruct is a library which provides you rich set of tools for manipulating with binaries.
-The goal is write declarations, which is readable now and will be readable even after years.
+BinStruct is a library which provides you rich set of tools for parsing/encoding binaries.
+
+The goal is write declarations, which is readable now and will stay readable for years.
 You can expect your actual code be more like page from protocol documentation.
 
-Most benefit you will get if bidirectional data flow is what you need.
+The library is particularly beneficial if you require bidirectional data flow.
 
 ## Installation
 
