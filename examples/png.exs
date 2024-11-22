@@ -187,3 +187,11 @@ IO.inspect(parsed_struct)
 [ first_chunk | _rest ] = parsed_struct.chunks
 
 IHDRChunk.decode(first_chunk.chunk) |> IO.inspect()
+
+png_struct_converted_back_to_binary = Png.dump_binary(parsed_struct)
+
+if png_struct_converted_back_to_binary == elixir_png_file_binary do
+  IO.puts("Input binary and output binaries are equal!")
+else
+  raise "Input binary and output binaries does no match"
+end
