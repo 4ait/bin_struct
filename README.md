@@ -47,6 +47,13 @@ For further insights, check out the `test/` folder, where you can explore the li
 
 ---
 
+## View generated code
+
+there is module_code/0 function for any module with applied use macro to (BinStruct, BinStructCustomType or BinStructOptionsInterface)
+which will show for you all generated code.
+
+---
+
 ## Configuration
 
 You can configure `BinStruct` by adding the following to your `config.exs` file:
@@ -82,8 +89,7 @@ Comprehensive documentation is available online:
 
 ## Development
 
-there is module_code/0 function for module applied use macro to (BinStruct, BinStructCustomType and BinStructOptionsInterface) 
-which will show for you all generated code.
+Later..
 
 ---
 
