@@ -4,8 +4,11 @@ defmodule BinStruct.PrimitiveEncoder do
 
     Useful in registered_callbacks when library can't achieve automatic type conversion.
 
-    ```
-      <<1>> = BinStruct.PrimitiveEncoder.uint8(1)
+     ```
+
+      iex>  BinStruct.PrimitiveEncoder.uint8(0)
+      <<0>>
+
     ```
 
   """

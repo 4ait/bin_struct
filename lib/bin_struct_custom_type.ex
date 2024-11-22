@@ -69,10 +69,11 @@ defmodule BinStructCustomType do
 
   @doc """
 
-  ## Examples
+      Called in module with use BinStructCustomType defined will register option with given name.
 
-      iex> MyApp.Hello.world(:john)
-      :ok
+      It can be created using option_(your_option_name)(value) generated function.
+
+      Options can be requested with registered_callback using name_of_opt: { type: :option, interface: YourCustomTypeModule }
 
   """
 

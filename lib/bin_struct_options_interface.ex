@@ -4,15 +4,19 @@ defmodule BinStructOptionsInterface do
 
     ```
 
-      defmodule SharedOptions do
-
-        use BinStructOptionsInterface
-
-        @type runtime_context :: :context_a | :context_b
-
-        register_option :runtime_context
-
-      end
+      iex> defmodule SharedOptions do
+      ...>   use BinStructOptionsInterface
+      ...>
+      ...>   @type runtime_context1 :: :context_a
+      ...>   @type runtime_context2 :: :context_b
+      ...>
+      ...>   register_option :runtime_context1
+      ...>   register_option :runtime_context2
+      ...>
+      ...> end
+      ...>
+      ...> SharedOptions.option_runtime_context1(:context_a)
+      ...> |> SharedOptions.option_runtime_context2(:context_b)
 
     ```
 
@@ -36,10 +40,11 @@ defmodule BinStructOptionsInterface do
 
   @doc """
 
-  ## Examples
+      Called in module with use BinStructOptionsInterface defined will register option with given name.
 
-      iex> MyApp.Hello.world(:john)
-      :ok
+      It can be created using option_(your_option_name)(value) generated function
+
+      Options can be requested with registered_callback using name_of_opt: { type: :option, interface: YourInterfaceModule }
 
   """
 

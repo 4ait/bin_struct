@@ -4,14 +4,12 @@ defmodule BinStruct.EnumVariantNameByValue do
 
     Useful in registered_callbacks when library can't achieve automatic type conversion.
 
+
     ```
 
-      enum = [
-          { 0x01, :a },
-          { 0x02, :b }
-        ]
-
-      :a = BinStruct.EnumVariantNameByValue.find_enum_variant_name_by_value(enum, 0x01)
+      iex> enum = [ { 0x01, :a }, { 0x02, :b } ]
+      ...>  BinStruct.EnumVariantNameByValue.find_enum_variant_name_by_value(enum, 0x01)
+      :a
 
     ```
 

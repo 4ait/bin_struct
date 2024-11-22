@@ -2,33 +2,78 @@ defmodule BinStruct do
 
   @moduledoc """
 
-    BinStruct is main builder block for this library.
+  ## BinStruct
 
-    Generated functions you can use:
+  BinStruct is main builder block for this library.
 
-      dump_binary/1
-      size/1
+  ## Configuration
 
-      parse/2
-        optionally will be generated if BinStruct is terminated (have rules defined to be parsed into finite struct from infinity bytestream)
+    tls implemented using :ssl application
 
-      parse_exact/2
-      decode/2
-
-    BinStruct itself is valid type for field, allowing nesting
-
-    Here’s an example:
+    disable it or add ssl to list of extra_applications
 
     ```
-      defmodule Child do
-        use BinStruct
+
+      def application do
+        [
+          extra_applications: [:ssl]
+        ]
       end
 
-      defmodule Struct do
-        use BinStruct
-        field :child, Child
-      end
     ```
+
+    ```
+
+      config :bin_struct,
+        define_receive_send_tcp: true,
+        define_receive_send_tls: true,
+        enable_log_tcp: true,
+        enable_log_tls: true
+
+    ```
+
+  ## Overview
+
+    ```
+
+     iex> defmodule SimpleChildStruct do
+     ...>  use BinStruct
+     ...>  field :data, :uint8
+     ...> end
+     ...>
+     ...> defmodule SimpleStructWithChild do
+     ...>   use BinStruct
+     ...>   field :child, SimpleChildStruct
+     ...> end
+     ...>
+     ...> SimpleStructWithChild.new(child: SimpleChildStruct.new(data: 1))
+     ...> |> SimpleStructWithChild.dump_binary()
+     ...> |> SimpleStructWithChild.parse()
+     ...> |> then(fn {:ok, struct, _rest } -> struct end)
+     ...> |> SimpleStructWithChild.decode()
+     %{ child: SimpleChildStruct.new(data: 1) }
+
+    ```
+
+    As you can see from example on above parsed structs and newly created are always equal thanks to intermediate type conversion called 'unmanaged'.
+    It's neither binary or managed and you are not suppose to work with it directly, by any type (including custom types) can perform
+    automatic type conversion between 'binary', 'managed' and 'unmanaged' on developer request (using registered_callback api)
+
+    BinStruct will automatically generate set if functions for you:
+
+        1. dump_binary/1
+        2. size/1
+        3. parse/2 will be present if is terminated (have rules defined to be parsed into finite struct from infinity bytestream)
+        4. parse_exact/2
+        4. decode/2
+        4. new/1
+
+    In additional with configuration it supports for now:
+
+        tls_receive()
+        tls_send()
+        tcp_receive()
+        tcp_send()
 
 
   ## How to implement your protocol wrapping struct using higher order macro
@@ -113,7 +158,6 @@ defmodule BinStruct do
 
   """
 
-
   alias BinStruct.Macro.Preprocess.Remap
 
   defmacro __using__(_opts) do
@@ -149,54 +193,59 @@ defmodule BinStruct do
 
   @doc """
 
-  ## Examples
-
-
-  Field is main building block for shape of your binary data you are working with.
+  With fields you are building the shape of your binary data.
 
   field/3 expected you to pass name and type of your field. Supported types can be found in bin_struct/types.
   In additional you can pass another BinStruct itself and BinStructCustomType as type.
 
-  ```
+  ## Supported Options
 
-   iex> defmodule SimpleChildStruct do
-   ...>  use BinStruct
-   ...>  field :data, :uint8
-   ...> end
-   ...>
-   ...> defmodule SimpleStructWithChild do
-   ...>   use BinStruct
-   ...>   field :child, SimpleChildStruct
-   ...> end
-   ...>
-   ...> SimpleStructWithChild.new(child: SimpleChildStruct.new(data: 1))
-   ...> |> SimpleStructWithChild.dump_binary()
-   ...> |> SimpleStructWithChild.parse()
-   ...> |> then(fn {:ok, struct, _rest } -> struct end)
-   ...> |> SimpleStructWithChild.decode()
-   %{ child: SimpleChildStruct.new(data: 1) }
+  ### length and its length_by dynamic version
 
-  ```
+    field :value, :binary, length: 1
+    field :value, :binary, length_by: &callback/1
 
-  As you can see from example on above parsed structs and newly created are always equal thanks to intermediate type conversion called 'unmanaged'.
-  It's neither binary or managed and you are not suppose to work with it directly, by any type (including custom types) can perform
-  automatic type conversion between 'binary', 'managed' and 'unmanaged' on developer request (using registered_callback api)
+    length expect you to pass integer and field will strict to this length
+    same for length_by by it receiving callback returning integer instead
 
-  BinStruct will automatically generate set if functions for you:
 
-      1. dump_binary/1
-      2. size/1
-      3. parse/2 will be present if is terminated (have rules defined to be parsed into finite struct from infinity bytestream)
-      4. parse_exact/2
-      4. decode/2
-      4. new/1
+  ### validate_by
 
-  In additional with configuration it supports for now:
+    field :value, :uint8, validate_by: &callback/1
 
-      tls_receive()
-      tls_send()
-      tcp_receive()
-      tcp_send()
+    Expecting callback returning true of data is valid and false if not
+    In case field is invalid parse will stop and { :wrong_data, _wrong_data_binary } will be returned.
+    Used by dynamic variant by dispatching.
+
+  ### optional
+
+    field :value, :uint8, optional: true
+    field :value, :uint8, optional: false
+
+    Optional, also known as optional tail is the way stop parsing struct of there
+    is no more binary data and left all optional fields which not populated set to nil
+
+
+  ### optional_by
+
+    field :value, :uint8, optional_by: &callback/1
+
+    Conditionally present or not value.
+
+    Callback should return either true if value should be present or false otherwise.
+
+
+  ### item_size and item_size_by (ListOf only)
+
+    field :value, :uint8, optional_by: &callback/1
+
+  ### count and count_by (ListOf only)
+
+    field :value, :uint8, optional_by: &callback/1
+
+  ### take_while_by (ListOf only)
+
+  field :value, :uint8, optional_by: &callback/1
 
   """
 
@@ -210,7 +259,12 @@ defmodule BinStruct do
 
   @doc """
 
-  ## Examples
+      Called in module with use BinStruct defined will register option with given name.
+
+      It can be created using option_(your_option_name)(value) generated function
+
+      Options can be requested with registered_callback using name_of_opt: { type: :option, interface: YourBinStruct }
+      or if requested from same module it's defined with short notation name_of_opt: :option
 
   """
 
@@ -223,7 +277,64 @@ defmodule BinStruct do
 
   @doc """
 
-  ## Examples
+      Called in module with use BinStruct defined will register callback.
+
+      RegisteredCallback is main source of dynamic behaviour.
+
+    ```
+
+      iex> defmodule StructWithRegisteredCallbackRequestField do
+      ...>   use BinStruct
+      ...>
+      ...>   register_callback &len_callback/1, len: :field
+      ...>
+      ...>   field :len, :uint32_be
+      ...>   field :data, :binary, length_by: &len_callback/1
+      ...>
+      ...>   defp len_callback(len), do: len
+      ...>
+      ...> end
+
+    ```
+
+    ```
+
+      iex> defmodule StructWithRegisteredCallbackRequestFieldInTypeConversion do
+      ...>   use BinStruct
+      ...>
+      ...>   alias BinStruct.TypeConversion.TypeConversionBinary
+      ...>
+      ...>   register_callback &payload_builder/1, number: %{ type: :field, type_conversion: TypeConversionBinary }
+      ...>
+      ...>   field :number, :uint32_be
+      ...>   field :payload, :binary, builder: &payload_builder/1
+      ...>
+      ...>   defp payload_builder(number_bin), do: number_bin
+      ...>
+      ...> end
+
+    ```
+
+    ```
+
+      iex> defmodule StructWithRegisteredCallbackRequestOption do
+      ...>   use BinStruct
+      ...>
+      ...>   register_option :opt
+      ...>
+      ...>   register_callback &data_length/1, opt: :option
+      ...>
+      ...>   field :data, :binary, length_by: &data_length/1
+      ...>
+      ...>   defp data_length(opt), do: opt
+      ...>
+      ...> end
+      ...>
+      ...> { :ok, struct, "" = _rest } = StructWithRegisteredCallbackRequestOption.parse(<<1>>, StructWithRegisteredCallbackRequestOption.option_opt(1))
+      ...> StructWithRegisteredCallbackRequestOption.decode(struct)
+      %{ data: <<1>> }
+
+    ```
 
   """
 
@@ -237,7 +348,51 @@ defmodule BinStruct do
 
   @doc """
 
-  ## Examples
+  Called in module with use BinStruct defined will implement options interface after struct fully parsed.
+
+  ```
+
+      iex> defmodule SharedOptions do
+      ...>   use BinStructOptionsInterface
+      ...>
+      ...>   @type shared_option :: :a | :b
+      ...>
+      ...>   register_option :shared_option
+      ...>
+      ...> end
+      ...>
+      ...>
+      ...>  defmodule StructImplementingOptionsInterface do
+      ...>   use BinStruct
+      ...>
+      ...>   register_callback &impl_options_interface_1/1, data: :field
+      ...>
+      ...>   impl_interface BinStructOptionsInterface, &impl_options_interface_1/1
+      ...>
+      ...>   field :data, :binary, length: 1
+      ...>
+      ...>   defp impl_options_interface_1("A"), do: SharedOptions.option_shared_option(:a)
+      ...>   defp impl_options_interface_1("B"), do: SharedOptions.option_shared_option(:b)
+      ...>
+      ...> end
+      ...>
+      ...> defmodule ParentOfStructImplementingOptionsInterface do
+      ...>   use BinStruct
+      ...>
+      ...>   register_callback &dependent_field_len/1, shared_option: %{ type: :option, interface: SharedOptions }
+      ...>
+      ...>   field :child, StructImplementingOptionsInterface
+      ...>   field :dependent_field, :binary, length_by: &dependent_field_len/1
+      ...>
+      ...>   defp dependent_field_len(:a), do: 1
+      ...>   defp dependent_field_len(:b), do: 2
+      ...>
+      ...> end
+      ...>
+      ...> { :ok, _struct, "" = _rest } = ParentOfStructImplementingOptionsInterface.parse("A1")
+      ...> { :ok, _struct, "" = _rest } = ParentOfStructImplementingOptionsInterface.parse("B22")
+
+    ```
 
   """
 
