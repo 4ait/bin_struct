@@ -172,7 +172,7 @@ defmodule BinStruct do
 
   Only values for virtual fields requested will be produced and exactly once per field and type conversion pair.
 
-  This behaviour can make them useful are a cache while parsing.
+  This behaviour can make them useful is a cache while parsing.
 
   Any virtual field in recursive dependency of requested virtual field will be produced as well and only once rule will still work.
 
@@ -445,7 +445,7 @@ defmodule BinStruct do
       ...>
       ...>   register_callback &impl_options_interface_1/1, data: :field
       ...>
-      ...>   impl_interface BinStructOptionsInterface, &impl_options_interface_1/1
+      ...>   impl_interface SharedOptions, &impl_options_interface_1/1
       ...>
       ...>   field :data, :binary, length: 1
       ...>
