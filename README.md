@@ -53,10 +53,10 @@ You can configure `BinStruct` by adding the following to your `config.exs` file:
 
 ```elixir
 config :bin_struct,
-define_receive_send_tcp: true,
-define_receive_send_tls: true,
-enable_log_tcp: true,
-enable_log_tls: true
+  define_receive_send_tcp: true,
+  define_receive_send_tls: true,
+  enable_log_tcp: true,
+e nable_log_tls: true
 ```
 
 ### Notes on TLS
