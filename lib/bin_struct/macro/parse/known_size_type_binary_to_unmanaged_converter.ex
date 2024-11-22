@@ -1,5 +1,7 @@
 defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
 
+  alias BinStruct.Macro.Common
+
   @moduledoc false
 
   def convert_known_size_type_binary_to_unmanaged(binary_access_bind, type, opts, context) do
@@ -8,7 +10,72 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
 
     case type do
 
-      {:enum, %{type: enum_representation_type} } -> convert_known_size_type_binary_to_unmanaged(binary_access_bind, enum_representation_type, opts, context)
+      {:enum, %{ type: enum_representation_type, values: values } } ->
+
+        enum_validation_case_patterns =
+          Enum.map(
+            values,
+            fn %{} = enum_variant ->
+
+              %{
+                enum_value: enum_value
+              } = enum_variant
+
+              Common.case_pattern(
+
+                enum_value,
+
+                quote do
+                  :exists
+                end
+              )
+
+            end
+          )
+
+
+        enum_validation_case_patterns = enum_validation_case_patterns ++ [
+
+            Common.case_pattern(
+              quote do
+                _
+              end,
+              quote do
+                :not_exists
+              end
+            )
+
+          ]
+
+        representation_type_as_unmanaged =
+
+          case convert_known_size_type_binary_to_unmanaged(binary_access_bind, enum_representation_type, opts, context) do
+            nil -> binary_access_bind
+            unmanaged -> unmanaged
+          end
+
+          representation_type_as_managed_expr =
+             BinStruct.Macro.TypeConverterToManaged.convert_unmanaged_value_to_managed(enum_representation_type, representation_type_as_unmanaged)
+
+
+          parse_expr =
+            quote do
+
+              validate_enum_variant_exists_result =
+                case unquote(representation_type_as_managed_expr) do
+                  unquote(enum_validation_case_patterns)
+                end
+
+              case validate_enum_variant_exists_result do
+                :exists -> { :ok, unquote(representation_type_as_unmanaged) }
+                :not_exists -> { :wrong_data, unquote(binary_access_bind) }
+              end
+
+          end
+
+        { :failable_expr_result, parse_expr }
+
+
       {:flags, %{type: flags_representation_type} } -> convert_known_size_type_binary_to_unmanaged(binary_access_bind, flags_representation_type, opts, context)
 
       {:module, module_info } ->
