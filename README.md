@@ -1,71 +1,81 @@
 # BinStruct
 
-BinStruct is a library which provides you rich set of tools for parsing/encoding binaries.
+**BinStruct** is a library that provides a rich set of tools for parsing and encoding binaries.
 
-The goal is write declarations, which is readable now and will stay readable for years.
-You can expect your actual code be more like page from protocol documentation.
+The goal is to write declarations that are **readable now and will remain readable for years**. Your code will closely resemble a page from protocol documentation, ensuring clarity and maintainability.
 
-The library is particularly beneficial if you require bidirectional data flow.
+This library is particularly beneficial for use cases that require **bidirectional data flow**.
+
+---
 
 ## Installation
 
+To get started, add `BinStruct` to your `mix.exs` dependencies:
+
 ```elixir
 def deps do
-  [
-    {:bin_struct, "~> 0.2.7"}
-  ]
+[
+  {:bin_struct, "~> 0.2.7"}
+]
 end
 ```
 
-## Getting Started 
-I suggest you to start with examples folder.
-You can run 
+---
+
+## Getting Started
+
+### Explore Examples
+Start by exploring the examples folder. Run the following command to see an example in action:
+
+```sh
+mix run examples/png.exs
 ```
-    mix run examples/png.exs
-```
 
-Next is docs in BinStruct module https://hexdocs.pm/bin_struct/BinStruct.html
+### Reference Documentation
+- [BinStruct Module Documentation](https://hexdocs.pm/bin_struct/BinStruct.html)
 
-And docs for types
+#### Type-Specific Docs
+- [StaticValue](https://hexdocs.pm/bin_struct/BinStruct.Types.StaticValue.html)
+- [Binary](https://hexdocs.pm/bin_struct/BinStruct.Types.Binary.html)
+- [Enum](https://hexdocs.pm/bin_struct/BinStruct.Types.Enum.html)
+- [Flags](https://hexdocs.pm/bin_struct/BinStruct.Types.Flags.html)
+- [List](https://hexdocs.pm/bin_struct/BinStruct.Types.ListOf.html)
+- [Variant](https://hexdocs.pm/bin_struct/BinStruct.Types.VariantOf.html)
 
-StaticValue https://hexdocs.pm/bin_struct/BinStruct.Types.StaticValue.html
+### Explore Tests
+For further insights, check out the `test/` folder, where you can explore the library’s future functionality through tests.
 
-Binary https://hexdocs.pm/bin_struct/BinStruct.Types.Binary.html
-
-Enum https://hexdocs.pm/bin_struct/BinStruct.Types.Enum.html
-
-Flags https://hexdocs.pm/bin_struct/BinStruct.Types.Enum.html
-
-List https://hexdocs.pm/bin_struct/BinStruct.Types.ListOf.html
-
-Variant https://hexdocs.pm/bin_struct/BinStruct.Types.VariantOf.html
-
-You can explore future via tests in test/ folder
+---
 
 ## Configuration
 
+You can configure `BinStruct` by adding the following to your `config.exs` file:
+
+```elixir
+config :bin_struct,
+define_receive_send_tcp: true,
+define_receive_send_tls: true,
+enable_log_tcp: true,
+enable_log_tls: true
+```
+
+### Notes on TLS
+- TLS functionality is implemented using the `:ssl` application.
+- If you wish to use TLS, make sure to either **disable it** or add `:ssl` to the list of `extra_applications`:
+
+  ```elixir
+  def application do
+  [
+    extra_applications: [:ssl]
+  ]
+  end
   ```
-    config :bin_struct,
-      define_receive_send_tcp: true,
-      define_receive_send_tls: true,
-      enable_log_tcp: true,
-      enable_log_tls: true
-  ```
 
-    tls implemented using :ssl application
+---
 
-    disable it or add ssl to list of extra_applications
+## Additional Documentation
 
-  ```
-    def application do
-      [
-        extra_applications: [:ssl]
-      ]
-    end
-  ```
+Comprehensive documentation is available online:  
+[BinStruct Docs](https://hexdocs.pm/bin_struct)
 
-
-## Docs
-
-https://hexdocs.pm/bin_struct
-
+---
