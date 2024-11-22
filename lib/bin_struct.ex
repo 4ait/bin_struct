@@ -189,7 +189,51 @@ defmodule BinStruct do
 
   @doc """
 
-  ## Examples
+  ## Overview
+
+  Virtual field is powerful system which can help you in many ways working with complex data.
+
+  Virtual field will act as Field at most cases, including automatic type conversion.
+
+  It can be represented as any type available for Field and in special :unspecified form.
+
+  Setting virtual field to :unspecified type will make automatic type conversions impossible but will give you opportunity
+  to set it to any elixir term.
+
+  ## How virtual fields behave in new context (when creating new struct)
+
+  When creating new struct with virtual fields you suppose to provide value for virtual field.
+
+  Any builder callbacks can read that value in any type conversion and create for you actual binary data.
+
+  ## How virtual fields behave in parse context (when parsing)
+
+  Virtual fields can be requested by any registered callback in any type conversion (in case it's :unspecified only 'managed') available.
+
+  Only values for virtual fields requested will be produced and exactly once per field and type conversion pair.
+
+  This behaviour can make them useful are a cache while parsing.
+
+  Any virtual field in recursive dependency of requested virtual field will be produced as well and only once rule will still work.
+
+  If A depends on B and B itself is requested in same type conversion A and B producing callbacks will be called once per such virtual field.
+
+  More idea of how and why you can use it currently you can find in test/virtual_field_system
+
+  I will try to provide more detailed info on this topic later.
+
+  ## How virtual fields behave in decode context (when reading data)
+
+  They will be present in decoded data.
+
+  ## Supported Options
+
+  ### optional
+
+    ```
+    virtual_field :v_field_name, :uint8, optional: true
+    ```
+    Makes field optional
 
   """
 
@@ -284,6 +328,12 @@ defmodule BinStruct do
     ```
     field :value, :uint8, builder: &callback/1
     ```
+
+   Builder callback will automatically build value for field.
+   It should return 'managed' value, type conversion to underlying 'unmanaged' and 'binary' will be applied automatically.
+   Builder callback called when you are creating struct via new/1 function.
+   Builder can't request option argument, options are parse only tools.
+   Field built with Builder can be requested from another builder, introducing chain. Calling order will be resolved automatically.
 
   """
 
