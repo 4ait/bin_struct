@@ -101,6 +101,9 @@ Many can find redundancy in syntax and lack of shortcuts, this is expected.
 
 General structure will help in future to implement and optimize more features required for more complex products.
 
+Next most desired feature for me is typesafe layer. 
+I'm waiting for types to be implemented into elixir and code editors and i will implement it into this library.
+
 ---
 
 ## Development
