@@ -188,6 +188,20 @@ defmodule BinStruct do
 
   ## Supported Options
 
+  ### read_by
+
+    ```
+    virtual_field :v_field_name, :uint8, read_by: &callback/1
+    ```
+
+    Source of this virtual field.
+
+    This callback will be called once.
+
+    On decode it's always called to produce output.
+
+    On parse this callback will be called only if this virtual field is direct or indirect dependency of other callbacks.
+
   ### optional
 
     ```
