@@ -40,11 +40,10 @@ defmodule BinStructOptionsInterface do
 
   @doc """
 
-      Called in module with use BinStructOptionsInterface defined will register option with given name.
+    Registering option for option interface. Interface will be your module name.
+    Implementation and usage same as register_option for BinStruct.
 
-      It can be created using option_(your_option_name)(value) generated function
-
-      Options can be requested with registered_callback using name_of_opt: { type: :option, interface: YourInterfaceModule }
+    Se more in BinStruct register_option docs [`BinStruct.register_option/2`](`BinStruct.register_option/2`)
 
   """
 

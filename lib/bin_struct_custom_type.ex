@@ -2,7 +2,7 @@ defmodule BinStructCustomType do
 
   @moduledoc """
 
-  BinStructCustomType is user defined type when you need most flexibility.
+  BinStructCustomType is user defined type when you need most control of how data are parsed.
 
   Such custom type can be used in place you would use BinStruct.
 
@@ -69,11 +69,10 @@ defmodule BinStructCustomType do
 
   @doc """
 
-      Called in module with use BinStructCustomType defined will register option with given name.
+    Registering option for custom type. Interface will be your module name.
+    Implementation and usage same as register_option for BinStruct.
 
-      It can be created using option_(your_option_name)(value) generated function.
-
-      Options can be requested with registered_callback using name_of_opt: { type: :option, interface: YourCustomTypeModule }
+    Se more in BinStruct register_option docs [`BinStruct.register_option/2`](`BinStruct.register_option/2`)
 
   """
 

@@ -2,37 +2,47 @@ defmodule BinStruct do
 
   @moduledoc """
 
-  ## BinStruct
 
-  BinStruct is main builder block for this library.
+  BinStruct is a library which provides you rich set of tools for manipulating with binaries.
+  The goal is write declarations, which is readable now and will be readable even after years.
+  You can expect your actual code be more like page from protocol documentation.
+
+  Most benefit you will get if bidirectional data flow is what you need.
+  But it will work if only you're parsing or encoding data too.
+
+  If struct is parsable it's already encodable too.
+  Only thing you can do to get most comfortable with encoding is to provide builder callbacks to generate part of message automatically.
+
+  For parse struct needs to be constraint, so it can figure out dynamic shape of data.
+
+  I'm always writing full set of rules, even if for now only receiving data. I found that more readable.
 
   ## Configuration
+
+
+  ```
+    config :bin_struct,
+      define_receive_send_tcp: true,
+      define_receive_send_tls: true,
+      enable_log_tcp: true,
+      enable_log_tls: true
+  ```
 
     tls implemented using :ssl application
 
     disable it or add ssl to list of extra_applications
 
-    ```
-
-      def application do
-        [
-          extra_applications: [:ssl]
-        ]
-      end
-
-    ```
-
-    ```
-
-      config :bin_struct,
-        define_receive_send_tcp: true,
-        define_receive_send_tls: true,
-        enable_log_tcp: true,
-        enable_log_tls: true
-
-    ```
+  ```
+    def application do
+      [
+        extra_applications: [:ssl]
+      ]
+    end
+  ```
 
   ## Overview
+
+    Start reading with macro
 
     ```
 
@@ -193,25 +203,30 @@ defmodule BinStruct do
 
   @doc """
 
-  With fields you are building the shape of your binary data.
+  ## Overview
 
-  field/3 expected you to pass name and type of your field. Supported types can be found in bin_struct/types.
-  In additional you can pass another BinStruct itself and BinStructCustomType as type.
+    With fields you are building the shape of your binary data.
+
+    field/3 expected you to pass name and type of your field. Supported types can be found in bin_struct/types.
+    In additional you can pass another BinStruct itself and BinStructCustomType as type.
 
   ## Supported Options
 
   ### length and its length_by dynamic version
 
+    ```
     field :value, :binary, length: 1
     field :value, :binary, length_by: &callback/1
+    ```
 
-    length expect you to pass integer and field will strict to this length
-    same for length_by by it receiving callback returning integer instead
-
+    length expect you to pass integer and field will be set strict to this length
+    same for length_by but it receiving callback returning integer instead
 
   ### validate_by
 
+    ```
     field :value, :uint8, validate_by: &callback/1
+    ```
 
     Expecting callback returning true of data is valid and false if not
     In case field is invalid parse will stop and { :wrong_data, _wrong_data_binary } will be returned.
@@ -219,33 +234,56 @@ defmodule BinStruct do
 
   ### optional
 
-    field :value, :uint8, optional: true
-    field :value, :uint8, optional: false
+    ```
+    field :v_always, :uint8
+    field :v_opt_tail1, :uint8, optional: true
+    field :v_opt_tail2, :uint8, optional: true
+    ```
 
-    Optional, also known as optional tail is the way stop parsing struct of there
-    is no more binary data and left all optional fields which not populated set to nil
-
+    Optional, also known as optional tail is the way stop parsing struct when
+    there is no more binary data and left all optional fields which not populated set to nil
 
   ### optional_by
 
+    ```
     field :value, :uint8, optional_by: &callback/1
+    ```
 
     Conditionally present or not value.
 
     Callback should return either true if value should be present or false otherwise.
 
-
   ### item_size and item_size_by (ListOf only)
 
-    field :value, :uint8, optional_by: &callback/1
+    ```
+    field :value, { :list_of, Item }, item_size: 2
+    field :value, { :list_of, Item }, item_size_by:  &callback/1
+    ```
+
+   Se more detailed explanation in [`BinStruct.Types.ListOf`](`BinStruct.Types.ListOf`)
 
   ### count and count_by (ListOf only)
 
-    field :value, :uint8, optional_by: &callback/1
+   ```
+    field :value, { :list_of, Item }, count: 2
+    field :value, { :list_of, Item }, count_by: &callback/1
+   ```
+
+   Se more detailed explanation in [`BinStruct.Types.ListOf`](`BinStruct.Types.ListOf`)
 
   ### take_while_by (ListOf only)
 
-  field :value, :uint8, optional_by: &callback/1
+    ```
+    field :value, { :list_of, Item }, take_while_by: &callback/1
+    ```
+
+   Se more detailed explanation in [`BinStruct.Types.ListOf`](`BinStruct.Types.ListOf`)
+
+  ### builder
+
+    ```
+    field :value, :uint8, builder: &callback/1
+    ```
 
   """
 
@@ -259,12 +297,39 @@ defmodule BinStruct do
 
   @doc """
 
-      Called in module with use BinStruct defined will register option with given name.
+  ## Overview
 
-      It can be created using option_(your_option_name)(value) generated function
+    Called in module with use BinStruct defined will register option with given name.
 
-      Options can be requested with registered_callback using name_of_opt: { type: :option, interface: YourBinStruct }
-      or if requested from same module it's defined with short notation name_of_opt: :option
+    ```
+    register_option :name_of_opt
+    ```
+
+    It can be created using option_(your_option_name)(value) generated function
+
+    ```
+    YourBinStruct.option_name_of_opt(value)
+    ```
+
+    Multiple options are chained with pipe operator
+
+    ```
+    YourBinStruct.option_name_of_opt(value)
+    |> YourBinStruct.option_name_of_opt2(value)
+    |> YourBinStruct.option_name_of_opt3(value)
+    ```
+
+    If requested from same module it's registered in use short notation name_of_opt: :option
+
+    ```
+    register_callback &callback/1, name_of_opt:  :option
+    ```
+
+    Full notation is
+
+    ```
+    register_callback &callback/1, name_of_opt: { type: :option, interface: YourBinStruct }
+    ```
 
   """
 
@@ -277,9 +342,12 @@ defmodule BinStruct do
 
   @doc """
 
-      Called in module with use BinStruct defined will register callback.
+  Called in module with use BinStruct defined will register callback.
 
-      RegisteredCallback is main source of dynamic behaviour.
+  RegisteredCallback is main source of dynamic behaviour.
+
+  It's binding arguments from current parse routine along with options from total parse tree context to function you pass in.
+  Automatically manipulating with type conversion on request.
 
     ```
 

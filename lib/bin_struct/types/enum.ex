@@ -4,6 +4,10 @@ defmodule BinStruct.Types.Enum do
 
     Enum can be declared as any internal type.
 
+    If none of value are matched while parsing { :wrong_data, _wrong_data_bin } will be returned for such struct.
+    This is playing nicely with dynamic variant dispatching, same as you would expect for static_value.
+
+
     Here’s an example:
 
   ## Integer based
