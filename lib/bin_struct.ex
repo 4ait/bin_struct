@@ -2,47 +2,7 @@ defmodule BinStruct do
 
   @moduledoc """
 
-
-  BinStruct is a library which provides you rich set of tools for manipulating with binaries.
-  The goal is write declarations, which is readable now and will be readable even after years.
-  You can expect your actual code be more like page from protocol documentation.
-
-  Most benefit you will get if bidirectional data flow is what you need.
-  But it will work if only you're parsing or encoding data too.
-
-  If struct is parsable it's already encodable too.
-  Only thing you can do to get most comfortable with encoding is to provide builder callbacks to generate part of message automatically.
-
-  For parse struct needs to be constraint, so it can figure out dynamic shape of data.
-
-  I'm always writing full set of rules, even if for now only receiving data. I found that more readable.
-
-  ## Configuration
-
-
-  ```
-    config :bin_struct,
-      define_receive_send_tcp: true,
-      define_receive_send_tls: true,
-      enable_log_tcp: true,
-      enable_log_tls: true
-  ```
-
-    tls implemented using :ssl application
-
-    disable it or add ssl to list of extra_applications
-
-  ```
-    def application do
-      [
-        extra_applications: [:ssl]
-      ]
-    end
-  ```
-
   ## Overview
-
-    Start reading with macro
 
     ```
 
