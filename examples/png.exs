@@ -93,7 +93,7 @@ defmodule IENDChunk do
 end
 
 
-defmodule BuiltInChunk do
+defmodule KnownChunk do
 
   use BinStruct
 
@@ -137,7 +137,7 @@ defmodule BuiltInChunk do
 end
 
 
-defmodule PrivateChunk do
+defmodule UnknownChunk do
 
   use BinStruct
 
@@ -159,7 +159,7 @@ defmodule Chunk do
 
   use BinStruct
 
-  field :chunk, { :variant_of, [ IHDRChunk, IENDChunk, BuiltInChunk, PrivateChunk ] }
+  field :chunk, { :variant_of, [ IHDRChunk, IENDChunk, KnownChunk, UnknownChunk ] }
 
 end
 
