@@ -167,5 +167,4 @@ decoded_v2 = StructInsidePacket.Packet.decode(parsed_v2_struct)
 StructInsidePacket.decode(content_of_v1) |> IO.inspect(label: "Protocol version 1 content")
 StructInsidePacket.decode(content_of_v2) |> IO.inspect(label: "Protocol version 2 content")
 
-
 #see everything is parsed as expected, protocol versions are shown on decode and respected
