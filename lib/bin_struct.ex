@@ -45,87 +45,6 @@ defmodule BinStruct do
         tcp_receive()
         tcp_send()
 
-
-  ## How to implement your protocol wrapping struct using higher order macro
-
-    Best way to implement wrapper is by creating  higher order macro which will create BinStruct for you
-
-  ```
-
-      iex> defmodule PacketProtocolHeader do
-      ...>   use BinStruct
-      ...>   field :version, <<0>>
-      ...>   field :length, :uint32_be
-      ...> end
-      ...>
-      ...> defmodule Packet do
-      ...>
-      ...>  defmacro __using__(_opts) do
-      ...>
-      ...>    quote do
-      ...>      import Packet
-      ...>    end
-      ...>
-      ...>  end
-      ...>
-      ...>   defmacro content(content_field_name, content_field_type) do
-      ...>     quote do
-      ...>       use BinStruct
-      ...>
-      ...>       # Register callbacks for dynamic fields
-      ...>       register_callback &header_builder/1,
-      ...>                        [{unquote(content_field_name), :field}]
-      ...>       register_callback &content_length/1, header: :field
-      ...>
-      ...>       # Define the header field
-      ...>       field :header, PacketProtocolHeader, builder: &header_builder/1
-      ...>
-      ...>       # Define the content field with length_by
-      ...>       field unquote(content_field_name), unquote(content_field_type),
-      ...>             length_by: &content_length/1
-      ...>
-      ...>       # Callback to build the header dynamically
-      ...>       defp header_builder(content) do
-      ...>         PacketProtocolHeader.new(%{
-      ...>           length: unquote(content_field_type).size(content)
-      ...>         })
-      ...>       end
-      ...>
-      ...>       # Callback to calculate content length from the header
-      ...>       defp content_length(header) do
-      ...>         %{length: length} = PacketProtocolHeader.decode(header)
-      ...>         length
-      ...>       end
-      ...>     end
-      ...>   end
-      ...> end
-      ...>
-      ...> defmodule StructInsidePacket do
-      ...>   use BinStruct
-      ...>   field :data, :binary
-      ...> end
-      ...>
-      ...> defmodule StructInsidePacket.Packet do
-      ...>   use Packet
-      ...>   content :content, StructInsidePacket
-      ...> end
-      ...>
-      ...> packet = StructInsidePacket.Packet.new(
-      ...>   content: StructInsidePacket.new(data: "123")
-      ...> )
-      ...>
-      ...> binary = StructInsidePacket.Packet.dump_binary(packet)
-      ...> {:ok, packet, _rest} = StructInsidePacket.Packet.parse(binary)
-      ...> %{ content: content } = StructInsidePacket.Packet.decode(packet)
-      ...> StructInsidePacket.decode(content)
-      %{ data: "123" }
-
-    ```
-
-    it will set length for content automatically for now, and if your packet has required info to be used inside parsing tree
-    you can always later implement some BinStructOptionsInterface for header and this context will be available
-    as simple as ..register_callback.., some_option_from_header: { type: :option, interface: PacketProtocolHeader } from any struct in tree
-
   """
 
   alias BinStruct.Macro.Preprocess.Remap
@@ -540,6 +459,7 @@ defmodule BinStruct do
     alias BinStruct.Macro.Structs.Field
     alias BinStruct.Macro.Structs.RegisteredOption
     alias BinStruct.Macro.NonVirtualFields
+    alias BinStruct.Macro.Structs.RegisteredOptionsMap
 
     raw_fields = Module.get_attribute(env.module, :fields) |> Enum.reverse()
     raw_registered_options = Module.get_attribute(env.module, :options) |> Enum.reverse()
@@ -601,6 +521,7 @@ defmodule BinStruct do
     options_default_values_function =
       BinStruct.Macro.InUseOnlyDefaultOptionsFunction.default_options_function(registered_callbacks, children_bin_structs, env)
 
+
     option_functions =
       Enum.map(
        registered_options,
@@ -608,6 +529,25 @@ defmodule BinStruct do
          BinStruct.Macro.OptionFunction.option_function(name, parameters, env)
        end
       )
+
+    registered_options_map =
+      RegisteredOptionsMap.new(
+        registered_options,
+        env
+      )
+
+    registered_options_map_access_function =
+
+      quote do
+        def __registered_options_map__() do
+
+          unquote(
+            Macro.escape(registered_options_map)
+          )
+
+        end
+
+      end
 
     known_total_size_bytes =
       BinStruct.Macro.AllFieldsSize.get_all_fields_size_bytes(
@@ -642,6 +582,7 @@ defmodule BinStruct do
        end)
 
     ] |> Enum.reject(&is_nil/1)
+
 
     maybe_receive =
 
@@ -703,6 +644,10 @@ defmodule BinStruct do
 
           unquote_splicing(
             BinStruct.Macro.Parse.CollapseOptionsIntoMap.define_functions()
+          )
+
+          unquote(
+            registered_options_map_access_function
           )
 
           unquote_splicing(maybe_receive)
