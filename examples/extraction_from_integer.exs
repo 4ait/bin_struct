@@ -1,7 +1,6 @@
-#Our goal in this example is extract values we want to work this from this
-#raw form which we can't use it
-#it will benefit us while developing, we can see things more clear
-#and also it will benefit us most if there will be conditions which our struct needs to respect inherited from those extracted values
+#Our goal in this example is extract values we want to work this from raw form (integer in this case) which we can't use.
+#Extraction will benefit us while developing, we can see things more clear.
+#Also it will benefit us most if there will be conditions which our struct needs to respect inherited from those extracted values
 
 
 defmodule ExtractionFromIntegerStruct do

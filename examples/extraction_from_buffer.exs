@@ -1,5 +1,5 @@
-#Our goal in this example is extract values from binary buffer where data can be in any order
-#it will benefit us while developing, we can see things more clear
+#Our goal in this example is extract values from binary buffer where data can be in any order.
+#Extraction will benefit us while developing, we can see things more clear
 #And also it will benefit us most if there will be conditions which our struct needs to respect inherited from those extracted values
 
 #I'm not expecting this will happen often, but if it will this example will help you
