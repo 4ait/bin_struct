@@ -162,7 +162,8 @@ defmodule BinStruct do
 
   ## How virtual fields behave in new context (when creating new struct)
 
-  When creating new struct with virtual fields you suppose to provide value for virtual field.
+  When creating new struct with virtual fields you suppose to provide value for virtual field or attach builder callback
+  if you need intermediate value as cache.
 
   Any builder callbacks can read that value in any type conversion and create for you actual binary data.
 
@@ -191,7 +192,7 @@ defmodule BinStruct do
   ### read_by
 
     ```
-    virtual_field :v_field_name, :uint8, read_by: &callback/1
+    virtual :v_field_name, :uint8, read_by: &callback/1
     ```
 
     Source of this virtual field.
@@ -202,10 +203,22 @@ defmodule BinStruct do
 
     On parse this callback will be called only if this virtual field is direct or indirect dependency of other callbacks.
 
+  ### builder
+
+  ```
+  virtual :v_field_name, :binary_utf16, builder: &callback/1
+  ```
+
+  Callback which virtual field will be created from during creation of new struct.
+
+  This value could be used from any other builders with any requested automatic type conversion.
+
+  Virtual field will act as intermediate storage while you creating new struct. Useful separation effect and cache effect.
+
   ### optional
 
     ```
-    virtual_field :v_field_name, :uint8, optional: true
+    virtual :v_field_name, :uint8, optional: true
     ```
     Makes field optional
 
