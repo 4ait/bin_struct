@@ -15,7 +15,7 @@ defmodule ExtractionFromBufferStruct do
 
   #how structure will be decoded ->
 
-  #it will read utf16 out if buffer
+  #it will read utf16 out of buffer
 
   register_callback &read_domain_name_utf16/3,
                     buffer: :field,
