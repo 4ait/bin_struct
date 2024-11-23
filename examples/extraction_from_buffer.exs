@@ -49,7 +49,6 @@ defmodule ExtractionFromBufferStruct do
 
   register_callback &build_user_name_len/1, user_name_utf16: :field
 
-
   #we are taking previous entry position in buffer and its length
   register_callback &build_user_name_buffer_offset/2,
                     domain_name_buffer_offset: :field,
