@@ -176,7 +176,7 @@ changed_struct_decoded = ExtractionFromBufferStruct.decode(changed_struct)
 
 IO.inspect(changed_struct_decoded, label: "Changed")
 
-#new binary ready to send with new content is ready!
+#new binary is ready to send with new content inside!
 _ready_to_send_new_binary = ExtractionFromBufferStruct.dump_binary(changed_struct)
 
 #this way we abstracted away internal complexity and working with this data as simple as directly with fields
