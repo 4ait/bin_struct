@@ -12,7 +12,7 @@ defmodule ExtractionFromIntegerStruct do
   #real struct looks like [  flags_bits ... enum ...flags_bits  ]
 
   @session_redirection_version_mask 0x0000003C
-  @session_redirection_version_mask_shift_right_offset 2
+  @session_redirection_version_mask_shift_offset 2
 
   #defining values for fields and enums separately, not inlining into declarations
 
@@ -74,7 +74,7 @@ defmodule ExtractionFromIntegerStruct do
 
     integer_under_mask = Bitwise.band(@session_redirection_version_mask, flags_and_server_session_redirection_version)
 
-    integer_under_mask_shifted = Bitwise.bsr(integer_under_mask, @session_redirection_version_mask_shift_right_offset)
+    integer_under_mask_shifted = Bitwise.bsr(integer_under_mask, @session_redirection_version_mask_shift_offset)
 
     EnumVariantNameByValue.find_enum_variant_name_by_value(
       @server_session_redirection_version,
@@ -98,7 +98,7 @@ defmodule ExtractionFromIntegerStruct do
         server_session_redirection_version
       )
 
-    mask_value = Bitwise.bsl(integer_under_mask, @session_redirection_version_mask_shift_right_offset)
+    mask_value = Bitwise.bsl(integer_under_mask, @session_redirection_version_mask_shift_offset)
 
     Bitwise.bor(flags_integer, mask_value)
 
