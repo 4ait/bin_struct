@@ -62,7 +62,7 @@ defmodule ExtractionFromIntegerStruct do
 
 
   #simulating usage inside parse one of created virtual fields
-  #optinal static value will not be created automatically when calling new() unless you pass :present atom to it's field
+  #optional static value will not be created automatically when calling new() unless you pass :present atom to it's field
   #in this example we never setting redirection_version to 4 and not passing :present so it will always be omitted
   field :present_only_if_redirection_version4, "some static value", optional_by: &is_redirection_version4/1
 
