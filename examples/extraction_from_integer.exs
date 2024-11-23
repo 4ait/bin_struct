@@ -133,7 +133,7 @@ override_struct =
 
 IO.inspect(ExtractionFromIntegerStruct.decode(override_struct), label: "Override")
 
-#new binary ready to send with new content is ready!
+#new binary is ready to send with new content inside!
 _ready_to_send_new_binary = ExtractionFromIntegerStruct.dump_binary(override_struct)
 
 #this way we abstracted away internal complexity and working with this data as simple as directly with fields
