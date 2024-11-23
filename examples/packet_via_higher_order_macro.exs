@@ -146,7 +146,6 @@ protocol_v2_struct = StructInsidePacket.Packet.new(
 protocol_v1_binary = StructInsidePacket.Packet.dump_binary(protocol_v1_struct)
 protocol_v2_binary = StructInsidePacket.Packet.dump_binary(protocol_v2_struct)
 
-
 #parse from binary simulating unknown packet receiving
 
 { :ok, parsed_v1_struct, "" = _rest } = StructInsidePacket.Packet.parse(protocol_v1_binary)
