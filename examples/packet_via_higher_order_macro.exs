@@ -152,7 +152,21 @@ protocol_v2_binary = StructInsidePacket.Packet.dump_binary(protocol_v2_struct)
 { :ok, parsed_v1_struct, "" = _rest } = StructInsidePacket.Packet.parse(protocol_v1_binary)
 { :ok, parsed_v2_struct, "" = _rest } = StructInsidePacket.Packet.parse(protocol_v2_binary)
 
-StructInsidePacket.Packet.decode(parsed_v1_struct) |> IO.inspect()
-StructInsidePacket.Packet.decode(parsed_v2_struct) |> IO.inspect()
+decoded_v1 = StructInsidePacket.Packet.decode(parsed_v1_struct)
+decoded_v2 = StructInsidePacket.Packet.decode(parsed_v2_struct)
+
+%{
+  protocol_version: :protocol_ver_1,
+  content: content_of_v1
+} = decoded_v1
+
+%{
+  protocol_version: :protocol_ver_2,
+  content: content_of_v2
+} = decoded_v2
+
+StructInsidePacket.decode(content_of_v1) |> IO.inspect(label: "Protocol version 1 content")
+StructInsidePacket.decode(content_of_v2) |> IO.inspect(label: "Protocol version 2 content")
+
 
 #see everything is parsed as expected, protocol versions are shown on decode and respected
