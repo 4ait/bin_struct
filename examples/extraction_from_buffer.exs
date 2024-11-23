@@ -67,7 +67,7 @@ defmodule ExtractionFromBufferStruct do
   virtual :domain_name_utf8, :binary, read_by: &read_domain_name_utf8/1
   virtual :user_name_utf8, :binary, read_by: &read_user_name_utf8/1
 
-  #we extracting utf16 virtual fields separately to more readability and will use at as cache
+  #we extracting utf16 virtual fields separately to more readability and to use them as cache
   #to populate both buffer and length while creating new structs
   virtual :domain_name_utf16, :binary, read_by: &read_domain_name_utf16/3, builder: &build_domain_name_utf16/1
   virtual :user_name_utf16, :binary, read_by: &read_user_name_utf16/3, builder: &build_user_name_utf16/1
