@@ -2,7 +2,7 @@ defmodule ExtractionFromBufferStruct do
 
   use BinStruct
 
-  #problem: data is in buffer in any order, we know only offset of each field
+  #problem: data is in buffer in any order, we know only offset and length of each field
   #problem2: it's utf16 and we can't work this it
   #we will solve exactly step by step as problems acquire
 
