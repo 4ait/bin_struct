@@ -15,7 +15,7 @@ To get started, add `BinStruct` to your `mix.exs` dependencies:
 ```elixir
 def deps do
 [
-  {:bin_struct, "~> 0.2.7"}
+  {:bin_struct, "~> 0.2.9"}
 ]
 end
 ```
