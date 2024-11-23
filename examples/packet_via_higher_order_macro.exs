@@ -2,7 +2,7 @@ defmodule PacketHeader do
 
   use BinStruct
 
-  #we are registering option for version on protocol in transport header
+  #we are registering option for version of protocol in transport header
 
   register_option :protocol_version
 
