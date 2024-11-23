@@ -7,11 +7,11 @@ defmodule PacketHeader do
   register_option :protocol_version
 
   #requesting fields required for implement this options interface
-  register_callback &impl_options_interface_1/1, version: :field
+  register_callback &impl_options_interface/1, version: :field
 
   #asking to implement interface PacketHeader (out module name will be our interface)
   #as soon as this header is fully parsed this interface will be implemented and any struct from three can receive it
-  impl_interface PacketHeader, &impl_options_interface_1/1
+  impl_interface PacketHeader, &impl_options_interface/1
 
   field :version, {
     :enum,
@@ -27,7 +27,7 @@ defmodule PacketHeader do
   field :length, :uint32_be
 
   #actual impl
-  defp impl_options_interface_1(protocol_ver), do: PacketHeader.option_protocol_version(protocol_ver)
+  defp impl_options_interface(protocol_ver), do: PacketHeader.option_protocol_version(protocol_ver)
 
 end
 
