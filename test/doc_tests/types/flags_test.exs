@@ -1,6 +1,6 @@
 defmodule BinStructTests.DocTests.Types.FlagsTest do
 
   use ExUnit.Case, async: true
-  doctest BinStruct.Types.Flags
+  doctest_file "pages/types/flags.md"
 
 end

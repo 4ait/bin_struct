@@ -1,8 +1,7 @@
 defmodule BinStructCustomType do
 
   @moduledoc """
-
-  BinStructCustomType is user defined type when you need most control of how data are parsed.
+  `BinStructCustomType` is user defined type when you need most control of how data are parsed.
 
   Such custom type can be used in place you would use BinStruct.
 
@@ -10,45 +9,37 @@ defmodule BinStructCustomType do
 
   Required functions to be defined by custom type:
 
-      either parse_returning_options/3 or parse_exact_returning_options/3
-      size/2
-      known_total_size_bytes/2
-      dump_binary/2
-      from_unmanaged_to_managed/2
-      from_managed_to_unmanaged/2
+  * either `parse_returning_options/3` or `parse_exact_returning_options/3`
+  * `size/2`
+  * `known_total_size_bytes/2`
+  * `dump_binary/2`
+  * `from_unmanaged_to_managed/2`
+  * `from_managed_to_unmanaged/2`
 
   Optional functions to be defined by custom type:
-      init_args/1
 
-  Here’s an example:
+  * `init_args/1`
 
   ## Basic Example
 
-    ```
+  ```elixir
+  defmodule SimpleCustomTypeTwoBytesLong do
+    use BinStructCustomType
 
-      defmodule SimpleCustomTypeTwoBytesLong do
-
-        use BinStructCustomType
-
-        def parse_returning_options(bin, _custom_type_args, opts) do
-
-          case bin do
-            <<data::2-bytes, rest::binary>> -> { :ok, data, rest, opts }
-            _ -> :not_enough_bytes
-          end
-
-        end
-
-        def size(_data, _custom_type_args), do: 2
-        def known_total_size_bytes(_custom_type_args), do: 2
-        def dump_binary(data, _custom_type_args), do: data
-        def from_unmanaged_to_managed(unmanaged, _custom_type_args), do: unmanaged
-        def from_managed_to_unmanaged(managed, _custom_type_args), do: managed
-
+    def parse_returning_options(bin, _custom_type_args, opts) do
+      case bin do
+        <<data::2-bytes, rest::binary>> -> {:ok, data, rest, opts}
+        _ -> :not_enough_bytes
       end
+    end
 
-    ```
-
+    def size(_data, _custom_type_args), do: 2
+    def known_total_size_bytes(_custom_type_args), do: 2
+    def dump_binary(data, _custom_type_args), do: data
+    def from_unmanaged_to_managed(unmanaged, _custom_type_args), do: unmanaged
+    def from_managed_to_unmanaged(managed, _custom_type_args), do: managed
+  end
+  ```
   """
 
   alias BinStruct.Macro.OptionFunction
@@ -68,12 +59,10 @@ defmodule BinStructCustomType do
 
 
   @doc """
+  Registering option for custom type. Interface will be your module name.
+  Implementation and usage same as register_option for BinStruct.
 
-    Registering option for custom type. Interface will be your module name.
-    Implementation and usage same as register_option for BinStruct.
-
-    Se more in BinStruct register_option docs [`BinStruct.register_option/2`](`BinStruct.register_option/2`)
-
+  See more in `BinStruct.register_option/2`
   """
 
   defmacro register_option(name, parameters \\ []) do

@@ -1,6 +1,6 @@
 defmodule BinStructTests.DocTests.Types.IntBeTest do
 
   use ExUnit.Case, async: true
-  doctest BinStruct.Types.IntBe
+  doctest_file "pages/types/int_be.md"
 
 end

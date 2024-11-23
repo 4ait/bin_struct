@@ -1,6 +1,6 @@
 defmodule BinStructTests.DocTests.Types.VariantOfTest do
 
   use ExUnit.Case, async: true
-  doctest BinStruct.Types.VariantOf
+  doctest_file "pages/types/variant_of.md"
 
 end

@@ -1,19 +1,17 @@
 defmodule BinStruct.BuiltIn.TerminatedBinary do
 
   @moduledoc """
+  Terminated binary implemented as `BinStructCustomType`.
 
-  Terminated binary implemented as BinStructCustomType.
+  ```elixir
+  defmodule Struct do
+    use BinStruct
 
-   ```
-      defmodule Struct do
-        use BinStruct
+    alias BinStruct.BuiltIn.TerminatedBinary
 
-        alias BinStruct.BuiltIn.TerminatedBinary
-
-        field :terminated_binary, { TerminatedBinary, termination: <<0, 0>> }
-      end
-    ```
-
+    field :terminated_binary, { TerminatedBinary, termination: <<0, 0>> }
+  end
+  ```
   """
 
   use BinStructCustomType

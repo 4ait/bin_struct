@@ -1,25 +1,21 @@
 defmodule BinStructOptionsInterface do
 
   @moduledoc """
-
-    ```
-
-      iex> defmodule SharedOptions do
-      ...>   use BinStructOptionsInterface
-      ...>
-      ...>   @type runtime_context1 :: :context_a
-      ...>   @type runtime_context2 :: :context_b
-      ...>
-      ...>   register_option :runtime_context1
-      ...>   register_option :runtime_context2
-      ...>
-      ...> end
-      ...>
-      ...> SharedOptions.option_runtime_context1(:context_a)
-      ...> |> SharedOptions.option_runtime_context2(:context_b)
-
-    ```
-
+  ```elixir
+  iex> defmodule SharedOptions do
+  ...>   use BinStructOptionsInterface
+  ...>
+  ...>   @type runtime_context1 :: :context_a
+  ...>   @type runtime_context2 :: :context_b
+  ...>
+  ...>   register_option :runtime_context1
+  ...>   register_option :runtime_context2
+  ...>
+  ...> end
+  ...>
+  ...> SharedOptions.option_runtime_context1(:context_a)
+  ...> |> SharedOptions.option_runtime_context2(:context_b)
+  ```
   """
 
   alias BinStruct.Macro.OptionFunction
@@ -39,12 +35,10 @@ defmodule BinStructOptionsInterface do
   end
 
   @doc """
+  Registering option for option interface. Interface will be your module name.
+  Implementation and usage same as `register_option` for `BinStruct`.
 
-    Registering option for option interface. Interface will be your module name.
-    Implementation and usage same as register_option for BinStruct.
-
-    Se more in BinStruct register_option docs [`BinStruct.register_option/2`](`BinStruct.register_option/2`)
-
+  See more in `BinStruct.register_option/2`
   """
 
   defmacro register_option(name, parameters \\ []) do

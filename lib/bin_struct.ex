@@ -1,50 +1,48 @@
 defmodule BinStruct do
 
   @moduledoc """
-
   ## Overview
 
-    ```
+  ```
+   iex> defmodule SimpleChildStruct do
+   ...>  use BinStruct
+   ...>  field :data, :uint8
+   ...> end
+   ...>
+   ...> defmodule SimpleStructWithChild do
+   ...>   use BinStruct
+   ...>   field :child, SimpleChildStruct
+   ...> end
+   ...>
+   ...> SimpleStructWithChild.new(child: SimpleChildStruct.new(data: 1))
+   ...> |> SimpleStructWithChild.dump_binary()
+   ...> |> SimpleStructWithChild.parse()
+   ...> |> then(fn {:ok, struct, _rest } -> struct end)
+   ...> |> SimpleStructWithChild.decode()
+   %{ child: SimpleChildStruct.new(data: 1) }
+  ```
 
-     iex> defmodule SimpleChildStruct do
-     ...>  use BinStruct
-     ...>  field :data, :uint8
-     ...> end
-     ...>
-     ...> defmodule SimpleStructWithChild do
-     ...>   use BinStruct
-     ...>   field :child, SimpleChildStruct
-     ...> end
-     ...>
-     ...> SimpleStructWithChild.new(child: SimpleChildStruct.new(data: 1))
-     ...> |> SimpleStructWithChild.dump_binary()
-     ...> |> SimpleStructWithChild.parse()
-     ...> |> then(fn {:ok, struct, _rest } -> struct end)
-     ...> |> SimpleStructWithChild.decode()
-     %{ child: SimpleChildStruct.new(data: 1) }
+  As you can see from example on above parsed structs and newly created are always equal thanks to intermediate type conversion called `unmanaged`.
+  It's neither binary or managed and you are not suppose to work with it directly, by any type (including custom types) can perform
+  automatic type conversion between `binary`, `managed` and `unmanaged` on developer request (using `registered_callback` api)
 
-    ```
+  BinStruct will automatically generate set if functions for you:
 
-    As you can see from example on above parsed structs and newly created are always equal thanks to intermediate type conversion called 'unmanaged'.
-    It's neither binary or managed and you are not suppose to work with it directly, by any type (including custom types) can perform
-    automatic type conversion between 'binary', 'managed' and 'unmanaged' on developer request (using registered_callback api)
+  1. `dump_binary/1`
+  2. `size/1`
+  3. `parse/2` will be present if is terminated (have rules defined to be parsed into finite struct from infinity bytestream)
+  4. `parse_exact/2`
+  5. `decode/2`
+  6. `new/1`
 
-    BinStruct will automatically generate set if functions for you:
+  In additional with configuration it supports for now:
 
-        1. dump_binary/1
-        2. size/1
-        3. parse/2 will be present if is terminated (have rules defined to be parsed into finite struct from infinity bytestream)
-        4. parse_exact/2
-        4. decode/2
-        4. new/1
-
-    In additional with configuration it supports for now:
-
-        tls_receive()
-        tls_send()
-        tcp_receive()
-        tcp_send()
-
+  ```elixir
+  tls_receive()
+  tls_send()
+  tcp_receive()
+  tcp_send()
+  ```
   """
 
   alias BinStruct.Macro.Preprocess.Remap
@@ -203,31 +201,31 @@ defmodule BinStruct do
 
     Callback should return either true if value should be present or false otherwise.
 
-  ### item_size and item_size_by (ListOf only)
+  ### item_size and item_size_by (`list_of` only)
 
     ```
     field :value, { :list_of, Item }, item_size: 2
     field :value, { :list_of, Item }, item_size_by:  &callback/1
     ```
 
-   Se more detailed explanation in [`BinStruct.Types.ListOf`](`BinStruct.Types.ListOf`)
+   Se more detailed explanation in [`list_of` doc](pages/types/list_of.md)
 
-  ### count and count_by (ListOf only)
+  ### count and count_by (`list_of` only)
 
    ```
     field :value, { :list_of, Item }, count: 2
     field :value, { :list_of, Item }, count_by: &callback/1
    ```
 
-   Se more detailed explanation in [`BinStruct.Types.ListOf`](`BinStruct.Types.ListOf`)
+   Se more detailed explanation in [`list_of` doc](pages/types/list_of.md)
 
-  ### take_while_by (ListOf only)
+  ### take_while_by (`list_of` only)
 
     ```
     field :value, { :list_of, Item }, take_while_by: &callback/1
     ```
 
-   Se more detailed explanation in [`BinStruct.Types.ListOf`](`BinStruct.Types.ListOf`)
+   Se more detailed explanation in [`list_of` doc](pages/types/list_of.md)
 
   ### builder
 

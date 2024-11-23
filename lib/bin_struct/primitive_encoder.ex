@@ -1,16 +1,12 @@
 defmodule BinStruct.PrimitiveEncoder do
 
   @moduledoc """
+  Useful in `registered_callbacks` when library can't achieve automatic type conversion.
 
-    Useful in registered_callbacks when library can't achieve automatic type conversion.
-
-     ```
-
-      iex>  BinStruct.PrimitiveEncoder.uint8(0)
-      <<0>>
-
-    ```
-
+  ```elixir
+  iex> BinStruct.PrimitiveEncoder.uint8(0)
+  <<0>>
+  ```
   """
 
   def uint8(value), do: <<value::8-unsigned>>
@@ -49,6 +45,3 @@ defmodule BinStruct.PrimitiveEncoder do
   end
 
 end
-
-
-

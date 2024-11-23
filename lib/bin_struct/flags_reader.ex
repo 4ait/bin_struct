@@ -1,19 +1,13 @@
 defmodule BinStruct.FlagsReader do
 
-
   @moduledoc """
+  Useful in `registered_callbacks` when library can't achieve automatic type conversion.
 
-    Useful in registered_callbacks when library can't achieve automatic type conversion.
-
-
-    ```
-
-      iex> flags = [ { 0x01, :flag_a }, { 0x02, :flag_b } ]
-      ...>  BinStruct.FlagsReader.read_flags_from_integer(flags, 0x01)
-      [ :flag_a ]
-
-    ```
-
+  ```elixir
+  iex> flags = [{0x01, :flag_a}, {0x02, :flag_b}]
+  ...> BinStruct.FlagsReader.read_flags_from_integer(flags, 0x01)
+  [:flag_a]
+  ```
   """
 
   def read_flags_from_integer([], _integer), do: []

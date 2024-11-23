@@ -1,18 +1,13 @@
 defmodule BinStruct.FlagsWriter do
 
   @moduledoc """
+  Useful in `registered_callbacks` when library can't achieve automatic type conversion.
 
-    Useful in registered_callbacks when library can't achieve automatic type conversion.
-
-
-    ```
-
-      iex> flags = [ { 0x01, :flag_a }, { 0x02, :flag_b } ]
-      ...>  BinStruct.FlagsWriter.write_flags_to_integer(flags, [ :flag_a ])
-      0x01
-
-    ```
-
+  ```elixir
+  iex> flags = [{ 0x01, :flag_a}, {0x02, :flag_b}]
+  ...> BinStruct.FlagsWriter.write_flags_to_integer(flags, [:flag_a])
+  0x01
+  ```
   """
 
   def write_flags_to_integer(flags_def, set_flags) do
