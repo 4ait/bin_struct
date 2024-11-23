@@ -14,7 +14,7 @@ defmodule ExtractionFromIntegerStruct do
   @session_redirection_version_mask 0x0000003C
   @session_redirection_version_mask_shift_offset 2
 
-  #defining values for fields and enums separately, not inlining into declarations
+  #defining values for flags and enum separately, not inlining into declarations
 
   @flags [
     { 0x00000001, :redirection_supported },
