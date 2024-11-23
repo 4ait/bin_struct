@@ -72,12 +72,17 @@ defmodule ExtractionFromBufferStruct do
   virtual :domain_name_utf16, :binary, read_by: &read_domain_name_utf16/3, builder: &build_domain_name_utf16/1
   virtual :user_name_utf16, :binary, read_by: &read_user_name_utf16/3, builder: &build_user_name_utf16/1
 
+
+  # Real shape of binary -> 
+
   field :domain_name_len, :uint16_le, builder: &build_domain_name_len/1
   field :domain_name_buffer_offset, :uint32_le, builder: &build_domain_name_buffer_offset/0
   field :user_name_len, :uint16_le, builder: &build_user_name_len/1
   field :user_name_buffer_offset, :uint32_le, builder: &build_user_name_buffer_offset/2
 
   field :buffer, :binary, builder: &build_buffer/2
+
+  # <- Real shape of binary
 
   #utf16 virtual fields
 
