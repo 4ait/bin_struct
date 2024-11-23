@@ -101,8 +101,8 @@ defmodule ExtractionFromBufferStruct do
 
   #utf8 virtual fields
 
-  defp read_domain_name_utf8(domain_name_utf16), do: from_utf16_non_terminated_to_utf8(domain_name_utf16)
-  defp read_user_name_utf8(user_name_utf16), do: from_utf16_non_terminated_to_utf8(user_name_utf16)
+  defp read_domain_name_utf8(domain_name_utf16), do: from_utf16_le_non_terminated_to_utf8(domain_name_utf16)
+  defp read_user_name_utf8(user_name_utf16), do: from_utf16_le_non_terminated_to_utf8(user_name_utf16)
 
   #length and offset creation
 
@@ -128,7 +128,7 @@ defmodule ExtractionFromBufferStruct do
 
   end
 
-  defp from_utf16_non_terminated_to_utf8(utf_16_terminated_binary)  do
+  defp from_utf16_le_non_terminated_to_utf8(utf_16_terminated_binary)  do
     :unicode.characters_to_binary(utf_16_terminated_binary, { :utf16, :little }, :utf8)
   end
 
