@@ -7,8 +7,14 @@ defmodule ExtractionFromIntegerStruct do
   alias BinStruct.FlagsWriter
   alias BinStruct.FlagsReader
 
+  #problem: there is enum hidden under mask in integer
+  #and it's not trivial to extract coz is not on an edge position
+  #real struct looks like [  flags_bits ... enum ...flags_bits  ]
+
   @session_redirection_version_mask 0x0000003C
   @session_redirection_version_mask_shift_right_offset 2
+
+  #defining values for fields and enums separately, not inlining into declarations
 
   @flags [
     { 0x00000001, :redirection_supported },
@@ -25,21 +31,35 @@ defmodule ExtractionFromIntegerStruct do
     { 0x05, :redirection_version6 }
   ]
 
+
+  #how flags will be created during decode/parse(can be requested from any callback inside parse too)
   register_callback &read_flags/1, flags_and_server_session_redirection_version: :field
+
+  #how our enum will be created
   register_callback &read_server_session_redirection_version/1, flags_and_server_session_redirection_version: :field
 
+
+  #how raw integer will be created from flags and enum during new struct creation
   register_callback &build_flags_and_server_session_redirection_version/2,
                     flags: :field,
                     server_session_redirection_version: :field
+
+  #desired clean api
 
   virtual :flags, { :flags, %{ type: :uint32_le, values: @flags }}, read_by: &read_flags/1
 
   virtual :server_session_redirection_version, { :enum, %{ type: :uint, values: @server_session_redirection_version } },
           read_by: &read_server_session_redirection_version/1
 
+
+  #real part we don't want to work this directly
   field :flags_and_server_session_redirection_version,
         :uint32_le,
         builder: &build_flags_and_server_session_redirection_version/2
+
+
+
+  #implementations to make it happen
 
   defp read_flags(flags_and_server_session_redirection_version) do
 
