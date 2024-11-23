@@ -106,6 +106,8 @@ defmodule ExtractionFromIntegerStruct do
 
 end
 
+#this extraction will be particular useful when next fields depend on some of this enum or flag value
+
 #we are creating new struct to simulate data we would receive
 created_struct =
   ExtractionFromIntegerStruct.new(
