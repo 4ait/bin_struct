@@ -6,7 +6,7 @@ defmodule ExtractionFromBufferStruct do
   #problem2: it's utf16 and we can't work this it
   #we will solve exactly step by step as problems acquire
 
-  #while parsing we will extract data from buffer to virtual utf16 fields
+  #while decoding/parsing(on request) we will extract data from buffer to virtual utf16 fields
   #then we will read those to virtual utf8 fields
 
   #while creating new binaries we will build virtual utf16 fields out of virtual utf8 fields we pass in
