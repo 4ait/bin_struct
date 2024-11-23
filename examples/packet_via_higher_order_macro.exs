@@ -1,4 +1,4 @@
-#This example is particular useful for any protocol developer!
+#This example is particular useful for any protocol developer using this lib!
 
 #Our goal is this example is to setup packet generation for our protocol.
 #We will do this once and will be generating it for every structure we need in few lines later
