@@ -1,0 +1,120 @@
+defmodule ExtractionFromIntegerStruct do
+
+  use BinStruct
+
+  alias BinStruct.EnumVariantNameByValue
+  alias BinStruct.EnumValueByVariantName
+  alias BinStruct.FlagsWriter
+  alias BinStruct.FlagsReader
+
+  @session_redirection_version_mask 0x0000003C
+  @session_redirection_version_mask_shift_right_offset 2
+
+  @flags [
+    { 0x00000001, :redirection_supported },
+    { 0x00000002, :redirected_sessionid_field_valid },
+    { 0x00000040, :redirected_smartcard }
+  ]
+
+  @server_session_redirection_version [
+    { 0x00, :redirection_version1 },
+    { 0x01, :redirection_version2 },
+    { 0x02, :redirection_version3 },
+    { 0x03, :redirection_version4 },
+    { 0x04, :redirection_version5 },
+    { 0x05, :redirection_version6 }
+  ]
+
+  register_callback &read_flags/1, flags_and_server_session_redirection_version: :field
+  register_callback &read_server_session_redirection_version/1, flags_and_server_session_redirection_version: :field
+
+  register_callback &build_flags_and_server_session_redirection_version/2,
+                    flags: :field,
+                    server_session_redirection_version: :field
+
+  virtual :flags, { :flags, %{ type: :uint32_le, values: @flags }}, read_by: &read_flags/1
+
+  virtual :server_session_redirection_version, { :enum, %{ type: :uint, values: @server_session_redirection_version } },
+          read_by: &read_server_session_redirection_version/1
+
+  field :flags_and_server_session_redirection_version,
+        :uint32_le,
+        builder: &build_flags_and_server_session_redirection_version/2
+
+  defp read_flags(flags_and_server_session_redirection_version) do
+
+    FlagsReader.read_flags_from_integer(
+      @flags,
+      flags_and_server_session_redirection_version
+    )
+
+  end
+
+  defp read_server_session_redirection_version(flags_and_server_session_redirection_version) do
+
+    integer_under_mask = Bitwise.band(@session_redirection_version_mask, flags_and_server_session_redirection_version)
+
+    integer_under_mask_shifted = Bitwise.bsr(integer_under_mask, @session_redirection_version_mask_shift_right_offset)
+
+    EnumVariantNameByValue.find_enum_variant_name_by_value(
+      @server_session_redirection_version,
+      integer_under_mask_shifted
+    )
+
+  end
+
+
+  defp build_flags_and_server_session_redirection_version(flags, server_session_redirection_version) do
+
+    flags_integer =
+      FlagsWriter.write_flags_to_integer(
+        @flags,
+        flags
+      )
+
+    integer_under_mask =
+      EnumValueByVariantName.find_enum_value_by_variant_name(
+        @server_session_redirection_version,
+        server_session_redirection_version
+      )
+
+    mask_value = Bitwise.bsl(integer_under_mask, @session_redirection_version_mask_shift_right_offset)
+
+    Bitwise.bor(flags_integer, mask_value)
+
+  end
+
+end
+
+#we are creating new struct to simulate data we would receive
+created_struct =
+  ExtractionFromIntegerStruct.new(
+    flags: [ :redirection_supported, :redirected_sessionid_field_valid ],
+    server_session_redirection_version: :redirection_version6
+  )
+
+#creating binary
+binary_version_of_struct = ExtractionFromIntegerStruct.dump_binary(created_struct)
+
+#parsing binary
+{:ok, parsed_back_struct, "" = _rest} = ExtractionFromIntegerStruct.parse(binary_version_of_struct)
+
+#decoding to see what is here
+decoded = ExtractionFromIntegerStruct.decode(parsed_back_struct)
+
+IO.inspect(decoded, label: "Original")
+
+#overriding some content
+override_struct =
+  ExtractionFromIntegerStruct.new(
+    flags: [ :redirected_smartcard | decoded.flags ],
+    server_session_redirection_version: :redirection_version5
+  )
+
+IO.inspect(ExtractionFromIntegerStruct.decode(override_struct), label: "Override")
+
+#new binary ready to send with new content is ready!
+_ready_to_send_new_binary = ExtractionFromIntegerStruct.dump_binary(override_struct)
+
+#this way we abstracted away internal complexity and working with this data as simple as directly with fields
+#we can now perform full cycle or encoding/decoding and extract this structure to be part of something else
