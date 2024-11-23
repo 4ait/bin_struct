@@ -4,7 +4,7 @@ defmodule BinStruct.MixProject do
   def project do
     [
       app: :bin_struct,
-      version: "0.2.8",
+      version: "0.2.9",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: ["lib"] |> maybe_add_test_elixirc_path(),
