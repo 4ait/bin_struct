@@ -10,7 +10,7 @@ defmodule PacketHeader do
   register_callback &impl_options_interface_1/1, version: :field
 
   #asking to implement interface PacketHeader (out module name will be our interface)
-  #at the end of parse this interface will be implemented and any struct from three can receive it
+  #as soon as this header is fully parsed this interface will be implemented and any struct from three can receive it
   impl_interface PacketHeader, &impl_options_interface_1/1
 
   field :version, {
