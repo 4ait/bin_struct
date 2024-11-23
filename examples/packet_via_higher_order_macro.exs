@@ -84,7 +84,7 @@ defmodule Packet do
 
       #reading content length from header
       defp content_length(header) do
-        %{length: length} = PacketHeader.decode(header)
+        %{ length: length } = PacketHeader.decode(header)
         length
       end
 
