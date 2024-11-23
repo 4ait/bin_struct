@@ -118,11 +118,11 @@ defmodule ExtractionFromBufferStruct do
 
   #helpers
 
-  defp read_from_buffer(_payload, _length = 0, _offset), do: <<>>
+  defp read_from_buffer(_buffer, _length = 0, _offset), do: <<>>
 
-  defp read_from_buffer(payload, length, offset) do
+  defp read_from_buffer(buffer, length, offset) do
 
-    <<_skip::binary-size(offset), value::binary-size(length), _rest::binary>> = payload
+    <<_skip::binary-size(offset), value::binary-size(length), _rest::binary>> = buffer
 
     value
 
