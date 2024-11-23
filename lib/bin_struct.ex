@@ -613,8 +613,8 @@ defmodule BinStruct do
         end
       ) |> Keyword.new()
 
-    define_receive_send_tcp = Application.get_env(:bin_struct, :define_receive_send_tcp, true)
-    define_receive_send_tls = Application.get_env(:bin_struct, :define_receive_send_tls, true)
+    define_receive_send_tcp = Application.get_env(:bin_struct, :define_receive_send_tcp, false)
+    define_receive_send_tls = Application.get_env(:bin_struct, :define_receive_send_tls, false)
     enable_log_tcp = Application.get_env(:bin_struct, :enable_log_tcp, true)
     enable_log_tls = Application.get_env(:bin_struct, :enable_log_tls, true)
 
