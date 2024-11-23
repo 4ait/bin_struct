@@ -51,7 +51,8 @@ defmodule BinStruct.MixProject do
       licenses: ["MIT"],
       maintainers: ["Ridtt"],
       links: %{
-        "GitHub" => "https://github.com/4ait/bin_struct"
+        "GitHub" => "https://github.com/4ait/bin_struct",
+        "Changelog" => "https://github.com/4ait/bin_struct/blob/master/CHANGELOG.md"
       }
     ]
   end
