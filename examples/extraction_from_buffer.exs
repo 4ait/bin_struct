@@ -6,7 +6,7 @@ defmodule ExtractionFromBufferStruct do
   #problem2: it's utf16 and we can't work this it
   #we will solve exactly step by step as problems acquire
 
-  #while parsing we will extract data from buffer to virtual utf16 fields
+  #while decoding/parsing(on request) we will extract data from buffer to virtual utf16 fields
   #then we will read those to virtual utf8 fields
 
   #while creating new binaries we will build virtual utf16 fields out of virtual utf8 fields we pass in
@@ -15,7 +15,7 @@ defmodule ExtractionFromBufferStruct do
 
   #how structure will be decoded ->
 
-  #it will read utf16 out if buffer
+  #it will read utf16 out of buffer
 
   register_callback &read_domain_name_utf16/3,
                     buffer: :field,
@@ -67,7 +67,7 @@ defmodule ExtractionFromBufferStruct do
   virtual :domain_name_utf8, :binary, read_by: &read_domain_name_utf8/1
   virtual :user_name_utf8, :binary, read_by: &read_user_name_utf8/1
 
-  #we extracting utf16 virtual fields separately to more readability and will use at as cache
+  #we extracting utf16 virtual fields separately to more readability and to use them as cache
   #to populate both buffer and length while creating new structs
   virtual :domain_name_utf16, :binary, read_by: &read_domain_name_utf16/3, builder: &build_domain_name_utf16/1
   virtual :user_name_utf16, :binary, read_by: &read_user_name_utf16/3, builder: &build_user_name_utf16/1
