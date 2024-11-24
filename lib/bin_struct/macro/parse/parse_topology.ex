@@ -38,7 +38,7 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
 
     non_virtual_fields = NonVirtualFields.skip_virtual_fields(fields)
 
-    parse_vertexes =
+    parse_vertices =
       Enum.map(
         non_virtual_fields,
         fn field ->
@@ -110,7 +110,7 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
 
     graph =
       Graph.new()
-      |> Graph.add_vertices(parse_vertexes)
+      |> Graph.add_vertices(parse_vertices)
       |> Graph.add_edges(edges)
 
     topology =

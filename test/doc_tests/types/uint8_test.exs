@@ -1,6 +1,6 @@
 defmodule BinStructTests.DocTests.Types.Uint8Test do
 
   use ExUnit.Case, async: true
-  doctest BinStruct.Types.Uint8
+  doctest_file "pages/types/uint8.md"
 
 end

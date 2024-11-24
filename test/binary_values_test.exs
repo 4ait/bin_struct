@@ -8,7 +8,7 @@ defmodule BinStructTest.BinaryValuesTest do
 
     alias BinStruct.BuiltIn.TerminatedBinary
 
-    field :binary_fixed_lenght, :binary, length: 3
+    field :binary_fixed_length, :binary, length: 3
     field :binary_terminated, { TerminatedBinary, termination: <<0, 0, 0>> }
     field :binary_unbounded, :binary
 
@@ -21,7 +21,7 @@ defmodule BinStructTest.BinaryValuesTest do
 
     struct =
       BinaryValuesBinStruct.new(
-        binary_fixed_lenght: bin,
+        binary_fixed_length: bin,
         binary_terminated: bin,
         binary_unbounded: bin
       )
@@ -34,7 +34,7 @@ defmodule BinStructTest.BinaryValuesTest do
     values = BinaryValuesBinStruct.decode(parsed_struct)
 
     %{
-      binary_fixed_lenght: ^bin,
+      binary_fixed_length: ^bin,
       binary_terminated: ^bin,
       binary_unbounded: ^bin
     } = values

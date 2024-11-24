@@ -35,7 +35,7 @@ defmodule IHDRChunk do
         { 2, :truecolor },
         { 3, :indexed_color_palette_based },
         { 4, :grayscale_with_alpha },
-        { 6, :truecolor_with_alhpa },
+        { 6, :truecolor_with_alpha },
       ]
     }
   }

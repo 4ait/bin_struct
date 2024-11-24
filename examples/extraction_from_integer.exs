@@ -49,7 +49,7 @@ defmodule ExtractionFromIntegerStruct do
                     flags: :field,
                     server_session_redirection_version: :field
 
-  #requsting our clean enum value out of virtual field we just created
+  #requesting our clean enum value out of virtual field we just created
   register_callback &is_redirection_version4/1, server_session_redirection_version: :field
 
   #desired clean api
