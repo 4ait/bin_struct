@@ -13,7 +13,7 @@ BinStruct is not an protocol itself, there is no goal to replace asn1, protobuf,
 BinStruct is not replacement for binary pattern matching. If your job can be done via pattern match only it will be always better to use it directly.
 There is layer of complexity this lib adds to make it achive it's main goal - write declarations, generate implementations automatically. When complexity grows only sane way to keep with it has general declarative structure of each part you working this.
 
-BinStruct is by no means a framework and does not force you to follow any specific structure of how its parts used will be used together. 
+BinStruct is by no means a framework and does not force you to follow any specific structure of how its parts will be used together. 
 Each BinStruct you create is completely self-contained and can be used as you see fit. Whether you want to validate CRC, add encryption, or implement something else inside or outside—it’s entirely up to you, and the library imposes no restrictions on these choices.
 
 ## What BinStruct is primarily
