@@ -57,7 +57,7 @@ end
     #use expanded constructs whenever possible, this is both easier to read and will be validated at parse time
     #its always better to expand arrays/flags/enums even if you don't use them for now, it will help moving forward
     #as you will have more complete picture
-    #which will give you opportunity to be dispatched as dynamic variant later
+    #and also it will give you opportunity to be dispatched as dynamic variant later (read it as if we received something and it has type distinct from listed below it's not this struct, we can catch it via upper variant_of later)
     field :type, {
       :enum,
       %{
