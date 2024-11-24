@@ -55,6 +55,8 @@ end
     field :length, :uint32_be
   
     #use expanded constructs whenever possible, this is both easier to read and will be validated at parse time
+    #its always better to expand arrays/flags/enums even if you don't use them for now, it will help moving forward
+    #as you will have more complete picture
     #which will give you opportunity to be dispatched as dynamic variant later
     field :type, {
       :enum,
