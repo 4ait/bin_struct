@@ -109,12 +109,12 @@ mix run examples/packet_via_higher_order_macro.exs
 
 #### Type-Specific Docs
 
-- [StaticValue](https://hexdocs.pm/bin_struct/BinStruct.Types.StaticValue.html)
-- [Binary](https://hexdocs.pm/bin_struct/BinStruct.Types.Binary.html)
-- [Enum](https://hexdocs.pm/bin_struct/BinStruct.Types.Enum.html)
-- [Flags](https://hexdocs.pm/bin_struct/BinStruct.Types.Flags.html)
-- [List](https://hexdocs.pm/bin_struct/BinStruct.Types.ListOf.html)
-- [Variant](https://hexdocs.pm/bin_struct/BinStruct.Types.VariantOf.html)
+- [StaticValue](https://hexdocs.pm/bin_struct/static_value.html)
+- [Binary](https://hexdocs.pm/bin_struct/binary.html)
+- [Enum](https://hexdocs.pm/bin_struct/enum.html)
+- [Flags](https://hexdocs.pm/bin_struct/flags.html)
+- [List](https://hexdocs.pm/bin_struct/list_of.html)
+- [Variant](https://hexdocs.pm/bin_struct/variant_of.html)
 
 ### Explore Tests
 
