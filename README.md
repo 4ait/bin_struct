@@ -18,6 +18,8 @@ Each BinStruct you create is completely self-contained and can be used as you se
 
 ## What BinStruct is primarily
 
+BinStruct is s tool. Tool to support developer from very beggining with reach set of generated features, allowing to exlore data in every step, to very end running your app in production.
+
 I believe BinStruct is an essential tool for developers. Simply transferring declarations from your protocol documentation into BinStruct special syntax is enough to start parsing your data, decoding it, and exploring its structure. This lets you build an understanding of how to proceed next.
 It is especially helpful when working with a protocol that is new to you. If you’re unsure where to start or what to focus on, just transfer what you see in the documentation into BinStruct declarations and experiment. At some point, things will start falling into place, and you might even find that the application almost writes itself before you realize it.
 Even the smallest fragments you implement can already be put to use. You can parse and decode binary data to gain a better understanding of what you're dealing with without needing to fully implement every detail or dynamic callback. You'll gradually build out your protocol implementation step by step, and over time, these pieces will naturally connect as your codebase grows.
