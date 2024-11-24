@@ -6,7 +6,17 @@ The goal is to write declarations that are **readable now and will remain readab
 
 This library is particularly beneficial for use cases that require **bidirectional data flow**.
 
----
+## What BinStruct is not
+
+BinStruct is by no means a framework and does not force you to follow any specific structure.  
+Each BinStruct you create is completely self-contained and can be used as you see fit. Whether you want to validate CRC, add encryption, or implement something else inside or outside—it’s entirely up to you, and the library imposes no restrictions on these choices.
+
+## What BinStruct is primarily
+
+I believe BinStruct is an essential tool for developers. Simply transferring declarations from your protocol documentation into BinStruct special syntax is enough to start parsing your data, decoding it, and exploring its structure. This lets you build an understanding of how to proceed next.
+It is especially helpful when working with a protocol that is new to you. If you’re unsure where to start or what to focus on, just transfer what you see in the documentation into BinStruct declarations and experiment. At some point, things will start falling into place, and you might even find that the application almost writes itself before you realize it.
+Even the smallest fragments you implement can already be put to use. You can parse and decode binary data to gain a better understanding of what you're dealing with without needing to fully implement every detail or dynamic callback. You'll gradually build out your protocol implementation step by step, and over time, these pieces will naturally connect as your codebase grows.
+You don’t need all the advanced features like virtual fields, auto-generated fields (builders), or type conversions beyond the basic managed (human-readable) one right away. You can always add them later if you think they’ll make the process easier.
 
 ## Installation
 
@@ -21,6 +31,61 @@ end
 ```
 
 ---
+
+## Basic syntax overview
+
+  ```elixir
+  
+  defmodule PngChunk do
+  
+    use BinStruct
+  
+    #all dynamic behaviour is callback
+    register_callback &data_length/1, length: :field
+  
+    #with fields you build shape of your binary data
+    field :length, :uint32_be
+  
+    #use expanded constructs whenever possible, this is both easier to read and will be validated at parse time
+    #which will give you opportunity to be dispatched as dynamic variant later
+    field :type, {
+      :enum,
+      %{
+        type: :binary,
+        values: [
+          "IHDR",
+          "PLTE",
+          "IDAT",
+          "IEND",
+          "cHRM",
+          "gAMA",
+          "iCCP",
+          "sBIT",
+          "sRGB",
+          "bKGD",
+          "hIST",
+          "tRNS",
+          "pHYs",
+          "sPLT",
+          "tIME",
+          "tEXt",
+          "zTXt",
+          "iTXt"
+        ]
+      }
+    }, length: 4
+  
+    #consuming dynamic behaviour into length_by
+    field :data, :binary, length_by: &data_length/1
+  
+    field :crc, :uint32_be
+  
+    #dynamic behaviour implementation
+    defp data_length(length), do: length
+  
+  end
+  
+  ```
 
 ## Getting Started
 
