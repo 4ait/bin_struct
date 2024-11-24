@@ -41,6 +41,7 @@ end
     use BinStruct
   
     #all dynamic behaviour is callback
+    #if we are not specifying type_conversion this is always 'managed' also known as 'human readable'
     register_callback &data_length/1, length: :field
   
     #with fields you build shape of your binary data
@@ -81,6 +82,8 @@ end
     field :crc, :uint32_be
   
     #dynamic behaviour implementation
+    #we returning always 'managed' type conversion, in this case length field will be automatically converted to elixir number
+    #and we return this number as it
     defp data_length(length), do: length
   
   end
