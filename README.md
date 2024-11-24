@@ -8,10 +8,17 @@ This library is particularly beneficial for use cases that require **bidirection
 
 ## What BinStruct is not
 
-BinStruct is by no means a framework and does not force you to follow any specific structure.  
+BinStruct is not an protocol itself, there is no goal to replace asn1, protobuf, erlang binary term or any other protocols. if you can solve your problem using existing protocol - stick with it.
+
+BinStruct is not replacement for binary pattern matching. If your job can be done via pattern match only it will be always better to use it directly.
+There is layer of complexity this lib adds to make it achive it's main goal - write declarations, generate implementations automatically. When complexity grows only sane way to keep with it has general declarative structure of each part you working this.
+
+BinStruct is by no means a framework and does not force you to follow any specific structure of how its parts will be used together. 
 Each BinStruct you create is completely self-contained and can be used as you see fit. Whether you want to validate CRC, add encryption, or implement something else inside or outside—it’s entirely up to you, and the library imposes no restrictions on these choices.
 
 ## What BinStruct is primarily
+
+BinStruct is s tool. Tool to support developer from very beggining with reach set of generated features, allowing to exlore data in every step, to very end running your app in production.
 
 I believe BinStruct is an essential tool for developers. Simply transferring declarations from your protocol documentation into BinStruct special syntax is enough to start parsing your data, decoding it, and exploring its structure. This lets you build an understanding of how to proceed next.
 It is especially helpful when working with a protocol that is new to you. If you’re unsure where to start or what to focus on, just transfer what you see in the documentation into BinStruct declarations and experiment. At some point, things will start falling into place, and you might even find that the application almost writes itself before you realize it.
@@ -48,7 +55,9 @@ end
     field :length, :uint32_be
   
     #use expanded constructs whenever possible, this is both easier to read and will be validated at parse time
-    #which will give you opportunity to be dispatched as dynamic variant later
+    #its always better to expand arrays/flags/enums even if you don't use them for now, it will help moving forward
+    #as you will have more complete picture
+    #and also it will give you opportunity to be dispatched as dynamic variant later (read it as if we received something and it has type distinct from listed below it's not this struct, we can catch it via upper variant_of later)
     field :type, {
       :enum,
       %{
