@@ -32,7 +32,7 @@ end
 
 ---
 
-## Basic syntax overview
+## Syntax overview
 
   ```elixir
   
