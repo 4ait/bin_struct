@@ -156,7 +156,7 @@ defmodule BinStruct do
 
     With fields you are building the shape of your binary data.
 
-    field/3 expected you to pass name and type of your field. Supported types can be found in bin_struct/types.
+    field/3 expected you to pass name and type of your field. Supported types can be found in Se more detailed explanation in [`types` doc](pages/types/binary.md).
     In additional you can pass another BinStruct itself and BinStructCustomType as type.
 
   ## Supported Options
