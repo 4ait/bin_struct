@@ -8,7 +8,7 @@ This library is particularly beneficial for use cases that require **bidirection
 
 ## What BinStruct is not
 
-BinStruct is not an protocol itself, there is no goal to replace asn1, protobuf, erlang binary term or any other protocols.
+BinStruct is not an protocol itself, there is no goal to replace asn1, protobuf, erlang binary term or any other protocols. if you can solve your problem using existing protocol - stick with it.
 
 BinStruct is not replacement for binary pattern matching. If your job can be done via pattern match only it will be always better to use it directly.
 There is layer of complexity this lib adds to make it achive it's main goal - write declarations, generate implementations automatically. When complexity grows then only sane way to keep with it has general declarative structure of each part you working this.
