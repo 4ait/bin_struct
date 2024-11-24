@@ -180,6 +180,8 @@ There is such tools as
 
 which may help in complex situations while developing, optimizing or generated code is not compiling.
 
+In most cases module_code/0 function should be enough. 
+
 ---
 
 ## Testing
