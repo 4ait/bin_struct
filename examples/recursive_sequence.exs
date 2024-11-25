@@ -37,7 +37,7 @@ defmodule SeqSequence do
   alias BinStruct.BuiltIn.Recursive
 
   #X don't use recursive types directly, at compile time library is building picture of what is inside tree
-  #it's calling every module to get it's properties, like does it have known length? does it can be parsed itself from infinity byte source?
+  #it's calling every module to get it's properties, like does it have known size? does it can be parsed itself from infinity byte source?
   #field :sequence, Sequence
 
   #V with wrapping it with recursing custom type we delegating this work to get compile time picture to custom type itself
