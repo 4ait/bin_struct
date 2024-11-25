@@ -71,10 +71,10 @@ defmodule BinStructCustomType do
   end
 
 
-  defp maybe_auto_implementation_of_parse_exact_returning_options(is_custom_type_terminated) do
+  defp maybe_auto_implementation_of_parse_exact_returning_options(is_should_define) do
 
     impl =
-      if is_custom_type_terminated do
+      if is_should_define do
 
           quote do
 
@@ -102,11 +102,15 @@ defmodule BinStructCustomType do
 
   defmacro __before_compile__(env) do
 
-
     ensure_custom_type_has_required_function_defined(env.module)
 
     is_parse_returning_options_defined = Module.defines?(env.module, {:parse_returning_options, 3})
+
     is_parse_exact_returning_options_defined = Module.defines?(env.module, {:parse_exact_returning_options, 3})
+
+    _is_custom_type_terminated_defined = Module.defines?(env.module, {:is_custom_type_terminated, 1})
+
+    _is_custom_type_terminated = is_parse_returning_options_defined
 
     raw_registered_options = Module.get_attribute(env.module, :options) |> Enum.reverse()
 
@@ -160,7 +164,7 @@ defmodule BinStructCustomType do
 
         unquote_splicing(
           maybe_auto_implementation_of_parse_exact_returning_options(
-            is_parse_returning_options_defined && !is_parse_exact_returning_options_defined
+            !is_parse_exact_returning_options_defined
           )
         )
 

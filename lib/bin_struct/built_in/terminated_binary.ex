@@ -24,7 +24,7 @@ defmodule BinStruct.BuiltIn.TerminatedBinary do
 
     case args do
       %{ termination: termination } when is_binary(termination) -> { :ok, args }
-      _ -> { :error, "Termination argument required by not provided" }
+      _ -> { :error, "Termination argument required but not provided" }
     end
 
   end

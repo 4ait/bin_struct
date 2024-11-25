@@ -39,7 +39,7 @@ defmodule BinStruct.BuiltIn.Asn1 do
         asn1_module: asn1_module,
         asn1_type: asn1_type
       } when is_atom(asn1_module) and is_atom(asn1_type) -> { :ok, args }
-      _ -> { :error, "asn1_module and asn1_type arguments required by not provided"  }
+      _ -> { :error, "asn1_module and asn1_type arguments required but not provided"  }
     end
 
   end
