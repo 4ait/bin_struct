@@ -164,6 +164,7 @@ mix run examples/extraction_from_integer.exs
 mix run examples/extraction_from_buffer.exs
 mix run examples/packet_via_higher_order_macro.exs
 mix run examples/recursive_sequence.exs
+mix run examples/compiled_decode_use_case.exs
 ```
 
 ### Reference Documentation
