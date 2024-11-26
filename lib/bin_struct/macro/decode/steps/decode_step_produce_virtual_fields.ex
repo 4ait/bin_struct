@@ -1,5 +1,6 @@
 defmodule BinStruct.Macro.Decode.Steps.DecodeStepProduceVirtualFields do
 
+  @moduledoc false
 
   alias BinStruct.Macro.Decode.Steps.DecodeStepProduceVirtualFields
 
