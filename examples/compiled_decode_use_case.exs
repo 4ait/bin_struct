@@ -21,7 +21,7 @@ defmodule Header do
 
   field :length, :uint32_be
 
-  #Solving without compiled decode_only function
+  #Solving with compiled decode_only function
 
   compile_decode_only :decode_only_version, [ :version ]
   compile_decode_only :decode_only_length, [ :length ]
