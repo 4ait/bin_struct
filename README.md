@@ -38,6 +38,38 @@ validation after each step, and creating structs as the result. It is not correc
 
 If, in some case, the library performs worse than regular pattern matching, please open an issue.
 
+## Future perfomance improvements 
+
+Along with chaning particular compilated output to better version of there will be some, i see another huge room of improvements, currently researching.
+
+It's called `use cases`. Problem: you don't always need all values to be decoded. And it's always will be not optimal solution no matter there will be decode single field function or not.
+
+I see way to solve it to implement compile time use cases. For example we often accessing length and version from some struct.
+
+We can compile it to usecase like 
+```elixir 
+compile_decode_only :decode_only_length_and_version, [:length, :version]
+```
+
+```elixir 
+Struct.decode_only_length_and_version(struct)
+```
+
+or more general version
+
+```elixir 
+compile_decode_only [:length, :version]
+```
+
+and use like
+
+```elixir 
+Struct.decode_only(struct, [:length, :version])
+```
+
+This way you will have exactly what you expect without any overhead. This feature needs to implement decode_topology, same as I did already for parse.
+
+
 ## Installation
 
 To get started, add `BinStruct` to your `mix.exs` dependencies:
