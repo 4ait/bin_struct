@@ -18,6 +18,8 @@ Added Recursive custom type for dynamic parsing recursive datastructures
 
 ## 0.2.13
 
-Removed decode_field/2 function
+Removed decode_field/2 function.
+
 Added compiled time use cases in exchange: 
+
 compile_decode_only [ :field_name_a, :field_name_b ] and compile_decode_only :function_name [ :field_name_a, :field_name_b ]
