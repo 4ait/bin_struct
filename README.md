@@ -51,6 +51,8 @@ We can compile it to usecase like
 compile_decode_only :decode_only_length_and_version, [:length, :version]
 ```
 
+and use like
+
 ```elixir 
 Struct.decode_only_length_and_version(struct)
 ```
