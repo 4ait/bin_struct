@@ -63,10 +63,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   def decode_only_labeled_function(fields, registered_callbacks_map, function_label, only_fields_names, _env) do
 
-
     topology = DecodeTopology.topology_only(fields, registered_callbacks_map, only_fields_names)
-
-    IO.inspect(topology)
 
     decode_steps = create_decode_steps_from_topology(topology)
 

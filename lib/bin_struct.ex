@@ -54,6 +54,8 @@ defmodule BinStruct do
     Module.register_attribute(__CALLER__.module, :options, accumulate: true)
     Module.register_attribute(__CALLER__.module, :callbacks, accumulate: true)
     Module.register_attribute(__CALLER__.module, :interface_implementations, accumulate: true)
+    Module.register_attribute(__CALLER__.module, :compile_decode_only_no_label, accumulate: true)
+    Module.register_attribute(__CALLER__.module, :compile_decode_only_with_labels, accumulate: true)
 
     quote do
       import BinStruct
@@ -428,6 +430,35 @@ defmodule BinStruct do
   end
 
 
+  defmacro compile_decode_only(label \\ nil, decode_only_names) do
+
+    case decode_only_names do
+      decode_only_names when is_list(decode_only_names) ->
+
+        all_atoms =
+          Enum.all?(
+            decode_only_names,
+            fn decode_only_name ->
+              is_atom(decode_only_name)
+            end
+          )
+
+        if !all_atoms do
+          raise "compile_decode_only accepts list of field_names as atoms as [ :a, :b ], got: #{inspect(decode_only_names)}"
+        end
+
+      _ ->
+          raise "compile_decode_only accepts list of field_names as atoms as [ :a, :b ], got: #{inspect(decode_only_names)}"
+    end
+
+    case label do
+      nil -> Module.put_attribute(__CALLER__.module, :compile_decode_only_no_label, decode_only_names)
+      label -> Module.put_attribute(__CALLER__.module, :compile_decode_only_with_labels, { label, decode_only_names })
+    end
+
+  end
+
+
   defp is_bin_struct_terminated_function(is_bin_struct_terminated) do
 
     quote do
@@ -464,6 +495,9 @@ defmodule BinStruct do
     raw_registered_options = Module.get_attribute(env.module, :options) |> Enum.reverse()
     raw_registered_callbacks = Module.get_attribute(env.module, :callbacks) |> Enum.reverse()
     raw_interface_implementations = Module.get_attribute(env.module, :interface_implementations) |> Enum.reverse()
+
+    compile_decode_only_no_label = Module.get_attribute(env.module, :compile_decode_only_no_label) |> Enum.reverse()
+    compile_decode_only_with_labels = Module.get_attribute(env.module, :compile_decode_only_with_labels) |> Enum.reverse()
 
     fields = Remap.remap_raw_fields(raw_fields, env)
 
@@ -503,14 +537,40 @@ defmodule BinStruct do
 
     decode_function = BinStruct.Macro.Decode.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
 
-    decode_only_user_name_utf8 =
-      BinStruct.Macro.Decode.DecodeFunction.decode_only_labeled_function(
-        fields,
-        registered_callbacks_map,
-        :decode_only_user_name_utf8,
-        [:user_name_utf8],
-        env
+    decode_only_labeled =
+      Enum.map(
+        compile_decode_only_with_labels,
+        fn { label, decode_only_names } ->
+
+          BinStruct.Macro.Decode.DecodeFunction.decode_only_labeled_function(
+            fields,
+            registered_callbacks_map,
+            label,
+            decode_only_names,
+            env
+          )
+
+        end
       )
+
+    decode_only_unlabeled =
+      Enum.map(
+        compile_decode_only_no_label,
+        fn decode_only_names ->
+
+          BinStruct.Macro.Decode.DecodeFunction.decode_only_unlabeled_function(
+            fields,
+            registered_callbacks_map,
+            decode_only_names,
+            env
+          )
+
+        end
+      )
+
+    decode_only_unlabeled_fallback =
+      BinStruct.Macro.Decode.DecodeFunction.decode_only_unlabeled_fallback_to_decode_all_with_warning_function()
+
 
     new_function = BinStruct.Macro.NewFunction.new_function(fields, registered_callbacks_map, env)
 
@@ -528,7 +588,6 @@ defmodule BinStruct do
 
     options_default_values_function =
       BinStruct.Macro.InUseOnlyDefaultOptionsFunction.default_options_function(registered_callbacks, children_bin_structs, env)
-
 
     option_functions =
       Enum.map(
@@ -625,14 +684,11 @@ defmodule BinStruct do
 
       end
 
-     decode_field_function = BinStruct.Macro.Decode.DecodeFieldFunction.decode_field_function_implemented_via_decode_all(env)
-
      result_quote =
         quote do
 
           defstruct unquote(struct_fields)
 
-          unquote(decode_field_function)
           unquote(new_function)
           unquote(dump_binary_function)
           unquote(options_default_values_function)
@@ -640,6 +696,11 @@ defmodule BinStruct do
           unquote_splicing(option_functions)
 
           unquote(decode_function)
+          unquote_splicing(decode_only_labeled)
+          unquote_splicing(decode_only_unlabeled)
+          unquote(decode_only_unlabeled_fallback)
+
+
           unquote(size_function)
 
           unquote(
@@ -661,13 +722,6 @@ defmodule BinStruct do
           unquote_splicing(maybe_receive)
           unquote_splicing(maybe_send)
 
-
-
-          unquote(decode_only_user_name_utf8)
-
-          unquote(
-            BinStruct.Macro.Decode.DecodeFunction.decode_only_unlabeled_fallback_to_decode_all_with_warning_function()
-          )
 
           def parse_exact_returning_options(bin, options \\ nil) do
 
