@@ -64,6 +64,11 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   def decode_only_labeled_function(fields, registered_callbacks_map, function_label, only_fields_names, _env) do
 
+
+    only_included_fields = only_included_fields(fields, only_fields_names)
+
+    raise_if_virtual_field_without_read_by_while_creating_compile_decode_only(only_included_fields)
+
     topology = DecodeTopology.topology_only(fields, registered_callbacks_map, only_fields_names)
 
     decode_steps = create_decode_steps_from_topology(topology)
@@ -72,24 +77,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
     steps_code = steps_code(decode_steps, registered_callbacks_map)
 
-    decode_only_fields =
-      Enum.filter(
-        fields,
-        fn field ->
-
-          name =
-            case field do
-              %Field{ name: name } -> name
-              %VirtualField{ name: name } -> name
-            end
-
-          name in only_fields_names
-
-        end
-      )
-
-    only_field_and_virtual_fields_with_read_by = only_field_and_virtual_fields_with_read_by(decode_only_fields)
-    result_decode_map_pairs = result_decode_map_pairs(only_field_and_virtual_fields_with_read_by)
+    result_decode_map_pairs = result_decode_map_pairs(only_included_fields)
 
     quote do
 
@@ -109,6 +97,43 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
     end
 
+
+  end
+
+  def decode_only_unlabeled_function(fields, registered_callbacks_map, only_fields_names, _env) do
+
+    only_included_fields = only_included_fields(fields, only_fields_names)
+
+    raise_if_virtual_field_without_read_by_while_creating_compile_decode_only(only_included_fields)
+
+    topology = DecodeTopology.topology_only(fields, registered_callbacks_map, only_fields_names)
+
+    decode_steps = create_decode_steps_from_topology(topology)
+
+    { function_head_struct_deconstruction, decode_steps } = function_head_deconstruction_optimization(decode_steps)
+
+    steps_code = steps_code(decode_steps, registered_callbacks_map)
+
+    result_decode_map_pairs = result_decode_map_pairs(only_included_fields)
+
+    quote do
+
+      def decode_only(
+            %__MODULE__{
+              unquote_splicing(function_head_struct_deconstruction)
+            } = bin_struct,
+            unquote(only_fields_names)
+          ) do
+
+        unquote_splicing(steps_code)
+
+        %{
+          unquote_splicing(result_decode_map_pairs)
+        }
+
+      end
+
+    end
 
   end
 
@@ -141,55 +166,6 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   end
 
-  def decode_only_unlabeled_function(fields, registered_callbacks_map, only_fields_names, _env) do
-
-    topology = DecodeTopology.topology_only(fields, registered_callbacks_map, only_fields_names)
-
-    decode_steps = create_decode_steps_from_topology(topology)
-
-    { function_head_struct_deconstruction, decode_steps } = function_head_deconstruction_optimization(decode_steps)
-
-    steps_code = steps_code(decode_steps, registered_callbacks_map)
-
-    decode_only_fields =
-      Enum.filter(
-        fields,
-        fn field ->
-
-          name =
-            case field do
-              %Field{ name: name } -> name
-              %VirtualField{ name: name } -> name
-            end
-
-          name in only_fields_names
-
-        end
-      )
-
-    only_field_and_virtual_fields_with_read_by = only_field_and_virtual_fields_with_read_by(decode_only_fields)
-    result_decode_map_pairs = result_decode_map_pairs(only_field_and_virtual_fields_with_read_by)
-
-    quote do
-
-      def decode_only(
-            %__MODULE__{
-              unquote_splicing(function_head_struct_deconstruction)
-            } = bin_struct,
-            unquote(only_fields_names)
-          ) do
-
-        unquote_splicing(steps_code)
-
-        %{
-          unquote_splicing(result_decode_map_pairs)
-        }
-
-      end
-
-    end
-
-  end
 
   #optimization in case first decode step is opening umnamanged values (will happen mostly, currently all the time)
   #first deconstruction will happen directly in function head
@@ -265,6 +241,51 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
               read_by when not is_nil(read_by) -> true
 
               nil -> false
+
+            end
+
+
+        end
+
+      end
+    )
+
+  end
+
+  defp only_included_fields(fields, only_fields_names) do
+
+    Enum.filter(
+      fields,
+      fn field_or_virtual_field ->
+
+        name =
+          case field_or_virtual_field do
+            %Field{ name: name } -> name
+            %VirtualField{ name: name } -> name
+          end
+
+        name in only_fields_names
+
+      end
+    )
+
+  end
+
+  defp raise_if_virtual_field_without_read_by_while_creating_compile_decode_only(fields) do
+
+    Enum.each(
+      fields,
+      fn field_or_virtual_field ->
+
+        case field_or_virtual_field do
+          %Field{} -> :ok
+          %VirtualField{ name: name, opts: opts } ->
+
+            case opts[:read_by] do
+
+              read_by when not is_nil(read_by) -> :ok
+
+              nil -> raise "virtual_field #{name} without read_by could not be used as argument of compile_decode_only"
 
             end
 
