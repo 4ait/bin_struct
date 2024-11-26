@@ -69,6 +69,7 @@ Struct.decode_only(struct, [:length, :version])
 
 This way you will have exactly what you expect without any overhead. This feature needs to implement decode_topology, same as I did already for parse.
 
+For second solution I see a fallback using decode all with filter along with warning for such usecase is not compiled and fallback used right now and instructions how to compile this usecase.
 
 ## Installation
 
