@@ -27,7 +27,15 @@ You don’t need all the advanced features like virtual fields, auto-generated f
 
 ## Performance 
 
-The library compiles into Elixir binary pattern match and uses optimizations like composing every part with known size into single pattern, always inlining for encoders, static values, caching every requested value (if in callback dependency B requested A and C requested A, A will be converted before B and later passed same value to C). All intermediate functions are declared in the same module and marked as private (defp), giving maximum optimization opportunities for the Erlang compiler (erlc). You can expect performance equal to manually written pattern matches, with some differences: modular structure, validation after each step, and creating structs as the result. It is not correct to compare simple manual parsing patterns directly to what this library does. If, in some case, the library performs worse than regular pattern matching, please open an issue.
+The library compiles into Elixir binary pattern match and uses optimizations like composing every part with known size into single pattern, 
+always inlining for encoders, static values, caching every requested value.
+If in callback dependency B requested A and C requested A, A will be converted before B and later passed same value to C.
+All intermediate functions are declared in the same module and marked as private (defp), giving maximum optimization opportunities for the Erlang compiler (erlc). 
+
+You can expect performance equal to manually written pattern matches, with some differences: modular structure,
+validation after each step, and creating structs as the result. It is not correct to compare simple manual parsing patterns directly to what this library does. 
+
+If, in some case, the library performs worse than regular pattern matching, please open an issue.
 
 ## Installation
 
