@@ -152,6 +152,8 @@ end
   
   ```
 
+---
+
 ## Getting Started
 
 ### Explore Examples
