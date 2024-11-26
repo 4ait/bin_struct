@@ -28,7 +28,7 @@ You don’t need all the advanced features like virtual fields, auto-generated f
 ## Performance 
 
 The library compiles into Elixir binary pattern match and uses optimizations like composing every part with known size into single pattern, 
-always inlining for encoders, static values, caching every requested value.
+always inlining for encoders and static values, caching every requested value.
 If in callback dependency B requested A and C requested A, A will be converted before B and later passed same value to C.
 All intermediate functions are declared in the same module and marked as private (defp), giving maximum optimization opportunities for the Erlang compiler (erlc). 
 
