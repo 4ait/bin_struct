@@ -39,7 +39,8 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
     steps_code = steps_code(decode_steps, registered_callbacks_map)
 
-    result_decode_map_pairs = result_decode_map_pairs(fields)
+    only_field_and_virtual_fields_with_read_by = only_field_and_virtual_fields_with_read_by(fields)
+    result_decode_map_pairs = result_decode_map_pairs(only_field_and_virtual_fields_with_read_by)
 
     quote do
 
@@ -87,7 +88,8 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
         end
       )
 
-    result_decode_map_pairs = result_decode_map_pairs(decode_only_fields)
+    only_field_and_virtual_fields_with_read_by = only_field_and_virtual_fields_with_read_by(decode_only_fields)
+    result_decode_map_pairs = result_decode_map_pairs(only_field_and_virtual_fields_with_read_by)
 
     quote do
 
@@ -160,7 +162,8 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
         end
       )
 
-    result_decode_map_pairs = result_decode_map_pairs(decode_only_fields)
+    only_field_and_virtual_fields_with_read_by = only_field_and_virtual_fields_with_read_by(decode_only_fields)
+    result_decode_map_pairs = result_decode_map_pairs(only_field_and_virtual_fields_with_read_by)
 
     quote do
 
@@ -241,6 +244,33 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
       end)
 
   end
+
+  defp only_field_and_virtual_fields_with_read_by(fields) do
+
+    Enum.filter(
+      fields,
+      fn field_or_virtual_field ->
+
+        case field_or_virtual_field do
+          %Field{} -> true
+          %VirtualField{ opts: opts } ->
+
+            case opts[:read_by] do
+
+              read_by when not is_nil(read_by) -> true
+
+              nil -> false
+
+            end
+
+
+        end
+
+      end
+    )
+
+  end
+
 
   defp struct_unmanaged_values_deconstruction_pairs(fields) do
 

@@ -19,7 +19,6 @@ defmodule BinStructTest.VirtualFieldSystem.WriteTest do
     register_callback &mac_length/1,
                       mac_length: :field
 
-
     virtual :mac_algo, { :unspecified, type: mac_algo() }, default: :none
 
     field :mac_length, :uint8,

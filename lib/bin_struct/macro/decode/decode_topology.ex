@@ -33,7 +33,9 @@ defmodule BinStruct.Macro.Decode.DecodeTopology do
 
     fields_to_decode =
       case field_names_to_decode_or_all_atom do
+
         :all -> fields
+
         field_names_to_decode ->
 
           Enum.filter(
@@ -52,6 +54,8 @@ defmodule BinStruct.Macro.Decode.DecodeTopology do
           )
 
       end
+
+    fields_to_decode = only_field_and_virtual_fields_with_read_by(fields_to_decode)
 
     connections_to_decode_nodes =
       Enum.map(
@@ -110,6 +114,32 @@ defmodule BinStruct.Macro.Decode.DecodeTopology do
     %VirtualFieldProducingNode{
       virtual_field: virtual_field
     }
+
+  end
+
+  defp only_field_and_virtual_fields_with_read_by(fields) do
+
+    Enum.filter(
+      fields,
+      fn field_or_virtual_field ->
+
+        case field_or_virtual_field do
+          %Field{} -> true
+          %VirtualField{ opts: opts } ->
+
+            case opts[:read_by] do
+
+              read_by when not is_nil(read_by) -> true
+
+              nil -> false
+
+            end
+
+
+        end
+
+      end
+    )
 
   end
 
@@ -210,8 +240,7 @@ defmodule BinStruct.Macro.Decode.DecodeTopology do
       nil ->
 
         %VirtualField{ name: name } = virtual_field
-        raise "Use virtual field without read_by callback defined as registered callback argument not possible, field name: #{inspect(name)}"
-
+        raise "Depend on  virtual field without read_by callback defined as registered callback argument not possible, field name: #{inspect(name)}"
 
     end
 

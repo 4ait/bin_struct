@@ -1,4 +1,4 @@
-defmodule BinStructTest.DecodeFieldTest do
+defmodule BinStructTest.DecodeOnlyTests.UnlabeledExistTest do
 
   use ExUnit.Case
 
@@ -8,6 +8,8 @@ defmodule BinStructTest.DecodeFieldTest do
 
     field :a, :uint8
     field :b, :uint8
+
+    compile_decode_only [:a]
 
   end
 
@@ -25,8 +27,7 @@ defmodule BinStructTest.DecodeFieldTest do
 
     { :ok, parsed_struct } = Struct.parse_exact(dump)
 
-    1 = Struct.decode_field(parsed_struct, :a)
-    2 = Struct.decode_field(parsed_struct, :b)
+    %{ a: 1} = Struct.decode_only(parsed_struct, [:a])
 
   end
 

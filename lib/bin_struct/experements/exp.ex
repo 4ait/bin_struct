@@ -137,4 +137,5 @@ defmodule ExtractionFromBufferStruct do
     :unicode.characters_to_binary(utf8_binary, :utf8, { :utf16, :little })
   end
 
+
 end
