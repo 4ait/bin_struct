@@ -10,7 +10,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   alias BinStruct.Macro.Decode.DecodeTopologyNodes.UnmanagedFieldValueNode
   alias BinStruct.Macro.Decode.DecodeTopologyNodes.TypeConversionNode
-  alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode
+  alias BinStruct.Macro.Decode.DecodeTopologyNodes.VirtualFieldProducingNode
 
   alias BinStruct.Macro.Decode.Steps.DecodeStepOpenUnmanagedValues
   alias BinStruct.Macro.Decode.Steps.DecodeStepApplyTypeConversions
@@ -23,6 +23,9 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   alias BinStruct.Macro.TypeConverterToManaged
   alias BinStruct.Macro.TypeConverterToBinary
+  alias BinStruct.Macro.RegisteredCallbackFunctionCall
+
+  alias BinStruct.Macro.Structs.RegisteredCallbacksMap
 
   alias BinStruct.Macro.Decode.DecodeTopology
 
@@ -32,61 +35,19 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
     decode_steps = create_decode_steps_from_topology(topology)
 
-    #optimization in case first decode step is openning umnanaged values (will happen mostly, currently all the time)
-    #first deconstruction will happen directly in function head
-    { function_head_struct_deconstruction, decode_steps } =
-      case decode_steps do
+    { function_head_struct_deconstruction, decode_steps } = function_head_deconstruction_optimization(decode_steps)
 
-        [ %DecodeStepOpenUnmanagedValues{ fields: fields } | rest ] ->
+    steps_code = steps_code(decode_steps, registered_callbacks_map)
 
-          function_head_struct_deconstruction = struct_umnanaged_values_deconstruction_pairs(fields)
-          { function_head_struct_deconstruction, rest }
-
-        _ -> { [], decode_steps }
-
-      end
-
-    steps_code =
-      Enum.map(
-        decode_steps,
-        fn decode_step ->
-
-          case decode_step do
-
-            %DecodeStepOpenUnmanagedValues{ fields: fields } ->
-              code_for_decode_step_open_unmanaged_values(fields)
-
-            %DecodeStepApplyTypeConversions{ type_conversion_nodes: type_conversion_nodes } ->
-              code_for_decode_step_apply_type_conversions(type_conversion_nodes)
-
-            %DecodeStepProduceVirtualFields{ virtual_fields: virtual_fields } ->
-              code_for_decode_step_produce_virtual_fields(virtual_fields)
-
-          end
-
-        end
-      )
-
-    result_decode_map_pairs =
-      Enum.map(
-        fields,
-        fn field ->
-
-          name =
-            case field do
-              %Field{ name: name } -> name
-              %VirtualField{ name: name } -> name
-            end
-
-          { name, Bind.bind_managed_value(name, __MODULE__) }
-
-        end)
-
-
+    result_decode_map_pairs = result_decode_map_pairs(fields)
 
     quote do
 
-      def decode(%__MODULE__{ unquote_splicing(function_head_struct_deconstruction) } = bin_struct) do
+      def decode(
+            %__MODULE__{
+              unquote_splicing(function_head_struct_deconstruction)
+            } = bin_struct
+          ) do
 
         unquote_splicing(steps_code)
 
@@ -100,7 +61,191 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   end
 
-  defp struct_umnanaged_values_deconstruction_pairs(fields) do
+  def decode_only_labeled_function(fields, registered_callbacks_map, function_label, only_fields_names, _env) do
+
+
+    topology = DecodeTopology.topology_only(fields, registered_callbacks_map, only_fields_names)
+
+    IO.inspect(topology)
+
+    decode_steps = create_decode_steps_from_topology(topology)
+
+    { function_head_struct_deconstruction, decode_steps } = function_head_deconstruction_optimization(decode_steps)
+
+    steps_code = steps_code(decode_steps, registered_callbacks_map)
+
+    decode_only_fields =
+      Enum.filter(
+        fields,
+        fn field ->
+
+          name =
+            case field do
+              %Field{ name: name } -> name
+              %VirtualField{ name: name } -> name
+            end
+
+          name in only_fields_names
+
+        end
+      )
+
+    result_decode_map_pairs = result_decode_map_pairs(decode_only_fields)
+
+    quote do
+
+      def unquote(function_label)(
+            %__MODULE__{
+              unquote_splicing(function_head_struct_deconstruction)
+            } = bin_struct
+          ) do
+
+        unquote_splicing(steps_code)
+
+        %{
+          unquote_splicing(result_decode_map_pairs)
+        }
+
+      end
+
+    end
+
+
+  end
+
+  def decode_only_unlabeled_fallback_to_decode_all_with_warning_function() do
+
+    quote do
+
+      require Logger
+
+      def decode_only(
+            %__MODULE__{} = bin_struct,
+            only_field_names_not_matched
+          ) do
+
+        Logger.warning("decode_only not matched #{inspect(only_field_names_not_matched)}")
+
+        Enum.filter(
+          decode(bin_struct),
+          fn { k, v } ->  k in only_field_names_not_matched end
+        ) |> Enum.into(%{})
+
+      end
+
+    end
+
+  end
+
+  def decode_only_unlabeled_function(fields, registered_callbacks_map, only_fields_names, _env) do
+
+    topology = DecodeTopology.topology_only(fields, registered_callbacks_map, only_fields_names)
+
+    decode_steps = create_decode_steps_from_topology(topology)
+
+    { function_head_struct_deconstruction, decode_steps } = function_head_deconstruction_optimization(decode_steps)
+
+    steps_code = steps_code(decode_steps, registered_callbacks_map)
+
+    decode_only_fields =
+      Enum.filter(
+        fields,
+        fn field ->
+
+          name =
+            case field do
+              %Field{ name: name } -> name
+              %VirtualField{ name: name } -> name
+            end
+
+          name in only_fields_names
+
+        end
+      )
+
+    result_decode_map_pairs = result_decode_map_pairs(decode_only_fields)
+
+    quote do
+
+      def decode_only(
+            %__MODULE__{
+              unquote_splicing(function_head_struct_deconstruction)
+            } = bin_struct,
+            unquote(only_fields_names)
+          ) do
+
+        unquote_splicing(steps_code)
+
+        %{
+          unquote_splicing(result_decode_map_pairs)
+        }
+
+      end
+
+    end
+
+  end
+
+  #optimization in case first decode step is opening umnamanged values (will happen mostly, currently all the time)
+  #first deconstruction will happen directly in function head
+  defp function_head_deconstruction_optimization(decode_steps) do
+
+    case decode_steps do
+
+      [ %DecodeStepOpenUnmanagedValues{ fields: fields } | rest ] ->
+
+        function_head_struct_deconstruction = struct_unmanaged_values_deconstruction_pairs(fields)
+        { function_head_struct_deconstruction, rest }
+
+      _ -> { [], decode_steps }
+
+    end
+
+  end
+
+  defp steps_code(decode_steps, registered_callbacks_map) do
+
+    Enum.map(
+      decode_steps,
+      fn decode_step ->
+
+        case decode_step do
+
+          %DecodeStepOpenUnmanagedValues{ fields: fields } ->
+            code_for_decode_step_open_unmanaged_values(fields)
+
+          %DecodeStepApplyTypeConversions{ type_conversion_nodes: type_conversion_nodes } ->
+            code_for_decode_step_apply_type_conversions(type_conversion_nodes)
+
+          %DecodeStepProduceVirtualFields{ virtual_fields: virtual_fields } ->
+            code_for_decode_step_produce_virtual_fields(virtual_fields, registered_callbacks_map)
+
+        end
+
+      end
+    )
+
+  end
+
+  defp result_decode_map_pairs(fields) do
+
+    Enum.map(
+      fields,
+      fn field ->
+
+        name =
+          case field do
+            %Field{ name: name } -> name
+            %VirtualField{ name: name } -> name
+          end
+
+        { name, Bind.bind_managed_value(name, __MODULE__) }
+
+      end)
+
+  end
+
+  defp struct_unmanaged_values_deconstruction_pairs(fields) do
 
     Enum.map(
       fields,
@@ -117,7 +262,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   defp code_for_decode_step_open_unmanaged_values(fields) do
 
-    struct_deconstruction_pairs = struct_umnanaged_values_deconstruction_pairs(fields)
+    struct_deconstruction_pairs = struct_unmanaged_values_deconstruction_pairs(fields)
 
     quote do
       %__MODULE__{
@@ -195,10 +340,35 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   end
 
-  defp code_for_decode_step_produce_virtual_fields(virtual_fields) do
+  defp code_for_decode_step_produce_virtual_fields(virtual_fields, registered_callbacks_map) do
+
+
+    read_by_calls =
+      Enum.map(
+        virtual_fields,
+        fn virtual_field ->
+           %VirtualField{ name: name, opts: opts } = virtual_field
+
+
+           managed_value_bind = Bind.bind_managed_value(name, __MODULE__)
+
+           read_by_callback = opts[:read_by]
+
+           registered_callback = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, read_by_callback)
+
+           registered_callback_function_call = RegisteredCallbackFunctionCall.registered_callback_function_call(registered_callback, __MODULE__)
+
+
+           quote do
+             unquote(managed_value_bind) = unquote(registered_callback_function_call)
+           end
+
+        end
+      )
+
 
     quote do
-
+      unquote_splicing(read_by_calls)
     end
 
   end
@@ -221,6 +391,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
   end
 
   defp create_decode_steps_from_topology_rec([ head_node | remain_nodes ], current_step, steps_acc) do
+
 
     case head_node do
 

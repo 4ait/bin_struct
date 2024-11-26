@@ -503,6 +503,15 @@ defmodule BinStruct do
 
     decode_function = BinStruct.Macro.Decode.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
 
+    decode_only_user_name_utf8 =
+      BinStruct.Macro.Decode.DecodeFunction.decode_only_labeled_function(
+        fields,
+        registered_callbacks_map,
+        :decode_only_user_name_utf8,
+        [:user_name_utf8],
+        env
+      )
+
     new_function = BinStruct.Macro.NewFunction.new_function(fields, registered_callbacks_map, env)
 
     size_function =
@@ -651,6 +660,14 @@ defmodule BinStruct do
 
           unquote_splicing(maybe_receive)
           unquote_splicing(maybe_send)
+
+
+
+          unquote(decode_only_user_name_utf8)
+
+          unquote(
+            BinStruct.Macro.Decode.DecodeFunction.decode_only_unlabeled_fallback_to_decode_all_with_warning_function()
+          )
 
           def parse_exact_returning_options(bin, options \\ nil) do
 
