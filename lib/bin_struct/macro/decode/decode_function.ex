@@ -42,57 +42,12 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
   end
 
 
-  def decode_type(type, _opts, value_access, deep_access) do
+  def decode_type(type, _opts, value_access) do
 
       case type do
 
-        { :variant_of, variants } ->
+        { :variant_of, _variants } -> value_access
 
-          patterns =
-            Enum.map(
-              variants,
-              fn variant ->
-
-                { :module, module_info }  = variant
-
-                if module_info[:module_type] == :bin_struct_custom_type do
-
-                  raise "decode of custom type as variant argument not implemented"
-
-                end
-
-                %{ module_full_name: module_full_name } = module_info
-
-                left =
-                  quote do
-                    %unquote(module_full_name){} = module
-                  end
-
-                right =
-                  quote do
-                    unquote(module_full_name).decode(module, deep: true)
-                  end
-
-                BinStruct.Macro.Common.case_pattern(left, right)
-
-              end
-            )
-
-          quote do
-
-            case unquote(deep_access) do
-              true ->
-
-                case unquote(value_access) do
-                  unquote(patterns)
-                end
-
-
-              false -> unquote(value_access)
-
-            end
-
-          end
 
         { :module, module_info } ->
 
@@ -100,17 +55,8 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
             %{
               module_type: :bin_struct,
-              module: module
-            } ->
-
-              quote do
-
-                case unquote(deep_access) do
-                  true -> unquote(module).decode(unquote(value_access), deep: true)
-                  false -> unquote(value_access)
-                end
-
-              end
+              module: _module
+            } -> value_access
 
             %{
               module_type: :bin_struct_custom_type,
@@ -127,52 +73,20 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
         { :list_of, %{ item_type: { :module, module_info } } } ->
 
-
           case module_info do
 
             %{
               module_type: :bin_struct,
-              module: module
-            } ->
-
-              quote do
-
-                case unquote(deep_access) do
-                  true ->
-                    Enum.map(
-                      unquote(value_access),
-                      fn item ->
-                        unquote(module).decode(item, deep: true)
-                      end
-                    )
-                  false -> unquote(value_access)
-                end
-
-              end
+              module: _module
+            } -> value_access
 
             %{
               module_type: :bin_struct_custom_type,
-              module: module,
-              custom_type_args: custom_type_args
-            } ->
-
-              quote do
-
-                case unquote(deep_access) do
-                  true ->
-                    Enum.map(
-                      unquote(value_access),
-                      fn item ->
-                        unquote(module).decode(item, unquote(custom_type_args), deep: true)
-                      end
-                    )
-                  false -> unquote(value_access)
-                end
-
-              end
+              module: _module,
+              custom_type_args: _custom_type_args
+            } -> value_access
 
           end
-
 
         { :list_of, %{ item_type: item_type } } ->
 
@@ -201,9 +115,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
     unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
 
-    deep_access = { :deep, [], __MODULE__ }
-
-    decode_type_expr = decode_type(type, opts, unmanaged_value_access, deep_access)
+    decode_type_expr = decode_type(type, opts, unmanaged_value_access)
 
     is_optional = IsOptionalField.is_optional_field(field)
 
@@ -287,16 +199,9 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
       def decode(%__MODULE__{
         unquote_splicing(struct_fields)
-      }, opts \\ []) do
-
-        deep =
-          case opts[:deep] do
-            nil -> false
-            value when is_boolean(value) -> value
-          end
+      }) do
 
           unquote_splicing(managed_values_bindings)
-
           unquote_splicing(read_by_calls)
 
         %{
