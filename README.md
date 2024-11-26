@@ -25,7 +25,7 @@ It is especially helpful when working with a protocol that is new to you. If you
 Even the smallest fragments you implement can already be put to use. You can parse and decode binary data to gain a better understanding of what you're dealing with without needing to fully implement every detail or dynamic callback. You'll gradually build out your protocol implementation step by step, and over time, these pieces will naturally connect as your codebase grows.
 You don’t need all the advanced features like virtual fields, auto-generated fields (builders), or type conversions beyond the basic managed (human-readable) one right away. You can always add them later if you think they’ll make the process easier.
 
-##Performance 
+## Performance 
 
 The library compiles into Elixir binary pattern match and uses optimizations like composing every part with known size into single pattern, inlining for encoders, caching every accessed value (everything is produced only once). All intermediate functions are declared in the same module and marked as private (defp), giving maximum optimization opportunities for the Erlang compiler (erlc). You can expect performance equal to manually written pattern matches, with some differences: modular structure, validation after each step, and creating structs as the result. It is not correct to compare simple manual parsing patterns directly to what this library does. If, in some case, the library performs worse than regular pattern matching, please open an issue.
 
