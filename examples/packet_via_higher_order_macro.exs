@@ -4,7 +4,6 @@
 #We will do this once and will be generating it for every structure we need in few lines later
 #It will generate for us required fields (like length, crc and so on) and provide context deeply in the tree if we need so
 
-
 defmodule PacketHeader do
 
   use BinStruct
