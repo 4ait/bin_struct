@@ -123,7 +123,12 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
             only_field_names_not_matched
           ) do
 
-        Logger.warning("decode_only not matched #{inspect(only_field_names_not_matched)}")
+        Logger.warning(
+          """
+          Use of not compiled decode_only pattern detected. Decode only pattern needs to be compiled. Falling back to decode all + filter.
+          To fix this warning add following to your module: compile_decode_only #{inspect(only_field_names_not_matched)}
+          """
+        )
 
         Enum.filter(
           decode(bin_struct),
