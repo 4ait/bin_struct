@@ -38,9 +38,9 @@ validation after each step, and creating structs as the result. It is not correc
 
 If, in some case, the library performs worse than regular pattern matching, please open an issue.
 
-## Future perfomance improvements 
+## Future performance improvements 
 
-Along with chaning particular compilated output to better version of there will be some, i see another huge room of improvements, currently researching.
+Along with changing particular comilator output to better version of there will be some, i see another huge room of improvements, currently researching.
 
 It's called `use cases`. Problem: you don't always need all values to be decoded. And it's always will be not optimal solution no matter there will be decode single field function or not.
 
