@@ -27,3 +27,7 @@ compile_decode_only [ :field_name_a, :field_name_b ] and compile_decode_only :fu
 ## 0.2.14
 
 Added compile time exceptions for invalid use of new feature compile_decode_only
+
+## 0.2.15
+
+Warning message for not compiled compile_decode_only pattern includes module name
