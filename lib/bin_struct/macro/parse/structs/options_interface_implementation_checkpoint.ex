@@ -1,8 +1,8 @@
-defmodule BinStruct.Macro.Structs.OptionsInterfaceImplementationCheckpoint do
+defmodule BinStruct.Macro.Parse.Structs.OptionsInterfaceImplementationCheckpoint do
 
   @moduledoc false
 
-  alias BinStruct.Macro.Structs.OptionsInterfaceImplementationCheckpoint
+  alias BinStruct.Macro.Parse.Structs.OptionsInterfaceImplementationCheckpoint
   alias BinStruct.Macro.Structs.InterfaceImplementation
 
   @type t :: %OptionsInterfaceImplementationCheckpoint {

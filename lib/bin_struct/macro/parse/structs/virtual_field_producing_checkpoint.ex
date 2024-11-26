@@ -1,8 +1,8 @@
-defmodule BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint do
+defmodule BinStruct.Macro.Parse.Structs.VirtualFieldProducingCheckpoint do
 
   @moduledoc false
 
-  alias BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint
+  alias BinStruct.Macro.Parse.Structs.VirtualFieldProducingCheckpoint
   alias BinStruct.Macro.Structs.VirtualField
 
   @type t :: %VirtualFieldProducingCheckpoint {

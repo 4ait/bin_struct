@@ -15,10 +15,10 @@ defmodule BinStruct.Macro.ParseFunction do
   alias BinStruct.Macro.Parse.ParseTopologyNodes.ParseNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
   alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode
-  alias BinStruct.Macro.Structs.ParseCheckpoint
-  alias BinStruct.Macro.Structs.TypeConversionCheckpoint
-  alias BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint
-  alias BinStruct.Macro.Structs.OptionsInterfaceImplementationCheckpoint
+  alias BinStruct.Macro.Parse.Structs.ParseCheckpoint
+  alias BinStruct.Macro.Parse.Structs.TypeConversionCheckpoint
+  alias BinStruct.Macro.Parse.Structs.VirtualFieldProducingCheckpoint
+  alias BinStruct.Macro.Parse.Structs.OptionsInterfaceImplementationCheckpoint
   alias BinStruct.Macro.Parse.ParseCheckpointFunction
   alias BinStruct.Macro.Parse.ParseTopologyNodes.InterfaceImplementationNode
 

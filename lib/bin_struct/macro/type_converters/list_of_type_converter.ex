@@ -4,6 +4,7 @@ defmodule BinStruct.Macro.TypeConverters.ListOfTypeConverter do
 
   alias BinStruct.Macro.TypeConverterToUnmanaged
   alias BinStruct.Macro.TypeConverterToBinary
+  alias BinStruct.Macro.TypeConverterToManaged
 
   def from_managed_to_unmanaged_list_of({ :list_of, list_of_info }, quoted) do
 
@@ -22,8 +23,23 @@ defmodule BinStruct.Macro.TypeConverters.ListOfTypeConverter do
 
   end
 
-  def from_unmanaged_to_managed_list_of({ :list_of, _list_of_info }, quoted) do
-    quoted
+  def from_unmanaged_to_managed_list_of({ :list_of, list_of_info }, quoted) do
+
+    %{ item_type: item_type } = list_of_info
+
+    item_access = { :umnanaged_item, [], __MODULE__ }
+
+    quote do
+
+      Enum.map(
+        unquote(quoted),
+        fn unquote(item_access) ->
+          unquote(TypeConverterToManaged.convert_unmanaged_value_to_managed(item_type, item_access))
+        end
+      )
+
+    end
+
   end
 
   def from_unmanaged_to_binary_list_of({ :list_of, list_of_info }, quoted) do

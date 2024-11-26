@@ -10,7 +10,7 @@ defmodule BinStruct.Macro.Parse.ParseCheckpointFunction do
   alias BinStruct.Macro.Dependencies.ParseDependencies
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.Bind
-  alias BinStruct.Macro.Structs.ParseCheckpoint
+  alias BinStruct.Macro.Parse.Structs.ParseCheckpoint
 
   def receiving_arguments_bindings(%ParseCheckpoint{} = checkpoint, registered_callbacks_map, context) do
 

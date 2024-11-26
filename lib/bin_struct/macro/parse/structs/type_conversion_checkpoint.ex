@@ -1,8 +1,8 @@
-defmodule BinStruct.Macro.Structs.TypeConversionCheckpoint do
+defmodule BinStruct.Macro.Parse.Structs.TypeConversionCheckpoint do
 
   @moduledoc false
 
-  alias BinStruct.Macro.Structs.TypeConversionCheckpoint
+  alias BinStruct.Macro.Parse.Structs.TypeConversionCheckpoint
 
   alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
 

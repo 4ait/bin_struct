@@ -5,207 +5,93 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
   alias BinStruct.Macro.Bind
   alias BinStruct.Macro.Structs.Field
   alias BinStruct.Macro.Structs.VirtualField
-  alias BinStruct.Macro.NonVirtualFields
   alias BinStruct.Macro.IsOptionalField
   alias BinStruct.Macro.TypeConverterToManaged
-  alias BinStruct.Macro.Decode.DecodeFunctionReadByCalls
 
-  #assuming we have managed type, such type to work people expect most comfortable to work this
-  #and unmanaged type we expect it to be close to stream of binary for easy parse/dump binaries
+  alias BinStruct.Macro.Decode.DecodeTopologyNodes.UnmanagedFieldValueNode
+  alias BinStruct.Macro.Decode.DecodeTopologyNodes.TypeConversionNode
+  alias BinStruct.Macro.Parse.ParseTopologyNodes.VirtualFieldProducingNode
 
-  #we will try to abstract away from decode/encode naming in any internals
+  alias BinStruct.Macro.Decode.Steps.DecodeStepOpenUnmanagedValues
+  alias BinStruct.Macro.Decode.Steps.DecodeStepApplyTypeConversions
+  alias BinStruct.Macro.Decode.Steps.DecodeStepProduceVirtualFields
 
-  def decode_expr_wrap_empty_binary(read_expr, value_access) do
+  alias BinStruct.TypeConversion.TypeConversionManaged
+  alias BinStruct.TypeConversion.TypeConversionUnmanaged
+  alias BinStruct.TypeConversion.TypeConversionBinary
+  alias BinStruct.Macro.OptionalNilCheckExpression
 
-    quote do
+  alias BinStruct.Macro.TypeConverterToManaged
+  alias BinStruct.Macro.TypeConverterToBinary
 
-      case unquote(value_access) do
-        <<>> -> nil
-        _ -> unquote(read_expr)
-      end
+  alias BinStruct.Macro.Decode.DecodeTopology
 
-    end
+  def decode_function(fields, registered_callbacks_map, _env) do
 
-  end
+    topology = DecodeTopology.topology_all(fields, registered_callbacks_map)
 
-  def decode_expr_wrap_optional(read_expr, value_access) do
+    decode_steps = create_decode_steps_from_topology(topology)
 
-    quote do
+    #optimization in case first decode step is openning umnanaged values (will happen mostly, currently all the time)
+    #first deconstruction will happen directly in function head
+    { function_head_struct_deconstruction, decode_steps } =
+      case decode_steps do
 
-      case unquote(value_access) do
-        nil -> nil
-        _ -> unquote(read_expr)
-      end
+        [ %DecodeStepOpenUnmanagedValues{ fields: fields } | rest ] ->
 
-    end
+          function_head_struct_deconstruction = struct_umnanaged_values_deconstruction_pairs(fields)
+          { function_head_struct_deconstruction, rest }
 
-  end
-
-
-  def decode_type(type, _opts, value_access) do
-
-      case type do
-
-        { :variant_of, _variants } -> value_access
-
-
-        { :module, module_info } ->
-
-          case module_info do
-
-            %{
-              module_type: :bin_struct,
-              module: _module
-            } -> value_access
-
-            %{
-              module_type: :bin_struct_custom_type,
-              module: module,
-              custom_type_args: custom_type_args
-            } ->
-
-              quote do
-                unquote(module).from_unmanaged_to_managed(unquote(value_access), unquote(custom_type_args))
-              end
-
-          end
-
-
-        { :list_of, %{ item_type: { :module, module_info } } } ->
-
-          case module_info do
-
-            %{
-              module_type: :bin_struct,
-              module: _module
-            } -> value_access
-
-            %{
-              module_type: :bin_struct_custom_type,
-              module: _module,
-              custom_type_args: _custom_type_args
-            } -> value_access
-
-          end
-
-        { :list_of, %{ item_type: item_type } } ->
-
-          quote do
-
-            Enum.map(
-              unquote(value_access),
-              fn unquote(value_access) ->
-                unquote(TypeConverterToManaged.convert_unmanaged_value_to_managed(item_type, value_access))
-              end
-            )
-
-          end
-
-        type -> TypeConverterToManaged.convert_unmanaged_value_to_managed(type, value_access)
+        _ -> { [], decode_steps }
 
       end
 
-
-
-  end
-
-  defp decode_field(%Field{} = field, _env) do
-
-    %Field{ name: name, type: type, opts: opts} = field
-
-    unmanaged_value_access = Bind.bind_unmanaged_value(name, __MODULE__)
-
-    decode_type_expr = decode_type(type, opts, unmanaged_value_access)
-
-    is_optional = IsOptionalField.is_optional_field(field)
-
-    if is_optional do
-      decode_expr_wrap_optional(decode_type_expr, unmanaged_value_access)
-    else
-      decode_type_expr
-    end
-
-  end
-
-  def decode_function(fields, registered_callbacks_map, env) do
-
-    non_virtual_fields = NonVirtualFields.skip_virtual_fields(fields)
-
-    struct_fields =
+    steps_code =
       Enum.map(
-        non_virtual_fields,
-        fn %Field{} = field ->
+        decode_steps,
+        fn decode_step ->
 
-          %Field{ name: name } = field
+          case decode_step do
 
-          { name, Bind.bind_unmanaged_value(name, __MODULE__) }
+            %DecodeStepOpenUnmanagedValues{ fields: fields } ->
+              code_for_decode_step_open_unmanaged_values(fields)
 
-        end
-      )
+            %DecodeStepApplyTypeConversions{ type_conversion_nodes: type_conversion_nodes } ->
+              code_for_decode_step_apply_type_conversions(type_conversion_nodes)
 
-    managed_values_bindings =
-      Enum.map(
-        non_virtual_fields,
-        fn field ->
+            %DecodeStepProduceVirtualFields{ virtual_fields: virtual_fields } ->
+              code_for_decode_step_produce_virtual_fields(virtual_fields)
 
-          %Field{ name: name } = field
-
-          managed_value_access = Bind.bind_managed_value(name, __MODULE__)
-
-          quote do
-            unquote(managed_value_access) = unquote(decode_field(field, env))
           end
 
         end
       )
 
-    read_by_calls =
-      DecodeFunctionReadByCalls.read_by_calls(
-        fields,
-        registered_callbacks_map,
-        __MODULE__
-      )
-
-    decoded_map_fields_with_values =
+    result_decode_map_pairs =
       Enum.map(
         fields,
         fn field ->
 
+          name =
             case field do
-              %Field{ name: name } ->
-
-                { name, Bind.bind_managed_value(name, __MODULE__) }
-
-              %VirtualField{ name: name, opts: opts } ->
-
-                case opts[:read_by] do
-
-                  read_by when not is_nil(read_by) ->
-
-                    { name, Bind.bind_managed_value(name, __MODULE__) }
-
-                  _ -> nil
-
-                end
-
+              %Field{ name: name } -> name
+              %VirtualField{ name: name } -> name
             end
 
+          { name, Bind.bind_managed_value(name, __MODULE__) }
 
-      end)
-      |> Enum.reject(&is_nil/1)
+        end)
+
 
 
     quote do
 
-      def decode(%__MODULE__{
-        unquote_splicing(struct_fields)
-      }) do
+      def decode(%__MODULE__{ unquote_splicing(function_head_struct_deconstruction) } = bin_struct) do
 
-          unquote_splicing(managed_values_bindings)
-          unquote_splicing(read_by_calls)
+        unquote_splicing(steps_code)
 
         %{
-          unquote_splicing(decoded_map_fields_with_values)
+          unquote_splicing(result_decode_map_pairs)
         }
 
       end
@@ -214,4 +100,278 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   end
 
+  defp struct_umnanaged_values_deconstruction_pairs(fields) do
+
+    Enum.map(
+      fields,
+      fn field ->
+
+        %Field{ name: name } = field
+
+        { name, Bind.bind_unmanaged_value(name, __MODULE__) }
+
+      end
+    )
+
+  end
+
+  defp code_for_decode_step_open_unmanaged_values(fields) do
+
+    struct_deconstruction_pairs = struct_umnanaged_values_deconstruction_pairs(fields)
+
+    quote do
+      %__MODULE__{
+        unquote_splicing(struct_deconstruction_pairs)
+      } = bin_struct
+    end
+
+  end
+
+  defp code_for_decode_step_apply_type_conversions(type_conversion_nodes) do
+
+    conversions =
+      Enum.map(
+        type_conversion_nodes,
+        fn type_conversion_node ->
+
+          %TypeConversionNode{ subject: type_conversion_subject, type_conversion: target_type_conversion } = type_conversion_node
+
+          is_optional =
+            case type_conversion_subject do
+             %Field{} = field -> IsOptionalField.is_optional_field(field)
+             %VirtualField{} = _virtual_field -> true
+            end
+
+
+          field_name =
+            case type_conversion_subject do
+              %Field{ name: name } -> name
+              %VirtualField{ name: name }  -> name
+            end
+
+          field_type =
+            case type_conversion_subject do
+              %Field{ type: type } -> type
+              %VirtualField{ type: type } -> type
+            end
+
+          unmanaged_value_bind = Bind.bind_unmanaged_value(field_name, __MODULE__)
+          managed_value_bind = Bind.bind_managed_value(field_name, __MODULE__)
+          binary_value_bind = Bind.bind_binary_value(field_name, __MODULE__)
+
+          case target_type_conversion do
+
+            TypeConversionManaged ->
+
+              managed_value_expr =
+                TypeConverterToManaged.convert_unmanaged_value_to_managed(field_type, unmanaged_value_bind)
+                |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_bind, is_optional)
+
+              quote do
+                unquote(managed_value_bind) = unquote(managed_value_expr)
+              end
+
+            TypeConversionUnmanaged -> unmanaged_value_bind
+
+            TypeConversionBinary ->
+
+              binary_value_expr =
+                TypeConverterToBinary.convert_unmanaged_value_to_binary(field_type, unmanaged_value_bind)
+                |> OptionalNilCheckExpression.maybe_wrap_optional(unmanaged_value_bind, is_optional)
+
+              quote do
+                unquote(binary_value_bind) = unquote(binary_value_expr)
+              end
+
+          end
+
+        end
+      )
+
+    quote do
+      unquote_splicing(conversions)
+    end
+
+
+  end
+
+  defp code_for_decode_step_produce_virtual_fields(virtual_fields) do
+
+    quote do
+
+    end
+
+  end
+
+
+  defp create_decode_steps_from_topology(decode_topology) do
+    create_decode_steps_from_topology_rec(decode_topology, nil, [])
+  end
+
+  defp create_decode_steps_from_topology_rec([], current_step, steps_acc) do
+
+    steps_acc =
+      case current_step do
+        nil -> steps_acc
+        current_step -> [ current_step | steps_acc ]
+      end
+
+    Enum.reverse(steps_acc)
+
+  end
+
+  defp create_decode_steps_from_topology_rec([ head_node | remain_nodes ], current_step, steps_acc) do
+
+    case head_node do
+
+      %UnmanagedFieldValueNode{} = unmanaged_field_value_node ->
+        add_umanaged_field_value_node(unmanaged_field_value_node, remain_nodes, current_step, steps_acc)
+
+      %TypeConversionNode{} = type_conversion_node ->
+        add_type_conversion_node(type_conversion_node, remain_nodes, current_step, steps_acc)
+
+      %VirtualFieldProducingNode{} = virtual_field_producing_node ->
+        add_virtual_field_producing_node(virtual_field_producing_node, remain_nodes, current_step, steps_acc)
+
+    end
+
+  end
+
+
+  defp add_umanaged_field_value_node(%UnmanagedFieldValueNode{} = unmanaged_field_value_node, remain_nodes, current_step, steps_acc) do
+
+    %UnmanagedFieldValueNode{ field: field } = unmanaged_field_value_node
+
+    case current_step do
+
+      %DecodeStepOpenUnmanagedValues{ fields: fields } ->
+
+        decode_step = %DecodeStepOpenUnmanagedValues{ fields: fields ++ [field] }
+
+        create_decode_steps_from_topology_rec(
+          remain_nodes,
+          decode_step,
+          steps_acc
+        )
+
+      _ ->
+
+        next_decode_step = %DecodeStepOpenUnmanagedValues{ fields: [field] }
+
+        case current_step do
+
+          nil ->
+
+            create_decode_steps_from_topology_rec(
+              remain_nodes,
+              next_decode_step,
+              steps_acc
+            )
+
+          current_checkpoint ->
+
+            create_decode_steps_from_topology_rec(
+              remain_nodes,
+              next_decode_step,
+              [ current_checkpoint | steps_acc ]
+            )
+
+        end
+
+    end
+
+  end
+
+
+
+  defp add_type_conversion_node(%TypeConversionNode{} = type_conversion_node, remain_nodes, current_step, steps_acc) do
+
+
+    case current_step do
+
+      %DecodeStepApplyTypeConversions{ type_conversion_nodes: type_conversion_nodes } ->
+
+        decode_step = %DecodeStepApplyTypeConversions{ type_conversion_nodes: type_conversion_nodes ++ [ type_conversion_node ] }
+
+        create_decode_steps_from_topology_rec(
+          remain_nodes,
+          decode_step,
+          steps_acc
+        )
+
+      _ ->
+
+        next_checkpoint = %DecodeStepApplyTypeConversions{ type_conversion_nodes: [ type_conversion_node ] }
+
+        case current_step do
+
+          nil ->
+
+            create_decode_steps_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              steps_acc
+            )
+
+          current_checkpoint ->
+
+            create_decode_steps_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              [ current_checkpoint | steps_acc ]
+            )
+
+        end
+
+    end
+
+  end
+
+
+  defp add_virtual_field_producing_node(%VirtualFieldProducingNode{} = virtual_field_producing_node, remain_nodes, current_step, steps_acc) do
+
+
+    %VirtualFieldProducingNode{ virtual_field: virtual_field } = virtual_field_producing_node
+
+    case current_step do
+
+      %DecodeStepProduceVirtualFields{ virtual_fields: virtual_fields } ->
+
+        next_checkpoint = %DecodeStepProduceVirtualFields{ virtual_fields: virtual_fields ++ [ virtual_field ] }
+
+        create_decode_steps_from_topology_rec(
+          remain_nodes,
+          next_checkpoint,
+          steps_acc
+        )
+
+      _ ->
+
+        next_checkpoint = %DecodeStepProduceVirtualFields{ virtual_fields: [ virtual_field ] }
+
+        case current_step do
+
+          nil ->
+
+            create_decode_steps_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              steps_acc
+            )
+
+          current_checkpoint ->
+
+            create_decode_steps_from_topology_rec(
+              remain_nodes,
+              next_checkpoint,
+              [ current_checkpoint | steps_acc ]
+            )
+
+        end
+
+    end
+
+  end
+
 end
+

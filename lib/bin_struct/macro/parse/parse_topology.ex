@@ -126,6 +126,23 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
 
   end
 
+  defp create_parse_node(field), do: %ParseNode{ field: field }
+
+  defp create_type_conversion_node(depend_on_field, type_conversion) do
+
+    %TypeConversionNode{
+      subject: depend_on_field,
+      type_conversion: type_conversion
+    }
+
+  end
+
+  defp create_virtual_field_producing_node(virtual_field) do
+    %VirtualFieldProducingNode{
+      virtual_field: virtual_field
+    }
+  end
+
 
   defp create_type_conversion_connections_for_interface_implementation_node(%InterfaceImplementationNode{} = interface_implementation_node, registered_callbacks_map) do
 
@@ -209,22 +226,7 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
   end
 
 
-  defp create_virtual_field_producing_node(virtual_field) do
-    %VirtualFieldProducingNode{
-      virtual_field: virtual_field
-    }
-  end
 
-  defp create_type_conversion_node(depend_on_field, type_conversion) do
-
-    %TypeConversionNode{
-      subject: depend_on_field,
-      type_conversion: type_conversion
-    }
-
-  end
-
-  defp create_parse_node(field), do: %ParseNode{ field: field }
 
   defp create_interface_implementation_node(interface_implementation) do
     %InterfaceImplementationNode{ interface_implementation: interface_implementation }

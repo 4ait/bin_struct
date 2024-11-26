@@ -8,7 +8,7 @@ defmodule BinStruct.Macro.Parse.VirtualFieldsProducingCheckpointFunction do
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
   alias BinStruct.Macro.RegisteredCallbackFunctionCall
   alias BinStruct.Macro.Bind
-  alias BinStruct.Macro.Structs.VirtualFieldProducingCheckpoint
+  alias BinStruct.Macro.Parse.Structs.VirtualFieldProducingCheckpoint
   alias BinStruct.Macro.Dependencies.ExcludeDependenciesOnField
 
   def receiving_arguments_bindings(%VirtualFieldProducingCheckpoint{} = checkpoint, registered_callbacks_map, context) do

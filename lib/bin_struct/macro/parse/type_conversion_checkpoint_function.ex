@@ -17,7 +17,7 @@ defmodule BinStruct.Macro.Parse.TypeConversionCheckpointFunction do
 
   alias BinStruct.Macro.OptionalNilCheckExpression
 
-  alias BinStruct.Macro.Structs.TypeConversionCheckpoint
+  alias BinStruct.Macro.Parse.Structs.TypeConversionCheckpoint
   alias BinStruct.Macro.Parse.ParseTopologyNodes.TypeConversionNode
   alias BinStruct.Macro.TypeConverterToUnmanaged
 

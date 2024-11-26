@@ -2,7 +2,7 @@ defmodule BinStruct.Macro.Parse.OptionsInterfaceImplementationCheckpointFunction
 
   @moduledoc false
 
-  alias BinStruct.Macro.Structs.OptionsInterfaceImplementationCheckpoint
+  alias BinStruct.Macro.Parse.Structs.OptionsInterfaceImplementationCheckpoint
   alias BinStruct.Macro.Parse.CallInterfaceImplementationsCallbacksAndProduceNewOptions
   alias BinStruct.Macro.Dependencies.InterfaceImplementationDependencies
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
