@@ -23,3 +23,7 @@ Removed decode_field/2 function.
 Added compiled time use cases in exchange: 
 
 compile_decode_only [ :field_name_a, :field_name_b ] and compile_decode_only :function_name [ :field_name_a, :field_name_b ]
+
+## 0.2.14
+
+Added compile time exceptions for invalid use of new feature compile_decode_only
