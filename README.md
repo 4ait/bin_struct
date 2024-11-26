@@ -40,11 +40,13 @@ If, in some case, the library performs worse than regular pattern matching, plea
 
 ## Future performance improvements 
 
-Along with changing particular compiler output to better version of if there will be some, i see another huge room of improvements, currently researching.
+Along with changing particular compiler output to better version of if there will be some, i see another huge room of improvements.
 
 It's called `use cases`. Problem: you don't always need all values to be decoded. And it's always will be not optimal solution no matter there will be decode single field function or not.
 
-I see way to solve it to implement compile time use cases. For example we often accessing length and version from some struct.
+Update: First use cases already implemented!
+
+For example, we're often accessing length and version from some struct.
 
 We can compile it to usecase like 
 ```elixir 
@@ -69,9 +71,9 @@ and use like
 Struct.decode_only(struct, [:length, :version])
 ```
 
-This way you will have exactly what you expect without any overhead. This feature needs to implement decode_topology, same as I did already for parse.
+This way you will have exactly what you expect without any overhead.
 
-For second solution I see a fallback using decode all with filter along with warning for such use case is not compiled and fallback used right now and instructions how to compile this use case.
+If such use case without function name will be used, but not compiled there is fallback using decode all with filter along with warning and instructions how to compile and solve it.
 
 ## Installation
 
