@@ -40,9 +40,9 @@ If, in some case, the library performs worse than regular pattern matching, plea
 
 ## Performance improvements for hot path
 
-It's called `use cases`. Problem: you don't always need all values to be decoded. And it's always will be not optimal solution no matter there will be decode single field function or not.
+There is new feature called `use cases`. 
 
-Update: First use cases already implemented!
+Problem: you don't always need all values to be decoded. And it's always will be not optimal solution no matter there will be decode single field function or not.
 
 For example, we're often accessing length and version from some struct.
 
