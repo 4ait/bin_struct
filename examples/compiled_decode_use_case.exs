@@ -1,8 +1,8 @@
 #we will optimize hot path with decode use cases
 
 #Problem: we need only length in some hot path and only version in another
-#This is particular usefull for complex structures with many chain dependency through virtual field
-#Every use case compiling using it's own graph for best topology
+#This is particular usefully for complex structures with many chain dependency through virtual field
+#Every use case compiling using it's own graph and producing only required values for best perfomance
 
 defmodule Header do
 
