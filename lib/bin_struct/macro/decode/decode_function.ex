@@ -150,7 +150,8 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
         Logger.warning(
           """
-          Use of not compiled decode_only pattern detected. Decode only pattern needs to be compiled. Falling back to decode all + filter.
+          Use of not compiled decode_only pattern detected in module #{inspect(__MODULE__)}
+          Decode only pattern needs to be compiled. Falling back to decode all + filter.
           To fix this warning add following to your module: compile_decode_only #{inspect(only_field_names_not_matched)}
           """
         )

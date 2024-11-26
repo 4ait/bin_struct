@@ -33,7 +33,7 @@ defmodule BinStructTest.DecodeOnlyTests.UnlabeledNotExistTest do
 
     %{ a: 1 } = decode_only_result
 
-    assert log =~ "Use of not compiled decode_only pattern detected."
+    assert log =~ " Use of not compiled decode_only pattern detected in module BinStructTest.DecodeOnlyTests.UnlabeledNotExistTest.Struct"
 
 
   end
