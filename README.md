@@ -38,9 +38,7 @@ validation after each step, and creating structs as the result. It is not correc
 
 If, in some case, the library performs worse than regular pattern matching, please open an issue.
 
-## Future performance improvements 
-
-Along with changing particular compiler output to better version of if there will be some, i see another huge room of improvements.
+## Performance improvements for hot path
 
 It's called `use cases`. Problem: you don't always need all values to be decoded. And it's always will be not optimal solution no matter there will be decode single field function or not.
 
@@ -74,6 +72,11 @@ Struct.decode_only(struct, [:length, :version])
 This way you will have exactly what you expect without any overhead.
 
 If such use case without function name will be used, but not compiled there is fallback using decode all with filter along with warning and instructions how to compile and solve it.
+
+## Future performance improvements
+
+We can change compiler output for some cases if there will to better version.
+We can implement more compile time use cases like we did with decode.
 
 ## Installation
 
