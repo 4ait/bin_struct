@@ -1,4 +1,4 @@
-defmodule BinStruct.Macro.DecodeFieldFunction do
+defmodule BinStruct.Macro.Decode.DecodeFieldFunction do
 
   @moduledoc false
 

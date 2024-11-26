@@ -501,7 +501,7 @@ defmodule BinStruct do
         _is_should_be_defined_private = !is_bin_struct_terminated
       )
 
-    decode_function = BinStruct.Macro.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
+    decode_function = BinStruct.Macro.Decode.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
 
     new_function = BinStruct.Macro.NewFunction.new_function(fields, registered_callbacks_map, env)
 
@@ -616,7 +616,7 @@ defmodule BinStruct do
 
       end
 
-     decode_field_function = BinStruct.Macro.DecodeFieldFunction.decode_field_function_implemented_via_decode_all(env)
+     decode_field_function = BinStruct.Macro.Decode.DecodeFieldFunction.decode_field_function_implemented_via_decode_all(env)
 
      result_quote =
         quote do

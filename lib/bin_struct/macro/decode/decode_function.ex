@@ -1,4 +1,4 @@
-defmodule BinStruct.Macro.DecodeFunction do
+defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   @moduledoc false
 
@@ -8,7 +8,7 @@ defmodule BinStruct.Macro.DecodeFunction do
   alias BinStruct.Macro.NonVirtualFields
   alias BinStruct.Macro.IsOptionalField
   alias BinStruct.Macro.TypeConverterToManaged
-  alias BinStruct.Macro.DecodeFunctionReadByCalls
+  alias BinStruct.Macro.Decode.DecodeFunctionReadByCalls
 
   #assuming we have managed type, such type to work people expect most comfortable to work this
   #and unmanaged type we expect it to be close to stream of binary for easy parse/dump binaries

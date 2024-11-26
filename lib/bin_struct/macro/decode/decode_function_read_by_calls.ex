@@ -1,4 +1,4 @@
-defmodule BinStruct.Macro.DecodeFunctionReadByCalls do
+defmodule BinStruct.Macro.Decode.DecodeFunctionReadByCalls do
 
   @moduledoc false
 
