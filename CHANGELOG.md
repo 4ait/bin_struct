@@ -34,4 +34,4 @@ Warning message for not compiled pattern of compile_decode_only includes module 
 
 ## 0.2.16
 
-Added compile time exceptions for invalid use (request of non-existing field)
+Added compile time exceptions for invalid use (request of non-existing field) of compile_decode_only
