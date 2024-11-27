@@ -30,4 +30,8 @@ Added compile time exceptions for invalid use of new feature compile_decode_only
 
 ## 0.2.15
 
-Warning message for not compiled compile_decode_only pattern includes module name
+Warning message for not compiled pattern of compile_decode_only includes module name
+
+## 0.2.16
+
+Added compile time exceptions for invalid use (request of non-existing field)
