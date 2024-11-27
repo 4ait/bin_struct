@@ -64,7 +64,8 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   def decode_only_labeled_function(fields, registered_callbacks_map, function_label, only_fields_names, _env) do
 
-
+    raise_if_requested_fields_does_not_exists_while_creating_compile_decode_only(fields, only_fields_names)
+    
     only_included_fields = only_included_fields(fields, only_fields_names)
 
     raise_if_virtual_field_without_read_by_while_creating_compile_decode_only(only_included_fields)
@@ -102,6 +103,8 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   def decode_only_unlabeled_function(fields, registered_callbacks_map, only_fields_names, _env) do
 
+    raise_if_requested_fields_does_not_exists_while_creating_compile_decode_only(fields, only_fields_names)
+    
     only_included_fields = only_included_fields(fields, only_fields_names)
 
     raise_if_virtual_field_without_read_by_while_creating_compile_decode_only(only_included_fields)
@@ -266,6 +269,34 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
           end
 
         name in only_fields_names
+
+      end
+    )
+
+  end
+
+  defp raise_if_requested_fields_does_not_exists_while_creating_compile_decode_only(fields, requested_field_names) do
+
+    existing_field_names =
+      Enum.map(
+        fields,
+        fn field_or_virtual_field ->
+
+            case field_or_virtual_field do
+              %Field{ name: name } -> name
+              %VirtualField{ name: name } -> name
+            end
+
+        end
+      )
+
+    Enum.each(
+      requested_field_names,
+      fn requested_field_name ->
+
+        if requested_field_name not in existing_field_names do
+          raise "requested field #{inspect(requested_field_name)} for compile_decode_only does not exists"
+        end
 
       end
     )
