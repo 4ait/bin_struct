@@ -481,7 +481,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
     case head_node do
 
       %UnmanagedFieldValueNode{} = unmanaged_field_value_node ->
-        add_umanaged_field_value_node(unmanaged_field_value_node, remain_nodes, current_step, steps_acc)
+        add_unmanaged_field_value_node(unmanaged_field_value_node, remain_nodes, current_step, steps_acc)
 
       %TypeConversionNode{} = type_conversion_node ->
         add_type_conversion_node(type_conversion_node, remain_nodes, current_step, steps_acc)
@@ -494,7 +494,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
   end
 
 
-  defp add_umanaged_field_value_node(%UnmanagedFieldValueNode{} = unmanaged_field_value_node, remain_nodes, current_step, steps_acc) do
+  defp add_unmanaged_field_value_node(%UnmanagedFieldValueNode{} = unmanaged_field_value_node, remain_nodes, current_step, steps_acc) do
 
     %UnmanagedFieldValueNode{ field: field } = unmanaged_field_value_node
 
