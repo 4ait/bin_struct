@@ -82,9 +82,13 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
 
           <<target_bin::size(length)-bytes, rest::binary>> = unquote(initial_binary_access)
 
-          structs = unquote(parse_until_length_by_parse_function_name)(target_bin, options, [])
+          parse_until_length_by_parse_function_result = unquote(parse_until_length_by_parse_function_name)(target_bin, options, [])
 
-          { :ok, structs, rest, options }
+          case parse_until_length_by_parse_function_result do
+            { :ok, structs, rest } ->  { :ok, structs, rest, options }
+            :not_enough_bytes -> :not_enough_bytes
+            { :wrong_data, wrong_data } -> wrong_data
+          end
 
         else
           :not_enough_bytes
