@@ -78,7 +78,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
             )
           )
 
-        if length >= byte_size(unquote(initial_binary_access)) do
+        if byte_size(unquote(initial_binary_access)) >= length  do
 
           <<target_bin::size(length)-bytes, rest::binary>> = unquote(initial_binary_access)
 
