@@ -40,7 +40,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
       quote do
 
         defp unquote(parse_until_length_by_parse_function_name)(<<>>, _options, acc) do
-          :lists.reverse(acc)
+          { :ok, :lists.reverse(acc) }
         end
 
         defp unquote(parse_until_length_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc) when is_binary(unquote(item_binary_bind))  do
@@ -85,9 +85,9 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
           parse_until_length_by_parse_function_result = unquote(parse_until_length_by_parse_function_name)(target_bin, options, [])
 
           case parse_until_length_by_parse_function_result do
-            { :ok, structs, rest } ->  { :ok, structs, rest, options }
+            { :ok, structs } ->  { :ok, structs, rest, options }
             :not_enough_bytes -> :not_enough_bytes
-            { :wrong_data, wrong_data } -> wrong_data
+            { :wrong_data, _wrong_data } = wrong_data -> wrong_data
           end
 
         else

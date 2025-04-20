@@ -59,6 +59,13 @@ defmodule BinStruct.Macro.TypeConverters.FlagsTypeConverter do
 
     flags_construction =
       case endianness do
+
+        :none ->
+
+          quote do
+            <<unquote_splicing(create_flags_binary_patterns(flags_count, __MODULE__))>>
+          end
+
         :big ->
 
           quote do
@@ -132,6 +139,13 @@ defmodule BinStruct.Macro.TypeConverters.FlagsTypeConverter do
 
     flags_deconstruction =
       case endianness do
+
+        :none ->
+
+          quote do
+            <<unquote_splicing(create_flags_binary_patterns(flags_count, __MODULE__) )>> = value
+          end
+
         :big ->
 
           quote do

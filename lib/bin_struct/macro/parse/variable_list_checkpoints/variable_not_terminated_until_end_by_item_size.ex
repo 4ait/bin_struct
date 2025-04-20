@@ -85,7 +85,9 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
 
                       { :cont, { :ok, new_items } }
 
-                    bad_result -> { :halt, bad_result }
+                    :not_enough_bytes -> { :halt, :not_enough_bytes }
+
+                    { :wrong_data, _wrong_data } = wrong_data -> { :halt, wrong_data }
 
                   end
 
@@ -94,7 +96,8 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
 
               case result do
                 { :ok, items } ->  { :ok, Enum.reverse(items), "", unquote(options_bind) }
-                bad_result -> bad_result
+                :not_enough_bytes -> :not_enough_bytes
+                { :wrong_data, _wrong_data } = wrong_data -> wrong_data
               end
 
             end

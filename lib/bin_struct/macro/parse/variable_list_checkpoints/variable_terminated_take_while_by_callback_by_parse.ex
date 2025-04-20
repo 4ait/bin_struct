@@ -191,7 +191,8 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
         case parse_function_call_result do
           { :ok, items, rest } -> { :ok, items, rest, options }
-          bad_result -> bad_result
+          :not_enough_bytes -> :not_enough_bytes
+          {:wrong_data, _wrong_data} = wrong_data -> wrong_data
         end
 
       end

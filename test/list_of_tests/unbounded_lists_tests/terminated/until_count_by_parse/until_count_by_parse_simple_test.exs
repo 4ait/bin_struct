@@ -1,4 +1,4 @@
-defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.UntilCountByParseTest do
+defmodule BinStructTest.ListOfTests.UnboundedListsTests.Terminated.UntilCountByParse.UntilCountByParseSimpleTest do
 
   use ExUnit.Case
 
