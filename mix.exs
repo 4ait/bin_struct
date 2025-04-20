@@ -17,7 +17,7 @@ defmodule BinStruct.MixProject do
   end
 
   def version do
-    "0.2.16"
+    "0.2.17"
   end
 
   defp maybe_add_test_elixirc_path(elixirc_paths) do
