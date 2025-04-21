@@ -33,7 +33,7 @@ defmodule BinStruct.Macro.Parse.CheckpointKnownSize do
 
               parsed_unmanaged_type =
                 KnownSizeTypeBinaryToUnmanagedConverter
-                  .convert_known_size_type_binary_to_unmanaged(binary_access_bind, type, opts, __MODULE__)
+                  .convert_known_size_type_binary_to_unmanaged(binary_access_bind, type, opts, registered_callbacks_map, __MODULE__)
 
               { field, parsed_unmanaged_type }
 

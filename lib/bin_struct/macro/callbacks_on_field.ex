@@ -14,6 +14,7 @@ defmodule BinStruct.Macro.CallbacksOnField do
       opts[:item_size_by],
       opts[:take_while_by],
       opts[:validate_by],
+      opts[:select_variant_by]
     ]
     |> Enum.reject(&is_nil/1)
     |> registered_version_of_callbacks(registered_callbacks_map)
