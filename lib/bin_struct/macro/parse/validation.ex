@@ -56,9 +56,6 @@ defmodule BinStruct.Macro.Parse.Validation do
         context
       ) do
 
-    BinStruct.Macro.Dependencies.ParseDependencies.parse_dependencies_excluded_self(fields, registered_callbacks_map)
-
-
     validate_by_patterns_and_preludes =
         Enum.map(
           fields,

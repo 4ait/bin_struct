@@ -67,7 +67,8 @@ defmodule BinStruct.Macro.Preprocess.RemapListOf do
                           item_type: item_type,
                           termination: :terminated,
                           take: :until_length_by_parse,
-                          any_length: any_length
+                          any_length: any_length,
+                          maybe_validate_any_count: any_count(item_type, opts)
                         }
 
                       else

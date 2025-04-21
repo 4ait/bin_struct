@@ -13,7 +13,8 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
   def variable_terminated_until_length_by_parse_checkpoint(
         %{
           item_type: item_type,
-          any_length: any_length
+          any_length: any_length,
+          maybe_validate_any_count: maybe_validate_any_count
         } = _list_of_info,
         %Field{} = field,
         function_name,
@@ -85,7 +86,46 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
           parse_until_length_by_parse_function_result = unquote(parse_until_length_by_parse_function_name)(target_bin, options, [])
 
           case parse_until_length_by_parse_function_result do
-            { :ok, structs } ->  { :ok, structs, rest, options }
+
+            { :ok, structs } ->
+
+              unquote(
+                case maybe_validate_any_count do
+
+                  nil ->
+                    #no additional count validation
+                    quote do
+                      { :ok, structs, rest, options }
+                    end
+
+                  any_count ->
+
+                    quote do
+
+                      any_count =
+                        unquote(
+                          ListOfBoundaryConstraintFunctionCall.function_call_or_unwrap_value(
+                            any_count,
+                            registered_callbacks_map,
+                            __MODULE__
+                          )
+                        )
+
+                      items_count = Enum.count(structs)
+
+                      if items_count == any_count do
+                        { :ok, structs, rest, options }
+                      else
+                        { :wrong_data, %{ message: "Requested items #{inspect(any_count)}, got: #{items_count}", data: target_bin } }
+                      end
+
+                    end
+
+                end
+              )
+
+
+
             :not_enough_bytes -> :not_enough_bytes
             { :wrong_data, _wrong_data } = wrong_data -> wrong_data
           end
