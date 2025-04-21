@@ -7,7 +7,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
   alias BinStruct.Macro.Parse.Result
   alias BinStruct.Macro.Parse.WrapWithLengthBy
   alias BinStruct.Macro.Parse.WrapWithOptionalBy
-  alias BinStruct.Macro.Termination
   alias BinStruct.Macro.Dependencies.DeconstructionOfOnOptionDependencies
   alias BinStruct.Macro.Parse.CheckpointRuntimeBoundedList
 
@@ -22,8 +21,10 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
   alias BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUntilEndByItemSize
   alias BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUntilEndByParse
 
-  alias BinStruct.Macro.Structs.RegisteredCallbacksMap
-  alias BinStruct.Macro.RegisteredCallbackFunctionCall
+  alias BinStruct.Macro.Parse.UnknownSizeVariantCheckpoints.VariantByDispatchCheckpoint
+  alias BinStruct.Macro.Parse.UnknownSizeVariantCheckpoints.VariantByDispatchWithLengthByCheckpoint
+  alias BinStruct.Macro.Parse.UnknownSizeVariantCheckpoints.VariantBySelectVariantCallbackCheckpoint
+  alias BinStruct.Macro.Parse.UnknownSizeVariantCheckpoints.VariantBySelectVariantCallbackWithLengthByCheckpoint
 
   alias BinStruct.Macro.Structs.Field
 
@@ -150,45 +151,61 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
 
         end
 
-      { :variant_of, variants } ->
-
-        wrong_data_binary_bind = { :binary_for_wrong_data, [], __MODULE__ }
-
-        body =
-          case opts[:select_variant_by] do
-
-            select_variant_by when not is_nil(select_variant_by) ->
-              checkpoint_body_variant_by_select_variant_by_callback(field, variants, select_variant_by, binary_value_access_bind, unmanaged_value_access, registered_callbacks_map, wrong_data_binary_bind)
-
-            nil -> checkpoint_body_variant_by_first_with_non_wrong_data(field, variants, binary_value_access_bind, unmanaged_value_access, registered_callbacks_map, wrong_data_binary_bind)
-
-          end
 
 
-        quote do
+      { :variant_of, _variants } = variant_of ->
 
-          defp unquote(function_name)(
-                 unquote(binary_value_access_bind),
-                 unquote_splicing(dependencies_bindings),
-                 options
-               ) when is_binary(unquote(binary_value_access_bind)) do
+        select_variant_by = opts[:select_variant_by]
 
-            unquote(
-              DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+        case variant_of do
+
+          { :variant_of, variants } when (not is_nil(select_variant_by)) and (not is_nil(length_by)) ->
+
+            VariantBySelectVariantCallbackWithLengthByCheckpoint.variant_by_select_variant_callback_with_length_by_checkpoint(
+              variants,
+              select_variant_by,
+              length_by,
+              field,
+              function_name,
+              dependencies,
+              registered_callbacks_map,
+              env
             )
 
-            unquote(wrong_data_binary_bind) = unquote(binary_value_access_bind)
+          { :variant_of, variants } when not is_nil(select_variant_by) ->
 
-            unquote(
-              (if !is_nil(length_by) do
-                 WrapWithLengthBy.wrap_with_length_by(body, length_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
-               else
-                 body
-               end)
-              |> WrapWithOptionalBy.maybe_wrap_with_optional_by(optional_by, binary_value_access_bind, registered_callbacks_map, __MODULE__)
+            VariantBySelectVariantCallbackCheckpoint.variant_by_select_variant_callback_checkpoint(
+              variants,
+              select_variant_by,
+              field,
+              function_name,
+              dependencies,
+              registered_callbacks_map,
+              env
             )
 
-          end
+          { :variant_of, variants } when not is_nil(length_by) ->
+
+            VariantByDispatchWithLengthByCheckpoint.variant_by_dispatch_with_length_by_checkpoint(
+              variants,
+              length_by,
+              field,
+              function_name,
+              dependencies,
+              registered_callbacks_map,
+              env
+            )
+
+          { :variant_of, variants } ->
+
+            VariantByDispatchCheckpoint.variant_by_dispatch_checkpoint(
+              variants,
+              field,
+              function_name,
+              dependencies,
+              registered_callbacks_map,
+              env
+            )
 
         end
 
@@ -492,174 +509,6 @@ defmodule BinStruct.Macro.Parse.CheckpointUnknownSize do
             end
 
         end
-
-    end
-
-  end
-
-  defp checkpoint_body_variant_by_select_variant_by_callback(field, variants, select_variant_by_callback, binary_value_access_bind, unmanaged_value_access, registered_callbacks_map, wrong_data_binary_bind) do
-
-    select_variant_by_registered_callback = RegisteredCallbacksMap.get_registered_callback_by_callback(registered_callbacks_map, select_variant_by_callback)
-
-    parse_expr =
-
-      quote do
-
-        variant_by_call = unquote(
-          RegisteredCallbackFunctionCall.registered_callback_function_call(
-            select_variant_by_registered_callback,
-            __MODULE__
-          )
-        )
-
-        case variant_by_call do
-
-          unquote(
-
-            Enum.map(
-              variants,
-              fn variant ->
-
-                {:module, module_info } = variant
-
-                case module_info do
-
-                  %{ module_type: :bin_struct, module: module } ->
-
-                    bin_struct_parse_expr =
-                      quote do
-                        unquote(module).parse_returning_options(unquote(binary_value_access_bind), options)
-                      end
-
-                    BinStruct.Macro.Common.case_pattern(module, bin_struct_parse_expr)
-
-                  %{
-                    module_type: :bin_struct_custom_type,
-                    module: module,
-                    custom_type_args: custom_type_args
-                  } ->
-
-                    bin_struct_custom_type_parse_expr =
-                      quote do
-                        unquote(module).parse_returning_options(unquote(binary_value_access_bind), unquote(custom_type_args), options)
-                      end
-
-                    BinStruct.Macro.Common.case_pattern(module, bin_struct_custom_type_parse_expr)
-
-                end
-
-              end
-            )
-          )
-
-        end
-
-      end
-
-    ok_clause = Result.return_ok_tuple([field], __MODULE__)
-
-    validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
-
-    validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
-
-    quote do
-
-      result = unquote(parse_expr)
-
-      case result do
-        { :ok, unquote(unmanaged_value_access), rest, options } -> unquote(validate_and_return_clause)
-        { :wrong_data, _wrong_data } = wrong_data_clause -> wrong_data_clause
-        :not_enough_bytes -> :not_enough_bytes
-      end
-
-    end
-
-  end
-
-  defp checkpoint_body_variant_by_first_with_non_wrong_data(field, variants, binary_value_access_bind, unmanaged_value_access, registered_callbacks_map, wrong_data_binary_bind) do
-
-
-    with_patterns_variants_parsing =
-      Enum.map(
-        variants,
-        fn variant ->
-
-          {:module, module_info } = variant
-
-          is_child_variant_bin_struct_terminated = Termination.is_module_terminated(module_info)
-
-          case variant do
-            _variant when is_child_variant_bin_struct_terminated ->
-
-              parse_expr =
-                case module_info do
-
-                  %{ module_type: :bin_struct, module: module } ->
-
-                    quote do
-                      unquote(module).parse_returning_options(unquote(binary_value_access_bind), options)
-                    end
-
-                  %{
-                    module_type: :bin_struct_custom_type,
-                    module: module,
-                    custom_type_args: custom_type_args
-                  } ->
-                    quote do
-                      unquote(module).parse_returning_options(unquote(binary_value_access_bind), unquote(custom_type_args), options)
-                    end
-                end
-
-              quote do
-                { :no_match, _reason, not_enough_bytes_seen } <-
-
-                  case unquote(parse_expr) do
-                    { :ok, _variant, _options, _rest } = ok_result ->  ok_result
-                    :not_enough_bytes -> { :no_match, :not_enough_bytes, _not_enough_bytes_seen = true }
-                    { :wrong_data, _wrong_data } = wrong_data -> { :no_match, wrong_data, not_enough_bytes_seen }
-                  end
-
-              end
-
-            {:module, %{module_full_name: module_full_name }} ->
-
-              message = """
-                BinStruct: #{inspect(module_full_name)} does not have required constraints to be used as variant of :variant_of.
-                All variants should be either self-terminated or length_by should be set for whole set.
-              """
-
-              raise message
-
-          end
-
-        end
-      )
-
-    ok_clause = Result.return_ok_tuple([field], __MODULE__)
-
-    validate_patterns_and_prelude = Validation.validate_fields_with_patterns_and_prelude([field], registered_callbacks_map, wrong_data_binary_bind, __MODULE__)
-
-    validate_and_return_clause = Validation.validate_and_return(validate_patterns_and_prelude, ok_clause, __MODULE__)
-
-    quote do
-
-      not_enough_bytes_seen = false
-
-      result =
-        with unquote_splicing(with_patterns_variants_parsing) do
-
-          case not_enough_bytes_seen do
-            true -> :not_enough_bytes
-            false ->  { :wrong_data, unquote(binary_value_access_bind) }
-          end
-
-        end
-
-      case result do
-        { :ok, unquote(unmanaged_value_access), rest, options } -> unquote(validate_and_return_clause)
-        { :wrong_data, _wrong_data } = wrong_data_clause -> wrong_data_clause
-        :not_enough_bytes -> :not_enough_bytes
-      end
 
     end
 

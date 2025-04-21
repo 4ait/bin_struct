@@ -1,4 +1,4 @@
-defmodule BinStructTest.VariantOfTests.SimpleVariantOfTest do
+defmodule BinStructTest.VariantOfTests.KnownSize.DispatchVariantOfTest do
 
   use ExUnit.Case
 
