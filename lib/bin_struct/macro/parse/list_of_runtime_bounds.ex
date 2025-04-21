@@ -30,14 +30,6 @@ defmodule BinStruct.Macro.Parse.ListOfRuntimeBounds do
   end
 
 
-  def get_runtime_bounds(%{
-    any_length: any_length,
-    any_count: any_count,
-  } = _bounds, registered_callbacks_map, context) do
-    get_runtime_bounds_by_length_and_count(any_length, any_count, registered_callbacks_map, context)
-  end
-
-
   defp get_runtime_bounds_all(
         any_length,
         any_count,
@@ -106,27 +98,5 @@ defmodule BinStruct.Macro.Parse.ListOfRuntimeBounds do
 
   end
 
-  defp get_runtime_bounds_by_length_and_count(
-        any_length,
-        any_count,
-        registered_callbacks_map,
-        context
-      ) do
-
-
-    quote do
-
-      length = unquote(ListOfBoundaryConstraintFunctionCall.function_call_or_unwrap_value(any_length, registered_callbacks_map, context))
-      count = unquote(ListOfBoundaryConstraintFunctionCall.function_call_or_unwrap_value(any_count, registered_callbacks_map, context))
-
-      %{
-        length: length,
-        count: count,
-        item_size: Integer.floor_div(length, count)
-      }
-
-    end
-
-  end
 
 end
