@@ -373,7 +373,9 @@ defmodule BinStruct do
 
   @doc """
 
-  Called in module with use BinStruct defined will implement options interface after struct fully parsed.
+  Called in module with use BinStruct defined will implement options interface after struct fully parsed by default.
+
+  With for: :field_name options could be used within same struct
 
   ```
 
