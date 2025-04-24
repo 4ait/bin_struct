@@ -22,6 +22,7 @@ defmodule BinStruct.Macro.Dependencies.InterfaceImplementationDependencies do
     CallbacksDependencies.dependencies(interface_implementations_callbacks)
     |> UniqueDeps.unique_dependencies()
 
+
   end
 
 end

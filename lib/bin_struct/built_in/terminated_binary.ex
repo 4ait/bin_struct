@@ -88,4 +88,5 @@ defmodule BinStruct.BuiltIn.TerminatedBinary do
     end
 
   end
+
 end

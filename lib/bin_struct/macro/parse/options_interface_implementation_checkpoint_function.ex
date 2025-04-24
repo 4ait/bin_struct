@@ -6,6 +6,7 @@ defmodule BinStruct.Macro.Parse.OptionsInterfaceImplementationCheckpointFunction
   alias BinStruct.Macro.Parse.CallInterfaceImplementationsCallbacksAndProduceNewOptions
   alias BinStruct.Macro.Dependencies.InterfaceImplementationDependencies
   alias BinStruct.Macro.Dependencies.BindingsToOnFieldDependencies
+  alias BinStruct.Macro.Dependencies.DeconstructionOfOnOptionDependencies
 
   def receiving_arguments_bindings(%OptionsInterfaceImplementationCheckpoint{} = checkpoint, registered_callbacks_map, context) do
 
@@ -26,6 +27,8 @@ defmodule BinStruct.Macro.Parse.OptionsInterfaceImplementationCheckpointFunction
 
     %OptionsInterfaceImplementationCheckpoint{ interface_implementations: interface_implementations } = checkpoint
 
+    dependencies = InterfaceImplementationDependencies.interface_implementations_dependencies(interface_implementations, registered_callbacks_map)
+
     receiving_arguments_bindings = receiving_arguments_bindings(checkpoint, registered_callbacks_map, __MODULE__)
 
     new_options_expr =
@@ -39,6 +42,10 @@ defmodule BinStruct.Macro.Parse.OptionsInterfaceImplementationCheckpointFunction
     quote do
 
       defp unquote(function_name)(unquote_splicing(receiving_arguments_bindings), options) do
+
+        unquote(
+          DeconstructionOfOnOptionDependencies.option_dependencies_deconstruction(dependencies, __MODULE__)
+        )
 
         unquote(new_options_expr)
 
