@@ -94,18 +94,29 @@ defmodule BinStruct.Macro.Parse.ParseTopology do
 
           interface_implementation_node = create_interface_implementation_node(interface_implementation)
 
-          %InterfaceImplementation{ force_call_before_parse_field_name: force_call_before_parse_field_name } = interface_implementation
+          %InterfaceImplementation{ force_call_before_parse_field_names: force_call_before_parse_field_names } = interface_implementation
 
           maybe_force_calling_order_connections  =
-            case force_call_before_parse_field_name do
+            case force_call_before_parse_field_names do
               nil -> []
-              force_call_before_parse_field_name ->
+              force_call_before_parse_field_names ->
 
-                call_before_field = Enum.find(fields, fn field -> field.name == force_call_before_parse_field_name end)
+                dependent_on_interface_impl_call_fields =
+                  Enum.filter(
+                    fields,
+                    fn field -> field.name in force_call_before_parse_field_names end
+                  )
 
-                parse_node = create_parse_node(call_before_field)
+                Enum.map(
+                  dependent_on_interface_impl_call_fields,
+                  fn field ->
 
-                [{ interface_implementation_node, parse_node }]
+                    parse_node = create_parse_node(field)
+
+                    { interface_implementation_node, parse_node }
+
+                  end
+                )
 
             end
 

@@ -11,10 +11,17 @@ defmodule BinStruct.Macro.Preprocess.RemapInterfaceImplementation do
 
     callback = RemapCallback.remap_callback(raw_callback, env)
 
+    force_call_before_parse_field_names =
+      case raw_options[:for] do
+        nil -> nil
+        for when is_atom(for) -> [for]
+        for when is_list(for) -> for
+      end
+
     %InterfaceImplementation{
       interface: interface,
       callback: callback,
-      force_call_before_parse_field_name: raw_options[:for]
+      force_call_before_parse_field_names: force_call_before_parse_field_names
     }
 
   end

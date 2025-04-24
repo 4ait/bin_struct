@@ -8,13 +8,13 @@ defmodule BinStruct.Macro.Structs.InterfaceImplementation do
   @type t :: %InterfaceImplementation{
                interface: atom(),
                callback: Callback.t(),
-               force_call_before_parse_field_name: atom() | nil
+               force_call_before_parse_field_names: list(atom())
              }
 
   defstruct [
     :interface,
     :callback,
-    :force_call_before_parse_field_name
+    :force_call_before_parse_field_names
   ]
 
 
