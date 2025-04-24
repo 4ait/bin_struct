@@ -687,10 +687,21 @@ defmodule BinStruct do
 
       end
 
-    known_total_size_bytes =
-      BinStruct.Macro.AllFieldsSize.get_all_fields_size_bytes(
-        non_virtual_fields
+    has_optional_fields =
+      Enum.any?(
+        non_virtual_fields,
+        fn field -> BinStruct.Macro.IsOptionalField.is_optional_field(field)  end
       )
+
+    known_total_size_bytes =
+
+      if has_optional_fields do
+        :unknown
+      else
+        BinStruct.Macro.AllFieldsSize.get_all_fields_size_bytes(
+          non_virtual_fields
+        )
+      end
 
     struct_fields =
       Enum.map(
