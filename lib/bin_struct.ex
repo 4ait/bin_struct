@@ -421,9 +421,9 @@ defmodule BinStruct do
 
   """
 
-  defmacro impl_interface(interface, callback) do
+  defmacro impl_interface(interface, callback, options \\ []) do
 
-    raw_interface_implementation = { interface, callback }
+    raw_interface_implementation = { interface, callback, options }
 
     Module.put_attribute(__CALLER__.module, :interface_implementations, raw_interface_implementation)
 
