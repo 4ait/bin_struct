@@ -373,53 +373,122 @@ defmodule BinStruct do
 
   @doc """
 
-  Called in module with use BinStruct defined will implement options interface after struct fully parsed by default.
+  # BinStruct Options Interface
 
-  With for: :field_name options could be used within same struct
+  ## Overview
 
+  When a module with `use BinStruct` is defined, it will implement the options interface after the struct is fully parsed by default.
+
+  The options interface allows for dynamic behavior based on field values, enabling more complex parsing logic and interdependencies between different parts of a binary structure.
+
+  ## Basic Usage
+
+  Options can be registered and implemented in a struct, and then used by other structs that reference it.
+
+  ### With Separate Interface Module
+
+  ```elixir
+  defmodule SharedOptions do
+    use BinStructOptionsInterface
+
+      @type shared_option :: :a | :b
+
+      register_option :shared_option
+    end
+
+    defmodule StructImplementingOptionsInterface do
+      use BinStruct
+
+      register_callback &impl_options_interface_1/1, data: :field
+
+      impl_interface SharedOptions, &impl_options_interface_1/1
+
+      field :data, :binary, length: 1
+
+      defp impl_options_interface_1("A"), do: SharedOptions.option_shared_option(:a)
+      defp impl_options_interface_1("B"), do: SharedOptions.option_shared_option(:b)
+    end
+
+    defmodule ParentOfStructImplementingOptionsInterface do
+      use BinStruct
+
+      register_callback &dependent_field_len/1, shared_option: %{ type: :option, interface: SharedOptions }
+
+      field :child, StructImplementingOptionsInterface
+      field :dependent_field, :binary, length_by: &dependent_field_len/1
+
+      defp dependent_field_len(:a), do: 1
+      defp dependent_field_len(:b), do: 2
+    end
+
+    { :ok, _struct, "" = _rest } = ParentOfStructImplementingOptionsInterface.parse("A1")
+    { :ok, _struct, "" = _rest } = ParentOfStructImplementingOptionsInterface.parse("B22")
   ```
 
-      iex> defmodule SharedOptions do
-      ...>   use BinStructOptionsInterface
-      ...>
-      ...>   @type shared_option :: :a | :b
-      ...>
-      ...>   register_option :shared_option
-      ...>
-      ...> end
-      ...>
-      ...>
-      ...>  defmodule StructImplementingOptionsInterface do
-      ...>   use BinStruct
-      ...>
-      ...>   register_callback &impl_options_interface_1/1, data: :field
-      ...>
-      ...>   impl_interface SharedOptions, &impl_options_interface_1/1
-      ...>
-      ...>   field :data, :binary, length: 1
-      ...>
-      ...>   defp impl_options_interface_1("A"), do: SharedOptions.option_shared_option(:a)
-      ...>   defp impl_options_interface_1("B"), do: SharedOptions.option_shared_option(:b)
-      ...>
-      ...> end
-      ...>
-      ...> defmodule ParentOfStructImplementingOptionsInterface do
-      ...>   use BinStruct
-      ...>
-      ...>   register_callback &dependent_field_len/1, shared_option: %{ type: :option, interface: SharedOptions }
-      ...>
-      ...>   field :child, StructImplementingOptionsInterface
-      ...>   field :dependent_field, :binary, length_by: &dependent_field_len/1
-      ...>
-      ...>   defp dependent_field_len(:a), do: 1
-      ...>   defp dependent_field_len(:b), do: 2
-      ...>
-      ...> end
-      ...>
-      ...> { :ok, _struct, "" = _rest } = ParentOfStructImplementingOptionsInterface.parse("A1")
-      ...> { :ok, _struct, "" = _rest } = ParentOfStructImplementingOptionsInterface.parse("B22")
+  ### Using Options Within the Same Struct
 
-    ```
+  With the `for: :field_name` option, you can use options within the same struct, creating internal dependencies between fields.
+
+  ```elixir
+  defmodule ChildUsingOption do
+    use BinStruct
+
+    register_callback &validate_f1_equal_option_a2/2,
+                      f1: :field,
+                      a: :option
+
+    register_option :a
+
+    field :f1, :uint8, validate_by: &validate_f1_equal_option_a2/2
+
+    defp validate_f1_equal_option_a2(f1, a), do: f1 == a
+  end
+
+  defmodule ParentPassingOptions do
+    use BinStruct
+
+    register_callback &callback/1,
+                    f: :field
+
+    field :f, :uint8
+    field :child, ChildUsingOption
+
+    impl_interface ChildUsingOption, &callback/1, for: :child
+
+    defp callback(f) do
+      ChildUsingOption.option_a(f)
+    end
+  end
+
+  # Example usage
+  child = ChildUsingOption.new(f1: 1)
+  parent = ParentPassingOptions.new(f: 1, child: child)
+  parent_binary = ParentPassingOptions.dump_binary(parent)
+  { :ok, parsed_parent, "" } = ParentPassingOptions.parse(parent_binary)
+  ```
+
+  ## Key Concepts
+
+  1. **Options Registration**: Use `register_option :option_name` to define available options.
+
+  2. **Callbacks Registration**: Use `register_callback` to define functions that will determine option values.
+   - Specify dependencies with `field_name: :field` for field dependencies
+   - Specify option dependencies with `option_name: :option`
+
+  3. **Interface Implementation**: Use `impl_interface Module, &function/arity` to implement an options interface.
+   - Add `for: :field_name` to specify the field for which the options are implemented.
+
+  4. **Validation**: Options can be used for validation through callbacks that verify field values against option values.
+
+  ## Common Patterns
+
+  ### Parent-Child Option Passing
+
+  This pattern allows a parent struct to pass options to its child structs, enabling the child's behavior to be determined by the parent's field values.
+
+  ### Self-Validating Structs
+
+  By using the `for: :field_name` syntax, a struct can implement an options interface for itself, enabling field values to be validated against options derived from other fields within the same struct.
 
   """
 
