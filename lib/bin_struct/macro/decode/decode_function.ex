@@ -62,13 +62,48 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   end
 
+  def decode_single_function(fields, registered_callbacks_map, function_label, field_name, _env) do
+
+    raise_if_requested_fields_does_not_exists_while_creating_compile_decode_single(fields, field_name)
+
+    only_included_field = find_single_fields(fields, field_name)
+
+    raise_if_virtual_field_without_read_by_while_creating_compile_decode([only_included_field])
+
+    topology = DecodeTopology.topology_only(fields, registered_callbacks_map, [field_name])
+
+    decode_steps = create_decode_steps_from_topology(topology)
+
+    { function_head_struct_deconstruction, decode_steps } = function_head_deconstruction_optimization(decode_steps)
+
+    steps_code = steps_code(decode_steps, registered_callbacks_map)
+
+    quote do
+
+      def unquote(function_label)(
+            %__MODULE__{
+              unquote_splicing(function_head_struct_deconstruction)
+            } = bin_struct
+          ) do
+
+        unquote_splicing(steps_code)
+
+        unquote(Bind.bind_managed_value(field_name, __MODULE__))
+
+      end
+
+    end
+
+
+  end
+
   def decode_only_labeled_function(fields, registered_callbacks_map, function_label, only_fields_names, _env) do
 
     raise_if_requested_fields_does_not_exists_while_creating_compile_decode_only(fields, only_fields_names)
     
     only_included_fields = only_included_fields(fields, only_fields_names)
 
-    raise_if_virtual_field_without_read_by_while_creating_compile_decode_only(only_included_fields)
+    raise_if_virtual_field_without_read_by_while_creating_compile_decode(only_included_fields)
 
     topology = DecodeTopology.topology_only(fields, registered_callbacks_map, only_fields_names)
 
@@ -107,7 +142,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
     
     only_included_fields = only_included_fields(fields, only_fields_names)
 
-    raise_if_virtual_field_without_read_by_while_creating_compile_decode_only(only_included_fields)
+    raise_if_virtual_field_without_read_by_while_creating_compile_decode(only_included_fields)
 
     topology = DecodeTopology.topology_only(fields, registered_callbacks_map, only_fields_names)
 
@@ -275,20 +310,28 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   end
 
+  defp find_single_fields(fields, field_name) do
+
+    Enum.find(
+      fields,
+      fn field_or_virtual_field ->
+
+        name =
+          case field_or_virtual_field do
+            %Field{ name: name } -> name
+            %VirtualField{ name: name } -> name
+          end
+
+        name == field_name
+
+      end
+    )
+
+  end
+
   defp raise_if_requested_fields_does_not_exists_while_creating_compile_decode_only(fields, requested_field_names) do
 
-    existing_field_names =
-      Enum.map(
-        fields,
-        fn field_or_virtual_field ->
-
-            case field_or_virtual_field do
-              %Field{ name: name } -> name
-              %VirtualField{ name: name } -> name
-            end
-
-        end
-      )
+    existing_field_names = existing_field_names(fields)
 
     Enum.each(
       requested_field_names,
@@ -303,7 +346,32 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
   end
 
-  defp raise_if_virtual_field_without_read_by_while_creating_compile_decode_only(fields) do
+  defp raise_if_requested_fields_does_not_exists_while_creating_compile_decode_single(fields, requested_field_name) do
+
+    existing_field_names = existing_field_names(fields)
+
+    if requested_field_name not in existing_field_names do
+      raise "requested field #{inspect(requested_field_name)} for compile_decode_single does not exists"
+    end
+  end
+
+  defp existing_field_names(fields) do
+
+    Enum.map(
+      fields,
+      fn field_or_virtual_field ->
+
+        case field_or_virtual_field do
+          %Field{ name: name } -> name
+          %VirtualField{ name: name } -> name
+        end
+
+      end
+    )
+
+  end
+
+  defp raise_if_virtual_field_without_read_by_while_creating_compile_decode(fields) do
 
     Enum.each(
       fields,
@@ -317,7 +385,7 @@ defmodule BinStruct.Macro.Decode.DecodeFunction do
 
               read_by when not is_nil(read_by) -> :ok
 
-              nil -> raise "virtual_field #{name} without read_by could not be used as argument of compile_decode_only"
+              nil -> raise "virtual_field #{name} without read_by could not be used as argument of compile_decode functions"
 
             end
 

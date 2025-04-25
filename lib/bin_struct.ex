@@ -54,6 +54,7 @@ defmodule BinStruct do
     Module.register_attribute(__CALLER__.module, :options, accumulate: true)
     Module.register_attribute(__CALLER__.module, :callbacks, accumulate: true)
     Module.register_attribute(__CALLER__.module, :interface_implementations, accumulate: true)
+    Module.register_attribute(__CALLER__.module, :compile_decode_single, accumulate: true)
     Module.register_attribute(__CALLER__.module, :compile_decode_only_no_label, accumulate: true)
     Module.register_attribute(__CALLER__.module, :compile_decode_only_with_labels, accumulate: true)
 
@@ -529,6 +530,22 @@ defmodule BinStruct do
 
   end
 
+  defmacro compile_decode_singe(label, field_name) do
+
+
+    if !is_atom(label) do
+      raise "compile_decode_singe accepts function name as first argument :decode_single_value, got: #{inspect(label)}"
+    end
+
+
+    if !is_atom(field_name) do
+      raise "compile_decode_singe accepts :field_name atom as second argument, got: #{inspect(field_name)}"
+    end
+
+    Module.put_attribute(__CALLER__.module, :compile_decode_single, { label, field_name })
+
+  end
+
 
   defp is_bin_struct_terminated_function(is_bin_struct_terminated) do
 
@@ -567,6 +584,7 @@ defmodule BinStruct do
     raw_registered_callbacks = Module.get_attribute(env.module, :callbacks) |> Enum.reverse()
     raw_interface_implementations = Module.get_attribute(env.module, :interface_implementations) |> Enum.reverse()
 
+    compile_decode_single = Module.get_attribute(env.module, :compile_decode_single) |> Enum.reverse()
     compile_decode_only_no_label = Module.get_attribute(env.module, :compile_decode_only_no_label) |> Enum.reverse()
     compile_decode_only_with_labels = Module.get_attribute(env.module, :compile_decode_only_with_labels) |> Enum.reverse()
 
@@ -607,6 +625,22 @@ defmodule BinStruct do
       )
 
     decode_function = BinStruct.Macro.Decode.DecodeFunction.decode_function(fields, registered_callbacks_map, env)
+
+    decode_single_functions =
+      Enum.map(
+        compile_decode_single,
+        fn { label, field_name } ->
+
+          BinStruct.Macro.Decode.DecodeFunction.decode_single_function(
+            fields,
+            registered_callbacks_map,
+            label,
+            field_name,
+            env
+          )
+
+        end
+      )
 
     decode_only_labeled =
       Enum.map(
@@ -778,6 +812,7 @@ defmodule BinStruct do
           unquote_splicing(option_functions)
 
           unquote(decode_function)
+          unquote_splicing(decode_single_functions)
           unquote_splicing(decode_only_labeled)
           unquote_splicing(decode_only_unlabeled)
           unquote(decode_only_unlabeled_fallback)
