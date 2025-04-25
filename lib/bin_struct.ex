@@ -530,16 +530,16 @@ defmodule BinStruct do
 
   end
 
-  defmacro compile_decode_singe(label, field_name) do
+  defmacro compile_decode_single(label, field_name) do
 
 
     if !is_atom(label) do
-      raise "compile_decode_singe accepts function name as first argument :decode_single_value, got: #{inspect(label)}"
+      raise "compile_decode_single accepts function name as first argument :decode_single_value, got: #{inspect(label)}"
     end
 
 
     if !is_atom(field_name) do
-      raise "compile_decode_singe accepts :field_name atom as second argument, got: #{inspect(field_name)}"
+      raise "compile_decode_single accepts :field_name atom as second argument, got: #{inspect(field_name)}"
     end
 
     Module.put_attribute(__CALLER__.module, :compile_decode_single, { label, field_name })
