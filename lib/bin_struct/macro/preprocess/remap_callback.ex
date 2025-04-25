@@ -8,6 +8,14 @@ defmodule BinStruct.Macro.Preprocess.RemapCallback do
 
   def remap_callback(raw_callback, env) do
 
+    raw_callback =
+      if is_function_ref(raw_callback) do
+        raw_callback
+      else
+        { ast, _bindings } = Code.eval_quoted(raw_callback, [], env)
+        ast
+      end
+
     case FunctionName.function_name(raw_callback, env) do
 
       function_name when function_name != :unknown ->
@@ -23,6 +31,23 @@ defmodule BinStruct.Macro.Preprocess.RemapCallback do
       :unknown -> raise "not a function reference (&), given: #{inspect(raw_callback)}"
 
     end
+
+  end
+
+
+  defp is_function_ref(raw_callback) do
+
+    case raw_callback do
+      {:&, _,
+        [
+          {:/, _,
+            [{ _function_name, _, _}, _arity]}
+        ]} -> true
+
+      _ -> false
+    end
+
+
 
   end
 
