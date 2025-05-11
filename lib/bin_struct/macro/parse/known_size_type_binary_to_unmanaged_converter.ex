@@ -190,11 +190,11 @@ defmodule BinStruct.Macro.Parse.KnownSizeTypeBinaryToUnmanagedConverter do
 
               case unquote(item_encode_expr) do
 
-                { :ok, encoded_item, new_options } ->
+                { :ok, encoded_item, options } ->
 
                   new_items = [ encoded_item | curr_items ]
 
-                  { :cont, { :ok, new_items, new_options } }
+                  { :cont, { :ok, new_items, options } }
 
                 bad_result -> { :halt, bad_result }
 

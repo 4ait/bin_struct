@@ -76,17 +76,17 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
                    end
 
                  result =
-                   Enum.reduce_while(chunks, { :ok, [] }, fn unquote(item_binary_bind), acc ->
+                   Enum.reduce_while(chunks, { :ok, [], unquote(options_bind) }, fn unquote(item_binary_bind), acc ->
 
-                     { _, items } = acc
+                     { _, items, unquote(options_bind) } = acc
 
                      case unquote(parse_expr) do
 
-                       { :ok, unmanaged_item } ->
+                       { :ok, unmanaged_item, options } ->
 
                          new_items = [ unmanaged_item | items ]
 
-                         { :cont, { :ok, new_items } }
+                         { :cont, { :ok, new_items, options } }
 
                        bad_result -> { :halt, bad_result }
 
@@ -96,7 +96,7 @@ defmodule BinStruct.Macro.Parse.CheckpointRuntimeBoundedList do
 
 
                  case result do
-                   { :ok, items } ->  { :ok, Enum.reverse(items), rest, unquote(options_bind) }
+                   { :ok, items, options } ->  { :ok, Enum.reverse(items), rest, options }
                    bad_result -> bad_result
                  end
 

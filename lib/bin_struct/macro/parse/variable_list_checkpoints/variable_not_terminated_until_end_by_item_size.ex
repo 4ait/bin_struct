@@ -73,17 +73,17 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
                 end
 
               result =
-                Enum.reduce_while(chunks, { :ok, [] }, fn unquote(item_binary_bind), acc ->
+                Enum.reduce_while(chunks, { :ok, [], unquote(options_bind) }, fn unquote(item_binary_bind), acc ->
 
-                  { _, items } = acc
+                  { _, items, unquote(options_bind) } = acc
 
                   case unquote(parse_expr) do
 
-                    { :ok, unmanaged_item } ->
+                    { :ok, unmanaged_item, options } ->
 
                       new_items = [ unmanaged_item | items ]
 
-                      { :cont, { :ok, new_items } }
+                      { :cont, { :ok, new_items, options } }
 
                     :not_enough_bytes -> { :halt, :not_enough_bytes }
 
@@ -95,7 +95,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableNotTerminatedUnt
 
 
               case result do
-                { :ok, items } ->  { :ok, Enum.reverse(items), "", unquote(options_bind) }
+                { :ok, items, options } ->  { :ok, Enum.reverse(items), "", options }
                 :not_enough_bytes -> :not_enough_bytes
                 { :wrong_data, _wrong_data } = wrong_data -> wrong_data
               end

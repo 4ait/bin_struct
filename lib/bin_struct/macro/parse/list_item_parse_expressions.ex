@@ -11,7 +11,7 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
       { :module, %{ module_type: :bin_struct, module: module } } ->
 
         quote do
-          unquote(module).parse(unquote(item_binary_bind), unquote(options_bind))
+          unquote(module).parse_returning_options(unquote(item_binary_bind), unquote(options_bind))
         end
 
       {
@@ -24,7 +24,7 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
       } ->
 
         quote do
-          unquote(module).parse(unquote(item_binary_bind), unquote(custom_type_args), unquote(options_bind))
+          unquote(module).parse_returning_options(unquote(item_binary_bind), unquote(custom_type_args), unquote(options_bind))
         end
 
     end
@@ -46,7 +46,7 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
 
         expr =
           quote do
-            unquote(module).parse_exact(unquote(item_binary_bind), unquote(options_bind))
+            unquote(module).parse_exact_returning_options(unquote(item_binary_bind), unquote(options_bind))
           end
 
         %{
@@ -66,7 +66,7 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
 
         expr =
           quote do
-            unquote(module).parse_exact(unquote(item_binary_bind), unquote(custom_type_args), unquote(options_bind))
+            unquote(module).parse_exact_returning_options(unquote(item_binary_bind), unquote(custom_type_args), unquote(options_bind))
           end
 
         %{
@@ -75,8 +75,6 @@ defmodule BinStruct.Macro.Parse.ListItemParseExpressions do
         }
 
     end
-
-
 
 
   end

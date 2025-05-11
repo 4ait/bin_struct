@@ -40,19 +40,19 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
 
       quote do
 
-        defp unquote(parse_until_length_by_parse_function_name)(<<>>, _options, acc) do
-          { :ok, :lists.reverse(acc) }
+        defp unquote(parse_until_length_by_parse_function_name)(<<>>, options, acc) do
+          { :ok, :lists.reverse(acc), options }
         end
 
         defp unquote(parse_until_length_by_parse_function_name)(unquote(item_binary_bind), unquote(options_bind), acc) when is_binary(unquote(item_binary_bind))  do
 
           case unquote(parse_expr) do
 
-            {:ok, unmanaged_new_item, rest } ->
+            {:ok, unmanaged_new_item, rest, options } ->
 
               new_acc = [ unmanaged_new_item | acc ]
 
-              unquote(parse_until_length_by_parse_function_name)(rest, unquote(options_bind), new_acc)
+              unquote(parse_until_length_by_parse_function_name)(rest, options, new_acc)
 
             :not_enough_bytes -> :not_enough_bytes
 
@@ -87,7 +87,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
 
           case parse_until_length_by_parse_function_result do
 
-            { :ok, structs } ->
+            { :ok, structs, unquote(options_bind) } ->
 
               unquote(
                 case maybe_validate_any_count do
@@ -95,7 +95,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
                   nil ->
                     #no additional count validation
                     quote do
-                      { :ok, structs, rest, options }
+                      { :ok, structs, rest, unquote(options_bind) }
                     end
 
                   any_count ->
@@ -114,7 +114,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
                       items_count = Enum.count(structs)
 
                       if items_count == any_count do
-                        { :ok, structs, rest, options }
+                        { :ok, structs, rest, unquote(options_bind) }
                       else
                         { :wrong_data, %{ message: "Requested items #{inspect(any_count)}, got: #{items_count}", data: target_bin } }
                       end
@@ -125,9 +125,10 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedUntilL
               )
 
 
-
             :not_enough_bytes -> :not_enough_bytes
+
             { :wrong_data, _wrong_data } = wrong_data -> wrong_data
+
           end
 
         else
