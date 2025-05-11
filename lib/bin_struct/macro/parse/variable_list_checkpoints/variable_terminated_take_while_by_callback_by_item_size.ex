@@ -160,7 +160,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
                       new_acc
                     )
 
-                  :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+                  :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest, unquote(options_bind) }
 
                 end
 
@@ -172,7 +172,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
                 case unquote(parse_expr) do
 
-                  {:ok, unquote(unmanaged_new_item_bind) } ->
+                  {:ok, unquote(unmanaged_new_item_bind), unquote(options_bind) } ->
 
                     unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
 
@@ -238,7 +238,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
                           new_acc
                         )
 
-                      :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+                      :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest, unquote(options_bind) }
 
                     end
 
@@ -272,7 +272,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
       unquote(parse_function_name)(
         unquote(initial_binary_access),
         unquote_splicing(dependencies_bindings),
-        options,
+        unquote(options_bind),
         unquote_splicing(inner_function_on_option_dependencies_bindings),
         {_unmanaged = [], _managed = [], _binary = []}
       )
@@ -283,12 +283,13 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
       parse_result = unquote(parse_function_call)
 
       case parse_result do
-        {:ok, items, rest} -> {:ok, items, rest, options}
+        {:ok, items, rest, options } -> {:ok, items, rest, options}
         :not_enough_bytes -> :not_enough_bytes
       end
     end
 
     wrong_data_binary_bind = {:binary_for_wrong_data, [], __MODULE__}
+
     validate_patterns = Validation.validate_fields_with_patterns_and_prelude(
       [field],
       registered_callbacks_map,
@@ -311,6 +312,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
           )
         )
         unquote(wrong_data_binary_bind) = unquote(initial_binary_access)
+
         unquote(
           WrapWithOptionalBy.maybe_wrap_with_optional_by(
             validate_clause,
@@ -320,6 +322,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
             __MODULE__
           )
         )
+
       end
     end
 
@@ -425,7 +428,6 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
           <<unquote(item_binary_bind)::size(item_size)-bytes, rest::binary>> = binary
 
-
           unquote(
 
             if is_infailable_of_primitive_type do
@@ -511,7 +513,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
 
                 case unquote(parse_expr) do
 
-                  {:ok, unquote(unmanaged_new_item_bind) } ->
+                  {:ok, unquote(unmanaged_new_item_bind), unquote(options_bind) } ->
 
                     unquote(unmanaged_value_bind) = [ unquote(unmanaged_new_item_bind) | unmanaged_items_acc ]
 
@@ -578,7 +580,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
                           new_acc
                         )
 
-                      :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest }
+                      :halt ->  { :ok, :lists.reverse(unquote(unmanaged_value_bind)), rest, unquote(options_bind) }
 
                     end
 
@@ -604,7 +606,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
       unquote(parse_function_name)(
         unquote(initial_binary_access),
         unquote_splicing(dependencies_bindings),
-        options,
+        unquote(options_bind),
         unquote_splicing(inner_function_on_option_dependencies_bindings),
         item_size,
         {_unmanaged = [], _managed = [], _binary = []}
@@ -614,7 +616,7 @@ defmodule BinStruct.Macro.Parse.VariableListCheckpoints.VariableTerminatedTakeWh
     body = quote do
       parse_result = unquote(parse_function_call)
       case parse_result do
-        {:ok, items, rest} -> {:ok, items, rest, options}
+        {:ok, items, rest, options } -> {:ok, items, rest, options}
         :not_enough_bytes -> :not_enough_bytes
         { :wrong_data, _wrong_data } = wrong_data -> wrong_data
       end
