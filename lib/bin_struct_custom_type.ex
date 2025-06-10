@@ -46,11 +46,6 @@ defmodule BinStructCustomType do
   alias BinStruct.Macro.Structs.RegisteredOptionsMap
   alias BinStruct.Macro.Preprocess.RemapRegisteredOption
 
-  @callback parse_returning_options(binary(), map(), term()) ::
-              :not_enough_bytes |
-              {:ok, term(), term(), term()} |
-              {:wrong_data, term()}
-
   defmacro __using__(_opts) do
 
     Module.register_attribute(__CALLER__.module, :options, accumulate: true)
@@ -58,7 +53,6 @@ defmodule BinStructCustomType do
     quote do
       import BinStructCustomType
       @before_compile BinStructCustomType
-      @behaviour BinStructCustomType
     end
 
   end
