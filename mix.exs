@@ -60,8 +60,18 @@ defmodule BinStruct.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications:
+        [:logger]
+        |> test_extra_applications()
     ]
+  end
+
+  defp test_extra_applications(extra_applications) do
+    if Mix.env() == :test do
+      extra_applications ++ [ :ssl ]
+    else
+      extra_applications
+    end
   end
 
   # Run "mix help deps" to learn about dependencies.
@@ -89,6 +99,7 @@ defmodule BinStruct.MixProject do
       Types: ~r/pages\/types\/.*/
     ]
   end
+
 
   defp groups_for_modules do
     [

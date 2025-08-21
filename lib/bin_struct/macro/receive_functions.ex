@@ -2,15 +2,21 @@ defmodule BinStruct.Macro.ReceiveFunctions do
 
   @moduledoc false
 
+  alias BinStruct.Macro.ReceiveFunctionsSizeValidation
+
+
   def tpc_receive_function_known_size(known_size_bytes, enable_log_tcp) do
 
     quote do
 
       unquote(try_parse_from_tcp_data_function(enable_log_tcp))
+      unquote(ReceiveFunctionsSizeValidation.validate_tcp_known_size())
 
       def tcp_receive(tcp_socket, buffer \\ <<>>, options \\ nil) do
 
         known_total_size_bytes = unquote(known_size_bytes)
+
+        validate_tcp_known_total_size_bytes_limit(known_total_size_bytes)
 
         available_in_buffer_size = byte_size(buffer)
 
@@ -47,6 +53,7 @@ defmodule BinStruct.Macro.ReceiveFunctions do
     quote do
 
       unquote(try_parse_from_tcp_data_function(enable_log_tcp))
+      unquote(ReceiveFunctionsSizeValidation.validate_tcp_buffer_size_function())
 
       def tcp_receive(tcp_socket, buffer \\ <<>>, options \\ nil) do
 
@@ -63,6 +70,8 @@ defmodule BinStruct.Macro.ReceiveFunctions do
             tcp_receive(tcp_socket, receive_more, options)
 
           buffer ->
+
+            validate_tcp_buffer_size(buffer)
 
             case try_parse_from_tcp_data(buffer, options) do
 
@@ -95,10 +104,13 @@ defmodule BinStruct.Macro.ReceiveFunctions do
     quote do
 
       unquote(try_parse_from_tls_data_function(enable_log_tls))
+      unquote(ReceiveFunctionsSizeValidation.validate_tls_known_size())
 
       def tls_receive(tcp_socket, buffer \\ <<>>, options \\ nil) do
 
         known_total_size_bytes = unquote(known_size_bytes)
+
+        validate_tls_known_total_size_bytes_limit(known_total_size_bytes)
 
         available_in_buffer_size = byte_size(buffer)
 
@@ -135,6 +147,7 @@ defmodule BinStruct.Macro.ReceiveFunctions do
     quote do
 
       unquote(try_parse_from_tls_data_function(enable_log_tls))
+      unquote(ReceiveFunctionsSizeValidation.validate_tls_buffer_size_function())
 
       def tls_receive(tcp_socket, buffer \\ <<>>, options \\ nil) do
 
@@ -151,6 +164,8 @@ defmodule BinStruct.Macro.ReceiveFunctions do
             tls_receive(tcp_socket, receive_more, options)
 
           buffer ->
+
+            validate_tls_buffer_size(buffer)
 
             case try_parse_from_tls_data(buffer, options) do
 

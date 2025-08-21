@@ -4,6 +4,7 @@ defmodule BinStruct.Macro.Preprocess.Remap do
 
   alias BinStruct.Macro.Preprocess.RemapType
   alias BinStruct.Macro.Preprocess.RemapCallbackOptions
+  alias BinStruct.Macro.Preprocess.RemapEvaluateOptions
   alias BinStruct.Macro.Preprocess.RemapRegisteredCallback
   alias BinStruct.Macro.Preprocess.RemapRegisteredOption
   alias BinStruct.Macro.Preprocess.RemapInterfaceImplementation
@@ -34,7 +35,10 @@ defmodule BinStruct.Macro.Preprocess.Remap do
 
   defp remap_raw_field({ name, type, opts } = _raw_field, env) do
 
-    new_opts = RemapCallbackOptions.remap_callback_options(opts, env)
+    new_opts =
+      RemapCallbackOptions.remap_callback_options(opts, env)
+      |> RemapEvaluateOptions.remap_evaluate_options(env)
+
     new_type = RemapType.remap_type(type, new_opts, env)
 
     %Field {
