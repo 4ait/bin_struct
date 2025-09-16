@@ -5,7 +5,7 @@ defmodule BinStruct.MixProject do
     [
       app: :bin_struct,
       version: version(),
-      elixir: "~> 1.17",
+      elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: ["lib"] |> maybe_add_test_elixirc_path(),
       deps: deps(),
@@ -17,7 +17,7 @@ defmodule BinStruct.MixProject do
   end
 
   def version do
-    "0.2.33"
+    "0.2.34"
   end
 
   defp maybe_add_test_elixirc_path(elixirc_paths) do

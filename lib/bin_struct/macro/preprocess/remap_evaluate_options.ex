@@ -2,7 +2,7 @@ defmodule BinStruct.Macro.Preprocess.RemapEvaluateOptions do
 
   @moduledoc false
 
-  def remap_evaluate_options(opts, env) do
+  def remap_evaluate_options(opts, _env) do
 
     opts
     |> Keyword.replace(
@@ -14,7 +14,7 @@ defmodule BinStruct.Macro.Preprocess.RemapEvaluateOptions do
 
   defp evaluate_expression(expression) do
 
-    { result, bindings } = Code.eval_quoted(expression)
+    { result, _bindings } = Code.eval_quoted(expression)
 
     result
 

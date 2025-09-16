@@ -201,14 +201,33 @@ defmodule BinStruct.Macro.ParseFunction do
         end
       ) |> List.flatten()
 
+    module_full_name = Macro.expand(env.module, env)
+
     parse_function_body =
       quote do
 
         options =
           case options do
             nil -> __default_options__()
+
             options when is_list(options) -> collapse_options_into_map(__default_options__(), options)
-            options when is_map(options) -> options
+
+            options when is_map(options) ->
+
+              case options do
+
+                %{ __default_options_initialized__: modules } ->
+
+                  if MapSet.member?(modules, unquote(module_full_name)) do
+                    options
+                  else
+                    :maps.merge(__default_options__(), options)
+                  end
+
+                _ -> :maps.merge(__default_options__(), options)
+
+              end
+
           end
 
         with unquote_splicing(checkpoints_with_clauses)

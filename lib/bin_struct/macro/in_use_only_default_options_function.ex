@@ -7,7 +7,7 @@ defmodule BinStruct.Macro.InUseOnlyDefaultOptionsFunction do
   alias BinStruct.Macro.Structs.RegisteredCallbackFieldArgument
   alias BinStruct.Macro.Structs.RegisteredCallbackOptionArgument
 
-  def default_options_function(registered_callbacks, children_modules, _env) do
+  def default_options_function(registered_callbacks, children_modules, env) do
 
     current_module_options =
       Enum.map(
@@ -58,10 +58,11 @@ defmodule BinStruct.Macro.InUseOnlyDefaultOptionsFunction do
 
           child_default_options = apply(child_module_full_name, :__default_options__, [])
 
+          child_default_options = Enum.filter(child_default_options, fn { k, _v } -> k != :__default_options_initialized__ end)
+
           Enum.map(
             child_default_options,
             fn { interface, options_map } ->
-
 
               Enum.map(
                 options_map,
@@ -69,7 +70,6 @@ defmodule BinStruct.Macro.InUseOnlyDefaultOptionsFunction do
                   {interface, option_name, value}
                 end
               )
-
 
             end
           )
@@ -80,7 +80,8 @@ defmodule BinStruct.Macro.InUseOnlyDefaultOptionsFunction do
 
     options_all = current_module_options ++ children_modules_options
 
-    options_all = Enum.uniq(options_all)
+    options_all =
+      Enum.uniq(options_all)
 
     options_map =
       Enum.reduce(
@@ -118,6 +119,30 @@ defmodule BinStruct.Macro.InUseOnlyDefaultOptionsFunction do
 
         end
       )
+
+    module_full_name = Macro.expand(env.module, env)
+
+    options_map =
+
+      case options_map do
+
+        %{ __default_options_initialized__: initialized_modules_map } ->
+
+          Map.put(
+            options_map,
+            :__default_options_initialized__,
+            MapSet.put(initialized_modules_map, module_full_name)
+          )
+
+        %{} ->
+
+          Map.put(
+            options_map,
+            :__default_options_initialized__,
+            MapSet.new([module_full_name])
+          )
+
+      end
 
     quote do
 

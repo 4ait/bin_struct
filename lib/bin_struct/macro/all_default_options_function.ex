@@ -4,7 +4,7 @@ defmodule BinStruct.Macro.AllDefaultOptionsFunction do
 
   alias BinStruct.Macro.Structs.RegisteredOption
 
-  def default_options_function(registered_options, _env) do
+  def default_options_function(registered_options, env) do
 
     current_module_options =
       Enum.map(
@@ -67,6 +67,30 @@ defmodule BinStruct.Macro.AllDefaultOptionsFunction do
 
         end
       )
+
+    module_full_name = Macro.expand(env.module, env)
+
+    options_map =
+
+      case options_map do
+
+        %{ __default_options_initialized__: initialized_modules_map } ->
+
+          Map.put(
+            options_map,
+            :__default_options_initialized__,
+            MapSet.put(initialized_modules_map, module_full_name)
+          )
+
+        %{} ->
+
+          Map.put(
+            options_map,
+            :__default_options_initialized__,
+            MapSet.new([module_full_name])
+          )
+
+      end
 
     quote do
 
